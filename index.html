@@ -1,0 +1,1813 @@
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0">
+    <title>Pseudowhizz - Online Pseudocode Interpreter</title>
+
+    <link rel="stylesheet" href="codemirror-5.65.19/theme/darcula.css">
+    <link rel="stylesheet" href="codemirror-5.65.19/theme/idea.css">
+    
+    <script src="codemirror-5.65.19/lib/codemirror.js"></script>
+    <script src="codemirror-5.65.19/addon/edit/closebrackets.js"></script>
+
+
+
+    <script src="codemirror-5.65.19/addon/fold/indent-fold.js"></script>
+    <script src="codemirror-5.65.19/addon/fold/foldcode.js"></script>
+    <script src="codemirror-5.65.19/addon/fold/foldgutter.js"></script>
+
+
+    <link rel="icon" href="Assets/Icon/favicon.ico">
+    <link rel="icon" href="/favicon.ico">
+    <meta property="og:image" content="https://pseudowhizz.org/public/Preview/preview.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="keywords" content="pseudowhizz, pseudocode, online pseudocode interpreter,online interpreter, interpreter, cie, igcse, coding, programming, cambridge international, gcse, computer science, cs, exam, 0478, computing, how to write pseudocode, pseudocode writer, pseudocode generator, pseudocode excecutor">
+    <meta name="description" content="Pseudowhizz Online Pseudocode Interpreter - Designed just for GCSE students to easily write and excecute IGCSE standard pseudocode.">
+    <meta property="og:title" content="Pseudowhizz Online Pseudocode Interpreter">
+    <meta property="og:description" content="Pseudowhizz Online Pseudocode Interpreter - Designed just for GCSE students to easily write and excecute IGCSE standard pseudocode.">
+
+    <link rel="stylesheet" href="codemirror-5.65.19/lib/codemirror.css">
+    
+
+
+
+    <link rel="stylesheet" href="style.css">
+
+
+
+    <link rel="stylesheet" href="codemirror-5.65.19/addon/fold/foldgutter.css">
+
+    <link rel="stylesheet" href="codemirror-5.65.19/addon/lint/lint.css">
+    <script src="codemirror-5.65.19/addon/lint/lint.js"></script>
+
+
+    <script type="text/javascript" src="lightMode.js" defer></script>
+
+
+    <script src="codemirror-5.65.19/addon/hint/show-hint.js"></script>
+    <link rel="stylesheet" href="codemirror-5.65.19/addon/hint/show-hint.css">
+
+
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9837178944354824"
+        crossorigin="anonymous">
+    </script>
+
+    <script type="application/ld+json">
+    {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Pseudowhizz",
+    "url": "https://pseudowhizz.org/",
+    "description": "Pseudowhizz Online Pseudocode Interpreter - Designed just for GCSE students to easily write and excecute IGCSE standard pseudocode.",
+    "logo": "https://pseudowhizz.org/favicon.ico"
+    }
+    </script>
+
+
+    
+</head>
+<body id="Home">
+
+    
+
+
+
+
+
+
+    <nav>
+
+        <logo-wrapper>
+            <a href="#"><svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0,0,348.09257,355.84254"><g transform="translate(-66.07874,-2.07873)"><g data-paper-data="{&quot;isPaintingLayer&quot;:true}" stroke="none" stroke-width="1" stroke-linecap="square" stroke-linejoin="miter" stroke-miterlimit="10" stroke-dasharray="" stroke-dashoffset="0" style="mix-blend-mode: normal"><path d="M66.07874,35.15509v0c0,-18.26756 14.80878,-33.07635 33.07636,-33.07635h281.68982c8.7724,0 17.18548,3.48481 23.38849,9.68784c6.20306,6.20302 9.68786,14.61612 9.68786,23.38852v281.68982c0,18.26758 -14.80877,33.07635 -33.07635,33.07635h-281.68982c-18.26758,0 -33.07636,-14.80877 -33.07636,-33.07635z" fill="#ea5b0b" fill-rule="evenodd"/><path d="M414.17131,349.89106h-269.25986v-220.96858c0,-11.72117 4.65185,-22.96229 12.93216,-31.25041c8.2803,-8.28815 19.51083,-12.94436 31.22098,-12.94436v0h225.10672z" fill="currentColor" fill-rule="evenodd"/><path d="M169.66928,128.44095h244.25198v229.48032h-244.25198z" fill-opacity="0" fill="currentColor" fill-rule="evenodd"/><path d="M273.13806,238.15344c0,6.125 -1.47397,11.61459 -4.4219,16.46875c-2.94792,4.84375 -6.99479,8.625 -12.14062,11.34375c-5.13541,2.71875 -10.76563,4.07813 -16.89063,4.07813h-20.98437v17.67188h21.15625v16.125h-50.78125v-16.125h13.6875v-66.90625h-13.51562v-16.10937h45.75c12.02084,0 21.38021,2.94791 28.07813,8.84375c6.70835,5.88541 10.06253,14.08854 10.06253,24.60938zM257.18491,237.62219c0,-5.08334 -1.88021,-9.15625 -5.64063,-12.21875c-3.75,-3.0625 -9.26562,-4.59375 -16.54687,-4.59375h-16.29687v33.10938h18.03125c13.63541,0 20.45313,-5.43229 20.45313,-16.29687zM322.00995,220.80969h-15.9375l6.0625,49.57813l17.32813,-47.3125h11.4375l17.51563,46.96875l5.89063,-49.23437h-16.125v-16.10937h39.51563v16.10938h-8.14062l-11.26562,83.03125h-13.51562l-19.9375,-52l-19.59375,52h-13.6875l-11.09375,-83.03125h-8.14062v-16.10937h39.6875z" fill="#ea5b0b" fill-rule="nonzero"/></g></g></svg></a>
+            <div id="svg-title"><a href="#">//Pseudowhizz</a></div>
+        </logo-wrapper>
+
+
+
+        
+        <ul id="navBar">
+            <li><a href="#">Editor</a></li>
+            <li><a href='/about' target='_blank'>About</a></li>
+
+            <li><a href='/contact' target='_blank'>Contact</a></li>
+
+            <div id="navextras">
+                <li><a href='/donate' target='_blank'>Donate</a></li>
+                <li><a href='/pps' target='_blank'>PPQs</a></li>
+                <li><a href='/submissions' target='_blank'>Monthly Submissions</a></li>
+            </div>
+
+            
+        </ul>
+
+
+
+
+        <mobile-navbox>
+
+            <ul id="mobile-nav-list">
+                <li><a id="current-tab" href="#">Editor</a></li>
+                <li><a href='/about' target='_blank'>About</a></li>
+
+                <li><a href='/contact' target='_blank'>Contact</a></li>
+
+                <li><a href='/donate' target='_blank'>Donate</a></li>
+                <li><a href='/pps' target='_blank'>Past Paper Questions</a></li>
+                <li><a href='/submissions' target='_blank'>Monthly Submissions</a></li>
+            </ul>
+            <div class="ham">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+
+        </mobile-navbox>
+    </nav>
+
+    <editor-main>
+        <div class="ad-wrapper">
+            <ins class="adsbygoogle"
+            style="display:block"
+            data-ad-client="ca-pub-9837178944354824"
+            data-ad-slot="4592956241"
+            data-ad-format="auto"
+            data-full-width-responsive="true">
+            </ins>
+            <script>
+                (adsbygoogle = window.adsbygoogle || []).push({});
+            </script>
+        </div>
+
+        <div id="underlay">
+            
+            <editornav>
+                <ul id="menu">
+                    <li><input type="button" id="saveBtn" title="Download (Ctrl+S)" value="Download"></li>
+                    <li><input type="button" id="loadBtn" title="Upload (Ctrl+U)" value="Upload"></li>
+                    <li><input type="button" id="runBtn" title="Run (Ctrl+Enter)" value="Run"></li>
+                    <li><input type="button" id="clearBtn" title="Clear" value="Clear"></li>
+                    
+
+                        
+                </ul>
+                <a id="hiddenDownload" style="display:none;"></a>
+                <div id="theme-toggle-container">
+
+                    <div id="theme-toggle-outline">
+                        <input type="checkbox" id="theme-toggle" hidden>
+                        <label for="theme-toggle">
+
+                        <ul id="theme-toggle-svg-container">
+                            <li><svg version="1.0" class="sun"  viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 3V4M12 20V21M4 12H3M6.31412 6.31412L5.5 5.5M17.6859 6.31412L18.5 5.5M6.31412 17.69L5.5 18.5001M17.6859 17.69L18.5 18.5001M21 12H20M16 12C16 14.2091 14.2091 16 12 16C9.79086 16 8 14.2091 8 12C8 9.79086 9.79086 8 12 8C14.2091 8 16 9.79086 16 12Z" stroke="currentColour" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg></li>
+
+                            <li><svg version="1.0" class="moon"  viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M3.32031 11.6835C3.32031 16.6541 7.34975 20.6835 12.3203 20.6835C16.1075 20.6835 19.3483 18.3443 20.6768 15.032C19.6402 15.4486 18.5059 15.6834 17.3203 15.6834C12.3497 15.6834 8.32031 11.654 8.32031 6.68342C8.32031 5.50338 8.55165 4.36259 8.96453 3.32996C5.65605 4.66028 3.32031 7.89912 3.32031 11.6835Z" stroke="currentColour" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg></li>
+                        </ul>
+                        </label>
+                        <div id="toggle-highlight"></div>
+                    </div>
+
+
+
+
+    
+                </div>
+
+            </editornav>
+            <div id="editor-container">
+                <h3 id="editorTitle">Main.pseudo</h3>
+
+                
+
+
+                
+                <div id="topBar">
+
+
+                    <div id="tabs">
+                        <ul>
+                            <li class="Main.pseudo" id="tabLink" onclick="
+                                IsolateTabSelection(this);">
+                                <a>Main.pseudo</a>
+                                
+                                <div id="underline"></div>
+                            </li>
+                            <li class="Sample.txt" id="tabLink" onclick="IsolateTabSelection(this);">
+                                <a>Sample.txt</a>
+                                <button onclick="
+                                    event.stopPropagation();
+                                    removeFile(this);
+                                        ">x
+                                </button>
+                                    
+                                
+                                <div id="underline"></div>
+                                
+                            </li>
+
+
+
+
+                            <li><input type="button" id="addFiles" value="+" onclick="
+                                if(!testFileMemory()){
+                                    
+                                    alert(`Maxium ${maxFiles} files can be opened at once!`);
+                                }
+                                else{
+                                    let fileName = prompt('New file name: ');
+
+                                    if(!fileName.startsWith('null') && fileName !== null){
+
+
+
+                                        createNewFile(fileName, '');
+                                    }
+                                }
+                            "></li>
+                        </ul>
+
+                    </div>
+
+
+                        
+                </div>
+
+                <div id="editor-box">
+
+                    <textarea id="sourceCode" ></textarea>
+
+                    <ul id="editor-position-table">
+                        <li class="ediPosPlate">Ln:</li>
+                        <li id="Ln">1</li>
+                        <li class="ediPosPlate">,</li>
+                        <li class="ediPosPlate">Col:</li>
+                        <li id="Col">1</li>
+                        <li id="charsSelected" class="ediPosPlate"></li>
+                    </ul>
+                </div>
+                
+                <h3>Console</h3>
+
+                <div id="editor-footer">
+
+                    <div id="console-options">
+                        <div title="Copy to clipboard" id="copy-console" class="console-btn"><svg xmlns="http://www.w3.org/2000/svg" width="23" height="23" viewBox="0 0 24 20"><path fill="currentColor" d="M19.53 8L14 2.47a.75.75 0 0 0-.53-.22H11A2.75 2.75 0 0 0 8.25 5v1.25H7A2.75 2.75 0 0 0 4.25 9v10A2.75 2.75 0 0 0 7 21.75h7A2.75 2.75 0 0 0 16.75 19v-1.25H17A2.75 2.75 0 0 0 19.75 15V8.5a.75.75 0 0 0-.22-.5Zm-5.28-3.19l2.94 2.94h-2.94Zm1 14.19A1.25 1.25 0 0 1 14 20.25H7A1.25 1.25 0 0 1 5.75 19V9A1.25 1.25 0 0 1 7 7.75h1.25V15A2.75 2.75 0 0 0 11 17.75h4.25ZM17 16.25h-6A1.25 1.25 0 0 1 9.75 15V5A1.25 1.25 0 0 1 11 3.75h1.75V8.5a.76.76 0 0 0 .75.75h4.75V15A1.25 1.25 0 0 1 17 16.25Z"/></svg></div>
+                        <div title="Clear" id="clear-console" class="console-btn"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 26 26"><path fill="currentColor" d="m14.03 1.889l9.657 9.657l-8.345 8.345l-.27.27H20v2H6.747l-3.666-3.666a4 4 0 0 1 0-5.657l10.95-10.95Zm.322 16.163l6.507-6.506l-6.829-6.829l-6.828 6.829l6.828 6.828l.32-.323l.002.001ZM5.788 12.96l-1.293 1.293a2 2 0 0 0 0 2.828l3.08 3.08h4.68l.366-.368l-6.833-6.833Z"/></svg></div>
+                        <div title="Download" id="download-console" class="console-btn"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 18 18"><path fill="currentColor" fill-rule="evenodd" d="M11.78 7.159a.75.75 0 0 0-1.06 0l-1.97 1.97V1.75a.75.75 0 0 0-1.5 0v7.379l-1.97-1.97a.75.75 0 0 0-1.06 1.06l3.25 3.25L8 12l.53-.53l3.25-3.25a.75.75 0 0 0 0-1.061ZM2.5 9.75a.75.75 0 0 0-1.5 0V13a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V9.75a.75.75 0 0 0-1.5 0V13a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V9.75Z" clip-rule="evenodd"/></svg></div>
+                    </div>
+
+                    <textarea id="Output" disabled></textarea>
+                </div>
+                
+            
+            </div>
+            <br>
+            <div id="infoPara" style="text-align: center;">
+                <p>The specific version of pseudocode that this interpreter supports is the
+                    CIE 0478 version, which you can find the documentation for <a target="_blank" href="https://www.cambridgeinternational.org/Images/697167-2026-2028-syllabus.pdf">here</a>.
+                    <br>
+                    <br>
+                    Note: There may be features supported in this interpreter which are not explicitly mentioned in the guide. <a href='/about#uniqueFeatures'>Learn more</a>.
+
+
+                </p>
+            </div>
+
+        </div>
+
+        <ul id="extras">
+            <li><h2>More</h2></li>
+            <li><a href='/donate' target='_blank'>Donate</a></li>
+            <li><a href='/pps' target='_blank'>Past paper solutions</a></li>
+            <li><a href='/submissions' target='_blank'>Monthly Submissions</a></li>
+
+        </ul>
+    </editor-main>
+
+
+
+    <dialog class="modal" id="input-modal">
+        <div id="modal-title">Enter here</div>
+        <br>
+        <input type="text" required id="input-box">
+        <br>
+        <br>
+        <div class="modal-buttons">
+            <input type="button" value="Cancel" id="input-cancel">
+            <input type="button" value="Enter" id="input-enter">
+           
+        </div>
+    </dialog>
+    
+
+    <br>
+
+    <br>
+
+
+    <div id="footer">
+        <div id="copy-right">
+            © 2025 Pseudowhizz. All rights reserved.
+        </div>
+
+        <div id="Socials">
+
+            <ul>
+                <li id="youtube" title="youtube"><svg  width="50px" height="50px" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><defs><style>.cls-1{ stroke-width: 2; fill:"currentColor";stroke:"currentColor";stroke-linecap:round;stroke-linejoin:round;}</style></defs><path class="a" d="M43.1124,14.394a5.0056,5.0056,0,0,0-3.5332-3.5332c-2.3145-.8936-24.7326-1.3314-31.2358.0256A5.0059,5.0059,0,0,0,4.81,14.42c-1.0446,4.583-1.1239,14.4914.0256,19.1767A5.006,5.006,0,0,0,8.369,37.13c4.5829,1.0548,26.3712,1.2033,31.2358,0a5.0057,5.0057,0,0,0,3.5332-3.5333C44.2518,28.6037,44.3311,19.31,43.1124,14.394Z"/><path class="a" d="M30.5669,23.9952,20.1208,18.004V29.9863Z"/></svg></li>
+                
+                
+                <li id="mailIcon" title="pseudowhizz@gmail.com">
+
+                    <svg  version="1.1" id="_x32_" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" 
+                        viewBox="0 0 512 512"  xml:space="preserve">
+                    <style type="text/css">
+                        .cls-1{fill:"currentColor"; stroke:"currentColor";}
+                    </style>
+                    <g>
+                        <path  class="st0" d="M510.746,110.361c-2.128-10.754-6.926-20.918-13.926-29.463c-1.422-1.794-2.909-3.39-4.535-5.009
+                            c-12.454-12.52-29.778-19.701-47.531-19.701H67.244c-17.951,0-34.834,7-47.539,19.708c-1.608,1.604-3.099,3.216-4.575,5.067
+                            c-6.97,8.509-11.747,18.659-13.824,29.428C0.438,114.62,0,119.002,0,123.435v265.137c0,9.224,1.874,18.206,5.589,26.745
+                            c3.215,7.583,8.093,14.772,14.112,20.788c1.516,1.509,3.022,2.901,4.63,4.258c12.034,9.966,27.272,15.45,42.913,15.45h377.51
+                            c15.742,0,30.965-5.505,42.967-15.56c1.604-1.298,3.091-2.661,4.578-4.148c5.818-5.812,10.442-12.49,13.766-19.854l0.438-1.05
+                            c3.646-8.377,5.497-17.33,5.497-26.628V123.435C512,119.06,511.578,114.649,510.746,110.361z M34.823,99.104
+                            c0.951-1.392,2.165-2.821,3.714-4.382c7.689-7.685,17.886-11.914,28.706-11.914h377.51c10.915,0,21.115,4.236,28.719,11.929
+                            c1.313,1.327,2.567,2.8,3.661,4.272l2.887,3.88l-201.5,175.616c-6.212,5.446-14.21,8.443-22.523,8.443
+                            c-8.231,0-16.222-2.99-22.508-8.436L32.19,102.939L34.823,99.104z M26.755,390.913c-0.109-0.722-0.134-1.524-0.134-2.341V128.925
+                            l156.37,136.411L28.199,400.297L26.755,390.913z M464.899,423.84c-6.052,3.492-13.022,5.344-20.145,5.344H67.244
+                            c-7.127,0-14.094-1.852-20.142-5.344l-6.328-3.668l159.936-139.379l17.528,15.246c10.514,9.128,23.922,14.16,37.761,14.16
+                            c13.89,0,27.32-5.032,37.827-14.16l17.521-15.253L471.228,420.18L464.899,423.84z M485.372,388.572
+                            c0,0.803-0.015,1.597-0.116,2.304l-1.386,9.472L329.012,265.409l156.36-136.418V388.572z"/>
+                    </g>
+                    </svg>
+                </li>
+
+
+                <li title="discord" id="discord"><svg stroke-width: 2 fill="currentColor" width="50px" height="50px" viewBox="0 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg"><path d="M20.992 20.163c-1.511-0.099-2.699-1.349-2.699-2.877 0-0.051 0.001-0.102 0.004-0.153l-0 0.007c-0.003-0.048-0.005-0.104-0.005-0.161 0-1.525 1.19-2.771 2.692-2.862l0.008-0c1.509 0.082 2.701 1.325 2.701 2.847 0 0.062-0.002 0.123-0.006 0.184l0-0.008c0.003 0.050 0.005 0.109 0.005 0.168 0 1.523-1.191 2.768-2.693 2.854l-0.008 0zM11.026 20.163c-1.511-0.099-2.699-1.349-2.699-2.877 0-0.051 0.001-0.102 0.004-0.153l-0 0.007c-0.003-0.048-0.005-0.104-0.005-0.161 0-1.525 1.19-2.771 2.692-2.862l0.008-0c1.509 0.082 2.701 1.325 2.701 2.847 0 0.062-0.002 0.123-0.006 0.184l0-0.008c0.003 0.048 0.005 0.104 0.005 0.161 0 1.525-1.19 2.771-2.692 2.862l-0.008 0zM26.393 6.465c-1.763-0.832-3.811-1.49-5.955-1.871l-0.149-0.022c-0.005-0.001-0.011-0.002-0.017-0.002-0.035 0-0.065 0.019-0.081 0.047l-0 0c-0.234 0.411-0.488 0.924-0.717 1.45l-0.043 0.111c-1.030-0.165-2.218-0.259-3.428-0.259s-2.398 0.094-3.557 0.275l0.129-0.017c-0.27-0.63-0.528-1.142-0.813-1.638l0.041 0.077c-0.017-0.029-0.048-0.047-0.083-0.047-0.005 0-0.011 0-0.016 0.001l0.001-0c-2.293 0.403-4.342 1.060-6.256 1.957l0.151-0.064c-0.017 0.007-0.031 0.019-0.040 0.034l-0 0c-2.854 4.041-4.562 9.069-4.562 14.496 0 0.907 0.048 1.802 0.141 2.684l-0.009-0.11c0.003 0.029 0.018 0.053 0.039 0.070l0 0c2.14 1.601 4.628 2.891 7.313 3.738l0.176 0.048c0.008 0.003 0.018 0.004 0.028 0.004 0.032 0 0.060-0.015 0.077-0.038l0-0c0.535-0.72 1.044-1.536 1.485-2.392l0.047-0.1c0.006-0.012 0.010-0.027 0.010-0.043 0-0.041-0.026-0.075-0.062-0.089l-0.001-0c-0.912-0.352-1.683-0.727-2.417-1.157l0.077 0.042c-0.029-0.017-0.048-0.048-0.048-0.083 0-0.031 0.015-0.059 0.038-0.076l0-0c0.157-0.118 0.315-0.24 0.465-0.364 0.016-0.013 0.037-0.021 0.059-0.021 0.014 0 0.027 0.003 0.038 0.008l-0.001-0c2.208 1.061 4.8 1.681 7.536 1.681s5.329-0.62 7.643-1.727l-0.107 0.046c0.012-0.006 0.025-0.009 0.040-0.009 0.022 0 0.043 0.008 0.059 0.021l-0-0c0.15 0.124 0.307 0.248 0.466 0.365 0.023 0.018 0.038 0.046 0.038 0.077 0 0.035-0.019 0.065-0.046 0.082l-0 0c-0.661 0.395-1.432 0.769-2.235 1.078l-0.105 0.036c-0.036 0.014-0.062 0.049-0.062 0.089 0 0.016 0.004 0.031 0.011 0.044l-0-0.001c0.501 0.96 1.009 1.775 1.571 2.548l-0.040-0.057c0.017 0.024 0.046 0.040 0.077 0.040 0.010 0 0.020-0.002 0.029-0.004l-0.001 0c2.865-0.892 5.358-2.182 7.566-3.832l-0.065 0.047c0.022-0.016 0.036-0.041 0.039-0.069l0-0c0.087-0.784 0.136-1.694 0.136-2.615 0-5.415-1.712-10.43-4.623-14.534l0.052 0.078c-0.008-0.016-0.022-0.029-0.038-0.036l-0-0z"></path></svg></li>
+            </ul>
+        </div>
+    </div>
+
+ 
+    
+    <script type="module" >
+
+
+
+
+        let ol_files = ["Main.pseudo", "Sample.txt"];
+
+        let savedEl = null; // store reference
+
+        function manageNavBar() {
+            const nav = document.getElementById('navBar'); // your <ul>
+
+            if (window.innerWidth >= 1400) {
+                // remove only if present
+                const el = document.getElementById('navextras');
+                if (el) {
+                savedEl = el;  // keep the element in memory
+                el.remove();
+                }
+            } else {
+                // add back if missing
+                if (!document.getElementById('navextras') && savedEl) {
+                nav.appendChild(savedEl); // restore to <ul>
+                }
+            }
+        }
+
+        window.addEventListener("resize", manageNavBar);
+        window.addEventListener("load", manageNavBar);
+
+
+
+
+        function open_file(filepath) {
+            fetch(filepath)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok: ' + response.statusText);
+                    }
+                    return response.text(); // Read as plain text
+                })
+                .then(text => {
+                    localStorage.setItem('Saved', text); // Store the solution in localStorage
+                    window.location.href = './index.html'; // Redirect to the editor page
+                })
+                .catch(error => {
+                    console.error('Error fetching file:', error);
+                });
+        }
+
+        const maxFiles = Infinity;
+        
+
+        let adapted = "";
+        let nameSpace = new Set();
+        let hasSaved = false;
+
+
+        window.nameSpace = nameSpace;
+
+
+        let progam_status = false;
+
+        function isAlpha(str) {
+
+
+            for(const letter of str){
+                if(/^[A-Za-z]+$/.test(str[0]) && /^[A-Za-z]+$/.test(letter)){
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+
+        var themeToggle = document.getElementById('theme-toggle');
+
+
+
+
+
+        themeToggle.style.transition = "none";
+        themeToggle.checked = (localStorage.getItem('lightMode') == "active") ? false : true;
+
+        
+        
+
+        CodeMirror.defineMode("CIEpseudocode", function () {
+
+        
+
+
+            const keywords = /^(ELSEIF|READFILE|WRITEFILE|OPENFILE|FALSE|TRUE|CLOSEFILE|DECLARE|CONSTANT|OUTPUT|INPUT|FUNCTION|ENDFUNCTION|PROCEDURE|ENDPROCEDURE)$/i;
+            const datatypes = /^(ARRAY|INTEGER|REAL|CHAR|STRING|BOOLEAN)$/i;
+            const native = /^(LCASE|UCASE|SUBSTRING|ROUND|MOD|DIV|RANDOM|NOT|AND|OR|LENGTH)$/i;
+            const other = /^(IF|ELSE|ENDIF|THEN|CASE|OF|ENDCASE|OTHERWISE|RETURNS|RETURN|READ|WRITE|STEP|FOR|TO|CALL|NEXT|WHILE|REPEAT|ENDWHILE|DO|UNTIL)$/i;
+            return {
+                token: function (stream, state) {
+
+                    if (selectedTab.endsWith('.pseudo')) {
+                        if (stream.eatSpace()) return null;
+
+                        // helper functions for Unicode-aware identifiers
+                        function readIdentifier(stream) {
+                            let word = "";
+                            let ch = stream.peek();
+
+                            // If the first character exists, consume it
+                            if (!ch) return null;
+
+                            // Keep consuming characters until we hit whitespace, punctuation, or end of line
+                            while (!stream.eol()) {
+                                ch = stream.peek();
+                                if (!ch || /\s/.test(ch) || /[\(\)\[\]\{\};,]/.test(ch)) break;
+                                word += stream.next();
+                            }
+
+                            return word || null;
+                        }
+
+
+                        function abs_accept(test){
+
+                            return test == '∑'
+
+                        }
+
+
+                        let word = "";
+
+
+
+                        word = stream.match(/^[a-zA-Z_∑][a-zA-Z0-9_∑]*/);
+                        
+                      
+                        
+                        if(JSON.stringify(word) == JSON.stringify(word).toUpperCase()){
+
+
+                            if (word && keywords.test(word)) return "keyword";
+                            if (word && datatypes.test(word)) return "datatype";
+                            if (word && other.test(word)) return "other-token";
+                            if (word && native.test(word)) return "native";
+
+
+                        }
+
+
+
+                        
+
+                        if (word &&!keywords.test(word) && !datatypes.test(word) && !native.test(word)) {
+
+                            return "variable"; // normal identifier
+                        }
+
+  
+
+                        if (stream.match(/^"[^"]*"/)) return "string";
+
+                        // Short single-quote strings (<=3 chars)
+                        const shortStringMatch = stream.match(/^'[^']*'/);
+                        if (shortStringMatch) {
+                            
+                            const sliced = JSON.stringify(shortStringMatch).slice(2, -2);
+                            
+
+                            if (0 < sliced.length && sliced.length <= 3) return "string";
+
+                            
+                        }
+
+                        // Numbers
+                        if (stream.match(/^\d+/)) return "number";
+
+                        // Comments
+                        if (stream.match(/^\/\/.*/)) return "comment";
+
+                        // Any unrecognized character: consume one char and mark as error
+                        stream.next();
+                        return "other";
+                    }
+
+                    stream.next();
+                    return null;
+                }
+            
+
+            }
+        });
+
+        function debounce(func, delay) {
+            let timeout;
+            return function (...args) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), delay);
+            };
+        }
+
+        function getCurrentWord(cm) {
+            const cursor = cm.getCursor();
+            const token = cm.getTokenAt(cursor);
+
+            // Only accept valid identifiers
+            const word = token.string;
+            const isIdentifier = isAlpha(word);
+
+            if (isIdentifier) {
+                return word;
+            }
+            return null;
+        }
+
+        const identifierSet = new Set();
+
+
+
+        CodeMirror.registerHelper("hint", "pseudocode", function(cm) {
+            
+            if(cm.getValue() != ""){
+                
+            }
+            
+            const cursor = cm.getCursor();
+            const token = cm.getTokenAt(cursor);
+            const start = token.start;
+            const end = cursor.ch;
+            const word = token.string.slice(0, end - start);
+
+            let keywordList = ["ARRAY","DECLARE","CONSTANT","OUTPUT","IF","ENDWHILE","THEN","ENDIF","ELSE", "INPUT", "FUNCTION","ENDFUNCTION","PROCEDURE","ENDPROCEDURE","CALL","CASE","OF","OTHERWISE","ENDCASE","RETURNS","RETURN","OPENFILE","CLOSEFILE","READFILE","WRITEFILE","READ","WRITE","FOR","NEXT","WHILE","DO","REPEAT","UNTIL","AND","OR","NOT","LCASE","UCASE","ROUND","RANDOM","SUBSTRING","STRING","BOOLEAN","CHAR","INTEGER","REAL", "DIV", "MOD", "LENGTH", "STEP", "TO", "TRUE", "FALSE"];
+            
+
+            const omniList = [...keywordList, ...nameSpace];
+
+            const list = omniList
+                .filter(item => item.startsWith(word.toUpperCase()))
+                .map(item => ({
+                    text: item,
+                    render: function(element, self, data) {
+
+
+                        const keywords = ["TO", "FALSE", "TRUE","OUTPUT", "INPUT", "CALL", "DECLARE", "CONSTANT","ELSE","FOR", "NEXT", "STEP", "WHILE", "DO", "ENDWHILE", "REPEAT", "UNTIL", "IF", "THEN", "ELSEIF", "ENDIF", "CASE", "OF", "OTHERWISE", "ENDCASE", "FUNCTION", "PROCEDURE", "RETURN", "RETURNS", "ENDFUNCTION", "ENDPROCEDURE", "OPENFILE", "CLOSEFILE", "READFILE", "WRITEFILE", "READ", "WRITE"];
+                        const operators = ["NOT", "AND", "OR", "DIV", "MOD"];
+                        const variables = [];
+                        const words = [];
+                        const functions = ["RANDOM","LENGTH", "ROUND", "UCASE", "LCASE", "SUBSTRING"];
+                        const dataTypes = ["ARRAY", "STRING", "INTEGER", "BOOLEAN", "CHAR", "REAL"];
+                    
+
+                        if(keywords.includes(item)){
+                            element.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><path fill="currentColor" d="M15 4h-5V3h5v1zm-1 3h-2v1h2V7zm-4 0H1v1h9V7zm2 6H1v1h11v-1zm-5-3H1v1h6v-1zm8 0h-5v1h5v-1zM8 2v3H1V2h7zM7 3H2v1h5V3z"/></svg>${item}<span class="hint-type">keyword</span>`;
+                        }
+                        else if(operators.includes(item)){
+                            element.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><path fill="currentColor" fill-rule="evenodd" d="M2.873 1.1c.335.136.602.398.745.73c.072.17.109.352.107.537a1.34 1.34 0 0 1-.61 1.135a1.359 1.359 0 0 1-.753.223A1.355 1.355 0 0 1 1 2.362a1.355 1.355 0 0 1 .83-1.256A1.37 1.37 0 0 1 2.873 1.1zm-.298 1.765a.551.551 0 0 0 .332-.5a.548.548 0 1 0-.332.5zM6.43 1.109L1.11 6.43l.686.687l5.32-5.32l-.686-.687zM11.5 9h1v2.5H15v1h-2.5V15h-1v-2.5H9v-1h2.5V9zm-5.732.525l.707.707L4.707 12l1.768 1.768l-.707.707L4 12.707l-1.768 1.768l-.707-.707L3.293 12l-1.768-1.768l.707-.707L4 11.293l1.768-1.768zm1.35-4.195a1.353 1.353 0 0 0-1.256-.83a1.355 1.355 0 0 0-1.256.83a1.362 1.362 0 0 0 1.257 1.895A1.358 1.358 0 0 0 7.118 5.33zm-.753.745a.553.553 0 0 1-.289.29a.547.547 0 0 1-.599-.117a.529.529 0 0 1-.117-.173a.544.544 0 0 1 .716-.715a.565.565 0 0 1 .173.116a.549.549 0 0 1 .116.599zM14 3h-4v1h4V3z" clip-rule="evenodd"/></svg>${item}<span class="hint-type">operator</span>`;
+                        }
+                        else if(dataTypes.includes(item)){
+                            element.innerHTML = `<svg id="name-svg" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><path fill="currentColor" fill-rule="evenodd" d="M2 5h2V4H1.5l-.5.5v8l.5.5H4v-1H2V5zm12.5-1H12v1h2v7h-2v1h2.5l.5-.5v-8l-.5-.5zm-2.74 2.57L12 7v2.51l-.3.45l-4.5 2h-.46l-2.5-1.5l-.24-.43v-2.5l.3-.46l4.5-2h.46l2.5 1.5zM5 9.71l1.5.9V9.28L5 8.38v1.33zm.58-2.15l1.45.87l3.39-1.5l-1.45-.87l-3.39 1.5zm1.95 3.17l3.5-1.56v-1.4l-3.5 1.55v1.41z" clip-rule="evenodd"/></svg>${item}<span class="hint-type">data type</span>`;
+                        }
+                        else if(variables.includes(item)){
+                            element.innerHTML = `<svg id="name-svg" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><path fill="currentColor" fill-rule="evenodd" d="M2 5h2V4H1.5l-.5.5v8l.5.5H4v-1H2V5zm12.5-1H12v1h2v7h-2v1h2.5l.5-.5v-8l-.5-.5zm-2.74 2.57L12 7v2.51l-.3.45l-4.5 2h-.46l-2.5-1.5l-.24-.43v-2.5l.3-.46l4.5-2h.46l2.5 1.5zM5 9.71l1.5.9V9.28L5 8.38v1.33zm.58-2.15l1.45.87l3.39-1.5l-1.45-.87l-3.39 1.5zm1.95 3.17l3.5-1.56v-1.4l-3.5 1.55v1.41z" clip-rule="evenodd"/></svg>${item}<span class="hint-type">variable</span>`;
+                        }
+                        else if(functions.includes(item)){
+                            element.innerHTML = `<svg id="function-svg" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><path fill="currentColor" d="m13.51 4l-5-3h-1l-5 3l-.49.86v6l.49.85l5 3h1l5-3l.49-.85v-6L13.51 4zm-6 9.56l-4.5-2.7V5.7l4.5 2.45v5.41zM3.27 4.7l4.74-2.84l4.74 2.84l-4.74 2.59L3.27 4.7zm9.74 6.16l-4.5 2.7V8.15l4.5-2.45v5.16z"/></svg>${item}<span class="hint-type">function</span>`;
+                        }
+                        else{
+                            element.innerHTML = `<svg id="name-svg" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><path fill="currentColor" fill-rule="evenodd" d="M2 5h2V4H1.5l-.5.5v8l.5.5H4v-1H2V5zm12.5-1H12v1h2v7h-2v1h2.5l.5-.5v-8l-.5-.5zm-2.74 2.57L12 7v2.51l-.3.45l-4.5 2h-.46l-2.5-1.5l-.24-.43v-2.5l.3-.46l4.5-2h.46l2.5 1.5zM5 9.71l1.5.9V9.28L5 8.38v1.33zm.58-2.15l1.45.87l3.39-1.5l-1.45-.87l-3.39 1.5zm1.95 3.17l3.5-1.56v-1.4l-3.5 1.55v1.41z" clip-rule="evenodd"/></svg>${item}<span class="hint-type">name</span>`;
+                        }
+
+                    }
+            }));
+
+            const container = document.querySelector('.CodeMirror-hint-active');
+            if(container && container != undefined){
+                container.style.position = "relative";
+            }
+            
+             
+
+
+
+            
+
+
+
+            window.keywordList = keywordList;
+
+            let returnList = [];
+            
+            if(selectedTab.endsWith('.pseudo') && cm.getValue() != ""){
+                returnList = list;
+            }
+
+            return {
+                list: returnList,
+                from: CodeMirror.Pos(cursor.line, start),
+                to: CodeMirror.Pos(cursor.line, end)
+            };
+        });
+
+
+
+
+
+        let editor = CodeMirror.fromTextArea(document.getElementById("sourceCode"), {   
+            lineNumbers: true,
+            lineWrapping: true,
+            autoCloseBrackets: true,
+            mode: "CIEpseudocode",
+            theme: window.lightMode == "active" ? "idea" : "darcula",
+            foldGutter: true,
+            gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"],
+
+            foldOptions: {
+                rangeFinder: CodeMirror.fold.indent
+            },
+
+            extraKeys: {
+                "Ctrl-Space": "autocomplete"
+            },
+
+
+        });
+
+        // Select all current matching elements
+
+
+
+
+        window.editor = editor;
+
+
+
+        function splitWords(text) {
+            const result = [];
+            // Split by spaces first
+            const words = text.split(/\s+/);
+            for (const word of words) {
+                if (word.includes(',')) {
+                    // Split by comma and add each trimmed part
+                    for (const part of word.split(',')) {
+                        if (part.trim() !== "") result.push(part.trim());
+                    }
+                } else if (word.trim() !== "") {
+                    result.push(word.trim());
+                }
+            }
+            return result;
+        }
+
+        const recordWord = debounce(function (cm) {
+                const word = getCurrentWord(cm);
+                if (word) {
+
+                    if(!keywordList.includes(word.toUpperCase())){
+                        nameSpace.add(word);
+
+                    }
+                }
+            }, 500);
+
+            editor.on("inputRead", function (cm, change) {
+            // Only respond to typing
+            if (change.origin === "+input" || change.origin === "paste") {
+                recordWord(cm);
+                
+            }
+
+        });
+
+        editor.setOption("hintOptions",{
+            hint: CodeMirror.hint.pseudocode
+        });
+
+        editor.on("inputRead", function(cm, event) {
+
+
+            if (!cm.state.completionActive && !cm.options.readOnly) {
+                CodeMirror.commands.autocomplete(cm, null, { completeSingle: false });
+            }
+        });
+
+        let selectedTab = "none";
+
+        import {files, pseudoFiles} from "./Main.js";
+        window.files = files;
+        window.pseudoFiles = pseudoFiles;
+
+        function testFileMemory(){
+
+            if(files.size + 1 > maxFiles){
+                return false;
+            }
+            else{
+                return true;
+            }
+        }
+
+        window.testFileMemory = testFileMemory;
+
+
+        function createNewFile(fileName, contents){
+
+            
+
+            if(fileName == ""){
+                return null;
+            }
+
+            fileName = adapt_file_name(fileName);
+
+
+
+            if(ol_files.includes(fileName)){
+                if(confirm(`File '${fileName}' already exists. Would you like to replace it?`)){
+
+                    change_file_contents(fileName, contents);
+
+                }
+                else{
+
+                    return null;
+
+                }
+            }
+            else{
+                ol_files.push(fileName);
+
+                if(files.size + 1 > maxFiles){
+                    alert(`Maximum ${maxFiles} files can be opened at once!`);
+                }
+                else{
+                    files.set(fileName, "");
+                    const parent = document.getElementById('tabs');
+                    const unorderedList = parent.querySelector('ul');
+
+                    const main = document.getElementsByClassName('Main.pseudo')[0];
+                    const newTab = main.cloneNode(true);
+
+                    newTab.className = fileName;
+                    newTab.querySelector('a').innerHTML = fileName;
+
+                    const button = document.createElement("button");
+                    button.onclick = function() {
+                        event.stopPropagation();
+                        removeFile(this);
+                    };
+                    button.innerHTML = 'x';
+
+                    newTab.insertBefore(button, newTab.lastElementChild);
+
+                    unorderedList.insertBefore(newTab, unorderedList.lastElementChild);
+                    IsolateTabSelection(newTab);
+                }
+
+                files.set(fileName, contents);
+                IsolateTabSelection(document.getElementsByClassName(fileName)[0]);
+
+                editor.setValue(contents);
+            }
+
+
+
+
+
+        }
+
+        function IsolateTabSelection(mytab){
+
+
+
+            const mytabname = mytab ? mytab.querySelector('a').textContent : "Main.pseudo"
+
+            
+
+
+            if(selectedTab != mytabname && mytab){
+                files.set(selectedTab, editor.getValue());
+                mytab.classList.toggle('selected');
+                            
+                const anchorTag = mytab.children[0];
+                const tabName = anchorTag.innerHTML;
+                selectedTab = tabName;
+                            
+                for(const tab of [...mytab.parentElement.children]){
+                    if(tab !== mytab){
+                        tab.classList.remove('selected');
+                    }
+                }
+
+                editor.setValue(files.get(selectedTab));
+
+                const titleText = document.getElementById('editorTitle');
+                if (titleText) {
+                    titleText.textContent = selectedTab;
+                }
+            }
+
+
+            
+        }
+
+        function removeFile(myTab){
+            
+
+
+            const thisFileName = myTab.parentElement.querySelector('a').innerHTML;
+
+            if(thisFileName == "Main.pseudo"){
+
+
+
+            }
+            else{
+                const i = ol_files.indexOf(thisFileName) - 1;
+                ol_files.splice(ol_files.indexOf(thisFileName), 1);
+
+
+                files.delete(thisFileName);
+                pseudoFiles.delete(thisFileName);
+                const tab = myTab.parentElement;
+                tab.remove();
+
+
+
+
+                
+                const newFileName = ol_files[i];
+
+                const newFile = document.getElementsByClassName(newFileName)[0];
+
+
+
+                if(selectedTab == thisFileName){
+                    IsolateTabSelection(newFile);
+                }
+            }
+
+
+            
+            
+        }
+
+        function remove_file_by_name(thisFileName){
+
+            const myTab = document.getElementsByClassName(thisFileName)[0];
+
+            const i = ol_files.indexOf(thisFileName) - 1;
+            ol_files.splice(ol_files.indexOf(thisFileName), 1);
+
+
+            files.delete(thisFileName);
+            pseudoFiles.delete(thisFileName);
+            myTab.remove();
+
+
+
+
+            
+            const newFileName = ol_files[i];
+
+            const newFile = document.getElementsByClassName(newFileName)[0];
+
+
+
+            if(selectedTab == thisFileName){
+                IsolateTabSelection(newFile);
+            }
+        }
+
+        window.removeFile = removeFile;
+        window.createNewFile = createNewFile;
+        window.IsolateTabSelection = IsolateTabSelection;
+
+
+
+        const mainFile = document.getElementsByClassName('Main.pseudo');
+        selectedTab = "none";
+
+
+
+        IsolateTabSelection(mainFile[0]);
+        files.delete("none");
+        pseudoFiles.delete("none");
+
+
+
+
+        function show_hint_description(hint) {
+
+            const token = extract_token_from_hint(hint);
+
+            switch(token){
+
+                case "MOD":
+                    throw "not implemented"
+                    break;
+
+                default:
+                    console.log("Unrecognised token");
+
+            }
+
+        }
+
+        function extract_token_from_hint(hint) {
+
+            let tk = "";
+
+            const list = hint.split('');
+
+            let i = 0;
+
+            while(list[i].toUpperCase() == list[i]){
+
+                tk += list[i];
+                i++;
+            }
+
+            return tk;
+
+        }
+
+
+
+        import { repl, outputLog, errorLog } from "/Main.js";
+        document.addEventListener('DOMContentLoaded', () => {
+
+
+
+        const runBtn = document.getElementById('runBtn');
+
+        const clearBtn = document.getElementById('clearBtn');
+        const outLog = document.getElementById('Output');
+        const saveBtn = document.getElementById('saveBtn');
+        const loadBtn = document.getElementById('loadBtn');
+        
+
+
+
+        clearBtn.addEventListener('click', () => {
+            
+            function checker() {
+                const result = confirm("Are you sure you want to clear the editor?");
+                if(!result){
+                    event.preventDefault();
+                }
+                else{
+
+
+
+                    for(const file of [...ol_files]){
+
+                        if(file != "Main.pseudo"){
+
+                            remove_file_by_name(file);
+
+                        }
+
+                    }
+
+
+                    fetch('/Prewritten/Default.txt')
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Network response was not ok: ' + response.statusText);
+                            }
+                            return response.text(); // Read as plain text
+                        })
+                        .then(text => {
+                            localStorage.setItem('Saved', text); // Store the solution in localStorage
+
+                            if(selectedTab.endsWith('.pseudo')){
+                                editor.setValue(text);
+                            }
+                           
+                        })
+                        .catch(error => {
+                            console.error('Error fetching file:', error);
+                        });
+
+                    
+
+                    
+                }
+            }
+
+            checker();
+            
+            
+        })
+
+        function getIndexFromPos(editor, pos) {
+            let index = 0;
+
+            for (let i = 0; i < pos.line; i++) {
+                index += editor.getLine(i).length + 1; // +1 for newline character
+            }
+
+            index += pos.ch;
+            return index - 1;
+        }
+
+        editor.on('change', (instance) => {
+            
+            const text = editor.getValue();
+
+
+            const cursor = instance.getCursor();
+
+
+            const index = getIndexFromPos(instance, cursor);
+
+            function screen_redundant(input) {
+                const toUse = splitWords(input);
+
+
+                for(const word of nameSpace){
+                    if(!toUse.includes(word)){
+                     
+                        nameSpace.delete(word);
+                    }
+                }
+
+            }
+
+            if(text[index] == '-' && text.length >= 2){
+                for(let i = 0; i < text.length - 1; i++){
+                    const potential = text[i]+text[i+1];
+                    if(potential == '<-'){
+
+
+                        const pos = editor.posFromIndex(i);
+
+                        editor.replaceRange('←', pos, {line: pos.line, ch: pos.ch + 2});
+
+
+                        editor.setCursor({line: pos.line, ch: pos.ch + 1});
+                        break;
+                    }
+
+                }   
+            }
+            else if(text[index] == '=' && text.length >= 2){
+                for(let i = 0; i < text.length - 1; i++){
+                    const potential = text[i]+text[i+1];
+                    if(potential == '>='){
+
+
+                        const pos = editor.posFromIndex(i);
+
+                        editor.replaceRange('≥', pos, {line: pos.line, ch: pos.ch + 2});
+
+
+                        editor.setCursor({line: pos.line, ch: pos.ch + 1});
+                        break;
+                    }
+                    else if(potential == '<='){
+
+                        const pos = editor.posFromIndex(i);
+
+                        editor.replaceRange('≤', pos, {line: pos.line, ch: pos.ch + 2});
+                    }
+                }   
+            }
+
+            screen_redundant(editor.getValue());
+        })
+
+        
+        const ln = document.getElementById('Ln');
+        const col = document.getElementById('Col');
+        const charsSelected = document.getElementById('charsSelected');
+
+        ln.style.color = "#EA5B0B";
+        col.style.color = "#EA5B0B";
+        
+        
+        
+        editor.on('cursorActivity', function(instance) {
+            const cursor = instance.getCursor();
+            const mousePos = cursor.ch + 1;
+
+
+            ln.innerHTML = cursor.line + 1;
+            col.innerHTML = cursor.ch + 1;
+
+            const selection = editor.getSelection();
+            if(selection){
+                charsSelected.innerHTML = `(${selection.length} selected)`;
+            }
+            else{
+                charsSelected.innerHTML = "";
+            }
+
+
+        })
+
+        
+
+        runBtn.addEventListener('click', async () => {
+            pseudoFiles.clear();
+            var outLog = document.getElementById('Output');
+            
+            const code = editor.getValue();
+            
+            files.set(selectedTab, code);
+
+            if(!selectedTab.endsWith('.pseudo')){
+                alert("The selected file is not of .pseudo type so cannot be run");
+            }
+            else{
+                
+
+                if(code !== ""){
+                    progam_status = true;
+                    clear_console.click();
+                    await repl(code, "program");
+                    
+                    outLog.textContent = "";
+                    outLog.style.setProperty("color", "var(--text-color)", "important");
+
+   
+
+                    if(errorLog.length > 0){
+                        
+                        outLog.style.setProperty("color", "red", "important");
+
+
+                    
+                        let adapted = "";
+
+                        for(const log of errorLog){
+
+
+
+                            adapted = adapted + log;
+                            adapted = adapted + '\n';
+                        }
+
+
+ 
+
+                        outLog.textContent = adapted;
+
+
+
+
+                    }
+                    else if(errorLog.length == 0 && outputLog && !outLog.textContent.includes("** Process exited **")){
+
+
+                        for(const log of outputLog){
+
+                            outLog.textContent += log;
+                            outLog.textContent += '\n';
+
+                        }
+
+                        outLog.textContent += "\n** Process exited **";
+
+                    }
+
+                    else if(errorLog.length == 0 && (!outputLog || outputLog.length == 0)){
+
+
+                        outLog.style.setProperty("color", "var(--text-color)", "important");
+                        outLog.textContent = " \n ** Process exited **";
+                    }
+
+                    
+ 
+
+
+                    
+                }
+                else if(errorLog.length == 0){
+
+
+                    outLog.style.setProperty("color", "var(--text-color)", "important");
+                    outLog.textContent = " \n ** Process exited **";
+                }
+
+                outLog.scrollTop = outLog.scrollHeight;
+
+            }
+
+
+
+
+
+        });
+    });
+
+        saveBtn.addEventListener('click', () => {
+
+        if(editor.getValue() == ""){
+            alert("Cannot download empty file!"); 
+
+            return null;
+        }
+
+
+
+        const fileName = adapt_file_name(prompt("Enter file name:", selectedTab));
+
+        if(!fileName.startsWith("null")){
+            const fileContent = editor.getValue();
+            const newFile = new Blob([fileContent], {type: 'text/plain'});
+
+            window.URL = window.URL || window.webkitURL;
+
+            const hidden = document.getElementById("hiddenDownload");
+
+            hidden.href = window.URL.createObjectURL(newFile);
+            hidden.download = fileName;
+            hidden.click();
+
+
+        }
+
+        save_to_system(fileName, true);
+
+    });
+
+        function change_file_contents(file_name, new_text){
+
+            ol_files[ol_files.indexOf(file_name)] = new_text;
+
+            files.set(file_name, new_text);
+
+            if(selectedTab == file_name){
+
+                editor.setValue(new_text);
+
+            }
+
+        }
+
+        loadBtn.addEventListener('click', () => {
+
+            function openFile() {
+                window.showOpenFilePicker({
+                    types: [{
+                        description: 'Text files',
+                        accept: {
+                            'text/plain': ['.txt','.pseudo']
+                        }
+                    }],
+                    excludeAcceptAllOption: true,
+                    multiple: false,
+                })
+                .then(([fileHandle]) => {
+                    // Save the handle if you want to write later
+                    return fileHandle.getFile().then(file => ({
+                        content: file.text(),
+                        name: file.name
+                    }));
+                })
+                .then(async ({ content, name }) => {
+                    const text = await content; // Resolve the file text
+                    name = adapt_file_name(name);
+
+                    createNewFile(name, text);
+
+
+                    const titleText = document.getElementById('editorTitle');
+                    if (titleText) {
+                        titleText.textContent = name;
+                    }
+
+
+                })
+                .catch(error => {
+                    console.error("File picking failed:", error);
+                });
+            }
+
+            if(!testFileMemory()){
+                alert(`Maxium ${maxFiles} files can be opened at once!`);
+            }
+            else{
+                openFile();
+            }
+            
+
+        })
+
+        var clear_console = document.getElementById('clear-console');
+        var copy_console = document.getElementById('copy-console');
+        var dnld_console = document.getElementById('download-console');
+
+        var cons = document.getElementById('Output');
+
+        clear_console.addEventListener("mouseenter", () => {
+
+            if(cons.textContent == ""){
+
+ 
+
+                clear_console.style.cursor = "not-allowed";
+
+            }
+            else{
+
+                clear_console.style.cursor = "pointer";
+
+            }
+
+        })
+
+
+        copy_console.addEventListener("mouseenter", () => {
+
+            if(cons.textContent == "" || outputLog.length == 0){
+
+ 
+
+                copy_console.style.cursor = "not-allowed";
+
+            }
+            else{
+
+                copy_console.style.cursor = "pointer";
+
+            }
+
+        })
+
+
+        dnld_console.addEventListener("mouseenter", () => {
+
+            if(cons.textContent == "" || outputLog.length == 0){
+
+ 
+
+                dnld_console.style.cursor = "not-allowed";
+
+            }
+            else{
+
+                dnld_console.style.cursor = "pointer";
+
+            }
+
+        })
+
+        clear_console.addEventListener("click", () => {
+
+            var console = document.getElementById('Output');
+            console.textContent = "";
+
+        })
+
+        copy_console.addEventListener("click", () => {
+
+
+            var console = document.getElementById('Output');
+
+            if(console.textContent != ""){
+                let toCopy = "";
+
+
+                for(const log of outputLog){
+                    toCopy += log;
+                    toCopy += '\n';
+                }
+
+
+                navigator.clipboard.writeText(toCopy);
+
+                alert("Result copied to clipboard!");
+
+            }
+
+            
+
+        })
+
+        function save_to_system(file, preventMessage){
+
+
+            files.set(file, editor.getValue());
+
+            const contents = editor.getValue();
+
+            if(file == "Main.pseudo"){
+                localStorage.setItem("Saved", contents);
+            }
+            
+
+            if(!preventMessage){
+                alert(`File '${file}' saved successfully!`);
+            }
+            
+
+            hasSaved = true;
+
+
+        }
+
+
+
+
+        async function saveTextFile(defaultName, contents) {
+            // Prompt user for a file handle
+            const opts = {
+                suggestedName: defaultName,
+                types: [
+                    {
+                        description: 'Text Files',
+                        accept: {'text/plain': ['.txt']},
+                    },
+                ],
+            };
+
+            try {
+                // showSaveFilePicker opens a native save dialog
+                const fileHandle = await (window).showSaveFilePicker(opts);
+                
+                // Create a writable stream
+                const writable = await fileHandle.createWritable();
+                
+                // Write contents
+                await writable.write(contents);
+                
+                // Close the file and save
+                await writable.close();
+
+
+            } catch (err) {
+                console.error('File save cancelled or failed:', err);
+            }
+        }
+
+
+        function removeSuffix(str, suffix) {
+            if (str.endsWith(suffix)) {
+                return str.slice(0, str.length - suffix.length);
+            }
+            return str;
+        }
+
+
+
+
+        dnld_console.addEventListener("click", () => {
+
+            var console = document.getElementById('Output');
+
+            if(outputLog.length > 0 && console.textContent != ""){
+                let toCopy = "";
+
+
+                for(const log of outputLog){
+                    toCopy += log;
+                    toCopy += '\n';
+                }
+
+                const fn = removeSuffix(selectedTab, ".pseudo") + '_output';
+
+                saveTextFile(fn, toCopy);
+            }
+
+
+            
+
+        })
+
+
+
+        var youtube_link = document.getElementById('youtube');
+        var discord_link = document.getElementById('discord');
+
+
+
+        youtube_link.addEventListener("click", function() {
+
+            window.open("https://www.youtube.com/channel/UC6VWHFdjnb8rL_nQMMttALw");
+
+        })
+
+        discord_link.addEventListener("click", function() {
+
+
+            window.open("https://discord.gg/btHq87PZ");
+
+        })
+
+
+        if(editor && selectedTab){
+
+            editor.setValue(localStorage.getItem("Default"));
+        }
+
+
+
+        document.addEventListener("DOMContentLoaded", () => {
+            document.addEventListener("keydown", function(e) {
+                if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
+                    e.preventDefault();
+                    if(editor.getValue() == ""){
+                        throw "Cannot save empty file!";
+                    }
+                    else{
+                        document.getElementById('saveBtn').click();
+                    }
+                }
+                else if((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "o") {
+                    e.preventDefault();
+                    if(!testFileMemory()){
+                        alert(`Maxium ${maxFiles} files can be opened at once!`);
+                    }
+                    else{
+                        document.getElementById('loadBtn').click();
+                    }
+                }
+                else if((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'enter'){
+                    e.preventDefault();
+                    document.getElementById('runBtn').click();
+                }
+            });
+        });
+
+        
+
+        
+        
+
+        window.addEventListener("beforeunload", function (e) {
+
+            
+
+
+            if(!hasSaved && (editor.getValue() != localStorage.getItem("Default"))){
+                e.preventDefault();
+                e.returnValue = ""; // Required for Chrome
+
+                fetch('/Prewritten/Default.txt')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.text(); // Use .json() if it's JSON
+                    })
+                    .then(data => {
+                        localStorage.setItem("Default", data);
+                    })
+                    .catch(error => {
+                        console.error("Error fetching file:", error);
+                    });
+            }
+
+
+
+
+        });
+
+
+
+        function rename_file(originalName, newName){
+
+            ol_files[ol_files.indexOf(originalName)] = newName;
+
+
+
+
+            const tabEl = document.getElementsByClassName(originalName)[0];
+
+            if(!tabEl){
+                alert(`File '${originalName}' does not exist!`);
+                return null;
+            }
+            else{
+
+                const originalContents = files.get(originalName);
+
+                files.set(newName, originalContents);
+
+                files.delete(originalName);
+                pseudoFiles.delete(originalName);
+
+                if(selectedTab == originalName){
+                    selectedTab = newName;
+                }
+                
+
+                tabEl.querySelector('a').textContent = newName;
+
+
+
+                const titleText = document.getElementById('editorTitle');
+                if (titleText && titleText.textContent == originalName) {
+                    titleText.textContent = newName;
+                }
+
+                tabEl.classList.remove(originalName);
+                tabEl.classList.add(newName);
+
+
+            }
+
+            
+
+        }
+
+        function extract_file_type(raw) {
+
+            let guess = "";
+
+            raw = raw.split('');
+
+            let i = raw.length - 1;
+
+            if(!raw.includes('.')){
+
+                return 'none';
+
+            }
+            else{
+                while(raw[i] != '.'){
+
+                    guess = raw[i] + guess;
+                    i--;
+
+                }
+
+                return guess;
+            }
+
+
+
+        }
+
+
+        function extract_file_name(raw) {
+
+            let guess = "";
+
+            raw = raw.split('');
+
+            let i = 0;
+
+            if(!raw.includes('.')){
+
+                return 'none';
+
+            }
+            else{
+                while(raw[i] != '.'){
+
+                    guess += raw[i];
+                    i++;
+
+                }
+
+                return guess;
+            }
+
+
+
+        }
+
+        function adapt_file_name(raw){
+
+            const typ = extract_file_type(raw);
+
+            if(typ == "none"){
+
+                return raw + '.txt';
+
+            }
+            else if(typ == "psc"){
+
+                return extract_file_name(raw) + '.pseudo';
+
+            }
+            else if(typ == "pseudo" || typ == "txt"){
+
+                return raw;
+
+            }
+            else{
+
+                return extract_file_name(raw) + '.txt'; 
+
+            }
+
+
+        }
+
+
+        document.addEventListener('keydown', function(e) {
+
+
+            if (e.code === 'F2' || e.key === "AudioVolumeDown") {
+ 
+                e.preventDefault();
+
+                const org = prompt("Enter the name of the file to rename: ");
+
+                if(org === null || org === ""){
+
+                    return null;
+
+                }
+
+                let newName = prompt("Enter the new file name: ");
+
+                if(newName === null || newName === ""){
+                    return null;
+                }
+
+                if(extract_file_type(newName) == 'none'){
+
+                    newName += '.' + extract_file_type(org);
+                    rename_file(org, newName);
+
+                }
+                else{
+
+                    rename_file(org, newName);
+
+                }
+
+                
+
+            }
+        }, true);
+
+
+        const hammenu = document.getElementsByClassName('ham')[0];
+        const offscreenmenu = document.getElementById('mobile-nav-list');
+
+
+
+        hammenu.addEventListener("click", ()=> {
+
+            hammenu.classList.toggle('active');
+            offscreenmenu.classList.toggle('active');
+        })
+
+        document.getElementById('current-tab').addEventListener("click", () => {
+
+            hammenu.classList.toggle('active');
+            offscreenmenu.classList.toggle('active');
+
+        })
+
+    </script>
+
+
+    
+</body>
+</html>
