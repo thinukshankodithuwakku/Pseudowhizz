@@ -3729,7 +3729,7 @@ export default class Parser {
         if(this.at().type == Tokens.CloseBracket){
 
           return this.MK_Err(context,"Expression expected!");
-
+          
         }
 
         const value = this.parse_expr(context);
