@@ -1,0 +1,77 @@
+CONSTANT ClassSize ← 20 //The number of students does not have to be 20; We are just using this value as an example
+CONSTANT SubjectNo ← 5 //The number of subjects also does not have to be 5
+
+DECLARE StudentName : ARRAY[1:ClassSize] OF STRING 
+DECLARE StudentMark : ARRAY[1:ClassSize, 1:SubjectNo] OF INTEGER
+
+FOR X ← 1 TO ClassSize
+	StudentName[X] ← "Student " , X //Feel free to use your own actual names
+NEXT X
+
+FOR X ← 1 TO ClassSize
+	FOR Y ← 1 TO SubjectNo
+    	StudentMark[X,Y] ← ROUND(RANDOM() * 100,0)
+    NEXT Y
+NEXT X //Using randomised test data. Feel free to use your own
+
+FUNCTION Total(nums : ARRAY OF INTEGER) RETURNS INTEGER
+	DECLARE Sum : INTEGER
+    
+    FOR X ← 1 TO LENGTH(nums)
+    	Sum ← Sum + nums[X]
+    NEXT X
+    
+    RETURN Sum
+ENDFUNCTION //Function to total all the student's marks
+
+
+FUNCTION Average(nums : ARRAY OF INTEGER) RETURNS INTEGER
+
+	CONSTANT Tot ← Total(nums)
+    
+    RETURN ROUND(Tot / LENGTH(nums),0)
+ENDFUNCTION //Function to calculate the average of marks
+
+FUNCTION Award(mark : INTEGER) RETURNS STRING
+	IF mark ≥ 70 THEN
+    	RETURN "Distinction"
+       ELSEIF mark ≥ 55 THEN
+       	RETURN "Merit"
+       ELSEIF mark ≥ 40 THEN
+       	RETURN "Pass"
+       ELSE
+       	RETURN "Fail"
+   ENDIF
+ENDFUNCTION //Function to award grade based on mark
+    	
+
+FOR X ← 1 TO ClassSize
+	OUTPUT StudentName[X]
+    OUTPUT "Total marks:",Total(StudentMark[X])
+    CONSTANT Avrg ← Average(StudentMark[X])
+    OUTPUT "Average mark:",Avrg
+    OUTPUT "Grade awarded:",Award(Avrg)	//Outputting details for each student
+    OUTPUT ""
+NEXT X
+    
+DECLARE DCount : INTEGER
+DECLARE MCount : INTEGER
+DECLARE PCount : INTEGER
+DECLARE FCount : INTEGER
+
+FOR X ← 1 TO ClassSize
+	CONSTANT Avrg ← Average(StudentMark[X])
+    CONSTANT Grde ← Award(Avrg)
+    
+    CASE OF Grde
+    	"Distinction" : DCount ← DCount + 1
+        "Merit" : MCount ← MCount + 1
+        "Pass" : PCount ← PCount + 1 //Calculating and storing the total number of each grade for the class
+        "Fail" : FCount ← FCount + 1
+    ENDCASE
+NEXT X
+
+OUTPUT "Total distinctions for the class:",DCount
+OUTPUT "Total merits for the class:",MCount
+OUTPUT "Total passes for the class:",PCount
+OUTPUT "Total fails for the class:",FCount //Outputting the total number of each grade for the class

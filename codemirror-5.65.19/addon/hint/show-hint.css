@@ -1,0 +1,89 @@
+.CodeMirror-hints {
+  position: absolute;
+  z-index: 10;
+  overflow: hidden;
+  list-style: none;
+
+  margin: 0;
+  padding: 2px;
+
+  -webkit-box-shadow: 2px 3px 5px rgba(0,0,0,.2);
+  -moz-box-shadow: 2px 3px 5px rgba(0,0,0,.2);
+  box-shadow: 2px 3px 5px rgba(0,0,0,.2);
+  border-radius: 3px;
+  border: 1px solid silver;
+
+  background: white;
+  font-size: 90%;
+  font-family: var(--editor-font-fam) !important;
+
+  max-height: 20em;
+  overflow-y: auto;
+  box-sizing: border-box;
+
+  width: 500px;
+
+
+}
+
+.CodeMirror-hint svg {
+  padding: 0;
+  vertical-align: middle;
+  margin-right: 2px !important;
+}
+
+.CodeMirror-hints .CodeMirror-hint-active .hint-type {
+  color: #77a5c793;
+}
+
+.hint-type {
+  position: absolute;
+  right: 8px;
+  color: transparent;
+  font-size: 0.7em;
+  pointer-events: none;
+  padding-top: 0.35em;
+}
+
+.CodeMirror-hint {
+  margin: 0;
+  padding: 0 0px;
+  border-radius: 2px;
+  white-space: pre;
+  color: #70707c;
+  cursor: pointer;
+  background-color: rgba(0, 0, 0, 0.219);
+  display: block;
+}
+
+
+#function-svg {
+
+  color: #8C68A8;
+
+}
+
+#name-svg {
+
+  color: #6095C6;
+
+}
+
+.CodeMirror-hints .CodeMirror-hint-active {
+
+  background-color: #04395E !important;
+  color: white !important;
+
+}
+
+.CodeMirror-hint-active #function-svg, 
+.CodeMirror-hint-active #name-svg {
+
+  color: white;
+
+}
+
+.hint-match {
+  font-weight: bold;
+  color: rgb(0, 157, 255);
+}

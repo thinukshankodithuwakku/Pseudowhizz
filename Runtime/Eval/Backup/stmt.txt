@@ -1,0 +1,111 @@
+import { SelectionStmtDeclaration, Expr, FunctionDeclaration, NumericLiteral, ObjectLiteral, Program, Stmt, VarDeclaration, FileExpr } from "../../Frontend/AST.js";
+import { Tokens } from "../../Frontend/Lexer.js";
+import Environment from "../Environment.js";
+import { evaluate } from "../Interpreter.js";
+import { RuntimeVal, MK_NULL, MK_NUMBER, MK_STRING, MK_BOOL, MK_CHAR, ValueType, FunctionValue, SelectionStmt, StringVal } from "../Value.js";
+import { configureFileMemory } from "../../Main.js";
+
+
+export function eval_program(program: Program, env: Environment): RuntimeVal {
+  let lastEvaluated: RuntimeVal = MK_NULL();
+  for (const statement of program.body) {
+    lastEvaluated = evaluate(statement, env);
+  }
+  
+  return lastEvaluated;
+}
+
+export function eval_file_statement(fileExpr : FileExpr, env : Environment){
+
+  const stringVal = {
+    type: "string",
+    kind: "StringLiteral",
+    value: ""
+  } as StringVal;
+
+  env.declareVar(fileExpr.fileName, stringVal, true);
+  configureFileMemory(fileExpr.fileName, fileExpr.mode, fileExpr.operation);
+
+  return MK_NULL();
+}
+
+export function eval_var_declaration(
+    declaration : VarDeclaration, 
+    env : Environment ) : RuntimeVal {
+
+        let value : RuntimeVal; 
+
+        //console.log(`Declaration value equals: ${JSON.stringify(declaration.value)}`);
+        if(declaration.value != undefined){
+          
+          value = evaluate(declaration.value, env) 
+        }
+        else if(declaration.dataType){
+
+          value = MK_EMPTY(declaration.dataType);
+
+
+        }
+        else{
+          
+          value = MK_NULL();
+        }
+
+        
+        for(let i = 0; i < declaration.identifier.length; i++){
+          env.declareVar(declaration.identifier[i], value, declaration.constant);
+        }
+
+
+        return value;
+    }
+
+
+export function MK_EMPTY(typ : Tokens) : RuntimeVal{
+
+  switch(typ){
+    case Tokens.Integer:
+      return MK_NUMBER(0, typ);
+    
+    case Tokens.Real:
+      return MK_NUMBER(0, typ);
+
+    case Tokens.Char:
+      return MK_CHAR(' ');
+
+    case Tokens.Boolean:
+      return MK_BOOL(false);
+
+    case Tokens.String:
+      return MK_STRING(" ");
+
+    default:
+      return MK_NULL();
+  }
+
+}
+
+export function eval_fn_declaration(
+    declaration : FunctionDeclaration, 
+    env : Environment ) : RuntimeVal {
+        
+
+      const fn = {
+        
+        type: "function",
+        name: declaration.name,
+        parameters: declaration.parameters,
+        declarationEnv : env,
+        body: declaration.body,
+
+        returnType: declaration.returns,
+        
+        expectedArguments: declaration.parameters.size,
+        isProcedure: declaration.isProcedure,
+        returnExpressions: declaration.returnExpressions,
+      
+      } as FunctionValue;
+
+      return env.declareVar(declaration.name, fn, true);
+    }
+

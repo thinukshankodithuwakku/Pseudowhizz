@@ -1,0 +1,34 @@
+DECLARE Patient : ARRAY[1:1000] OF STRING //You do NOT need to initialise or populate the arrays in the exam
+DECLARE Readings : ARRAY[1:1000, 1:2] OF REAL
+
+//Feel free to add your own test data
+
+
+PROCEDURE Program(HospitalNumber : INTEGER)
+	IF HospitalNumber < 1 OR HospitalNumber > 1000
+    	THEN
+        	OUTPUT "Invalid hospital number. Must be 1 - 1000 inclusive."
+        ELSE
+        	OUTPUT "Patient name: ",Patient[HospitalNumber]
+            
+            CONSTANT TempOK ← 31.6 ≤ Readings[HospitalNumber,1] AND Readings[HospitalNumber,1] ≤ 37.2
+            CONSTANT PulseOK ← 55 ≤ Readings[HospitalNumber,2] AND Readings[HospitalNumber,2] ≤ 100
+            
+            IF TempOK AND PulseOK 
+            	THEN
+            		OUTPUT "Normal readings"
+                ELSEIF (NOT TempOK) AND (NOT PulseOK) THEN
+                    OUTPUT "Severe warning: Temperature and Pulse"
+                ELSEIF (NOT TempOK) THEN
+                    OUTPUT "Warning: Temperature"
+                ELSE
+                    OUTPUT "Warning: Pulse"
+            ENDIF
+    ENDIF
+ENDPROCEDURE
+
+CONSTANT PatientID ← ROUND(RANDOM() * 1000,0)
+Patient[PatientID] ← "Patient ",PatientID
+
+CALL Program(PatientID)
+	

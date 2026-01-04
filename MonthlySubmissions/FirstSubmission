@@ -1,0 +1,21 @@
+
+DECLARE Range : INTEGER
+DECLARE PrimeCount : INTEGER
+OUTPUT "Display primes from 2-n. Enter n:"
+INPUT Range
+DECLARE Test : ARRAY[2:Range] OF BOOLEAN
+FOR X ← 2 TO Range
+	Test[X] ← TRUE
+NEXT X
+
+
+FOR n ← 2 TO Range
+	IF Test[n] THEN
+    	OUTPUT n
+     	PrimeCount ← PrimeCount + 1
+     	FOR m ← 2 TO DIV(Range,n)
+        	Test[n * m] ← FALSE
+        NEXT m
+    ENDIF
+NEXT n
+OUTPUT "There are ",PrimeCount," primes between 2 and ",Range,'.'

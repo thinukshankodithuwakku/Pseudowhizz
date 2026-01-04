@@ -1,0 +1,22 @@
+export const default_code = localStorage.getItem('Saved') ? localStorage.getItem('Saved') :
+
+`//Welcome to Pseudowhizz Online Pseudocode Interpreter!
+
+FUNCTION Sum(num1, num2 : REAL) RETURNS REAL
+    RETURN num1 + num2
+ENDFUNCTION
+
+DECLARE First : REAL
+DECLARE Second : REAL
+
+OUTPUT "Enter first number"
+INPUT First
+
+OUTPUT "Enter second number"
+INPUT Second
+
+OUTPUT "The sum of ",First," and ",Second," is ",Sum(First, Second),'.'`;
+
+
+
+

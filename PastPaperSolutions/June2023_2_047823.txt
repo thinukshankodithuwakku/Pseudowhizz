@@ -1,0 +1,95 @@
+DECLARE Contacts : ARRAY[1:100, 1:2] OF STRING //You do not need to initialise names in the exam
+DECLARE CurrentSize : INTEGER
+
+DECLARE MenuInput : INTEGER
+
+
+WHILE TRUE DO //Housed within WHILE TRUE loop so program can run continuously
+  OUTPUT "1: enter new contact details, 2: display all the contact details, 3: delete all contact details:"
+  INPUT MenuInput //Displaying a menu of choices
+
+  WHILE MenuInput < 1 OR MenuInput > 3 DO
+      OUTPUT "Menu option out of range. Please enter option from 1 - 3:"
+      INPUT MenuInput
+  ENDWHILE //Validating the menu input
+
+  IF MenuInput = 1
+      THEN
+          DECLARE NoToAdd : INTEGER //Stores the number of contacts to add (maximum 5)
+          OUTPUT "Enter the number of contacts you wish to add (maximum 5):"
+          INPUT NoToAdd
+
+          WHILE NoToAdd < 1 OR NoToAdd > 5 DO
+              OUTPUT "Number must be above 0 and below 6:"
+              INPUT NoToAdd
+          ENDWHILE //Validating number of contacts to add
+
+          IF CurrentSize + NoToAdd > 100
+              THEN
+                  OUTPUT "Cannot exceed 100 total contacts!"
+              ELSE
+                  FOR X ← 1 TO NoToAdd
+                      CurrentSize ← CurrentSize + 1
+                      OUTPUT "Enter contact ", X,"'s name:"
+                      INPUT Contacts[CurrentSize,1]
+                      OUTPUT "Enter ",Contacts[CurrentSize,1],"'s phone number:"
+                      INPUT Contacts[CurrentSize,2]
+                  NEXT X //Taking in the contact detail inputs
+
+                  IF CurrentSize ≥ 2 //Only sort if at least 2 contacts
+                      THEN
+                      DECLARE Flag : BOOLEAN
+                      DECLARE Temp1 : STRING
+                      DECLARE Temp2 : STRING
+                          REPEAT
+                              Flag ← FALSE
+                              FOR Count ← 1 TO CurrentSize - 1
+                                  IF Contacts[Count + 1, 1] < Contacts[Count, 1]
+                                      THEN
+                                          Flag ← TRUE
+                                          Temp1 ← Contacts[Count, 1]
+                                          Temp2 ← Contacts[Count, 2]
+                                          Contacts[Count, 1] ← Contacts[Count + 1, 1]
+                                          Contacts[Count, 2] ← Contacts[Count + 1, 2]
+                                          Contacts[Count + 1, 1] ← Temp1
+                                          Contacts[Count + 1, 2] ← Temp2
+                                  ENDIF
+                               NEXT Count
+                          UNTIL NOT Flag //Alphabetic sorting of contacts
+                  ENDIF
+
+          ENDIF
+
+  ELSEIF MenuInput = 2
+      THEN
+      
+      	  IF CurrentSize = 0
+          	THEN
+            	OUTPUT "No contacts yet!" 
+          	ELSE
+            
+            	OUTPUT "Contacts: " 
+
+            	FOR X ← 1 TO CurrentSize
+              		OUTPUT "Name: ",Contacts[X,1], ", Number: ",Contacts[X,2]
+          		NEXT X
+
+         ENDIF //Displaying all contact details if at least 1 contact
+          
+  ELSEIF MenuInput = 3
+      THEN
+          FOR X ← 1 TO CurrentSize
+              Contacts[X,1] ← ""
+              Contacts[X,2] ← ""
+          NEXT X
+          
+          CurrentSize ← 0 
+          OUTPUT "All contacts deleted." //Deleting all contacts
+  ENDIF
+ENDWHILE                 
+        
+        
+        
+        
+
+

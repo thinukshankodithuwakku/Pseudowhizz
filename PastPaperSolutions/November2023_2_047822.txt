@@ -1,0 +1,72 @@
+DECLARE Customers : ARRAY[1:100] OF STRING
+DECLARE Quotations : ARRAY[1:100, 1:5] OF REAL
+DECLARE WoodType : ARRAY[1:3] OF STRING
+DECLARE Price : ARRAY[1:3] OF REAL
+
+WoodType ← ["Laminate", "Pine", "Oak"] //Initialising WoodType
+Price ← [29.99, 39.99, 54.99] //Initialising Price
+
+DECLARE ExtraMsg : STRING
+
+
+FUNCTION CeilArea(num1 : REAL, num2 : REAL) RETURNS INTEGER
+	DECLARE RawArea : REAL
+    RawArea ← num1 * num2
+    
+    IF ROUND(RawArea,0) > RawArea OR ROUND(RawArea,0) = RawArea
+    	THEN
+        	RETURN ROUND(RawArea,0)
+        ELSE
+        	RETURN ROUND(RawArea,0) + 1
+    ENDIF
+ENDFUNCTION //Function to round up area to nearest whole number
+
+FOR X ← 1 TO 100
+
+	OUTPUT ExtraMsg, " Enter name:"
+    INPUT Customers[X] //Inputting name
+    
+    DECLARE Test : REAL
+    OUTPUT "Enter room length:"
+    INPUT Test
+    
+    WHILE Test < 1.5 OR Test > 10 DO
+    	OUTPUT "Length entered out of range. Please re-enter:"
+        INPUT Test
+    ENDWHILE
+    
+    Quotations[X, 1] ← ROUND(Test, 1)
+    
+    OUTPUT "Enter room width:"
+    INPUT Test
+    
+    WHILE Test < 1.5 OR Test > 10 DO
+    	OUTPUT "Width entered out of range. Please re-enter:"
+        INPUT Test
+    ENDWHILE  //Inputting and validating length and width respectively, outputting relevant error message
+    
+    Quotations[X, 2] ← ROUND(Test, 1)
+    
+    Quotations[X, 3] ← CeilArea(Quotations[X, 1], Quotations[X, 2]) //Calculating area and rounding up
+    
+    //Details have all been stored in relevant array	
+    
+    DECLARE ChoiceIndex : INTEGER
+    OUTPUT "Enter 1 (laminate), 2 (pine) or 3 (oak):"
+    INPUT Quotations[X, 4]
+    
+    WHILE Quotations[X, 4] < 1 OR Quotations[X, 4] > 3 DO
+    	OUTPUT "Index must be between 1 and 3 inclusive:"
+        INPUT Quotations[X, 4]
+    ENDWHILE
+    
+
+    Quotations[X, 5] ← ROUND(Quotations[X, 3] * Price[Quotations[X, 4]] ,2)
+    
+    ExtraMsg ← "Previous customer name: ",Customers[X], ", choice of wood: ",WoodType[Quotations[X, 4]],", total cost: $",Quotations[X, 5],'.'
+    //Outputs previous customer's quotation, then continues to the next customer
+    
+NEXT X
+
+OUTPUT "Reached 100 quotes!" //Message when quotations full
+    

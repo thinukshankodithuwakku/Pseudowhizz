@@ -1,0 +1,49 @@
+DECLARE Days : ARRAY[1:7] OF STRING //Oddly, you DO need to initalise and populate this array in the exam...
+Days ← ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+
+DECLARE Readings : ARRAY[1:7, 1:24] OF REAL 
+DECLARE AverageTemp : ARRAY[1:7] OF REAL
+
+FOR X ← 1 TO 7
+	FOR Y ← 1 TO 24
+    	DECLARE Test : REAL
+     	OUTPUT "Enter temperature at ",Y,":00 on ",Days[X],':' //Inputting hourly temperatures for 1 week
+        INPUT Test
+        
+        WHILE Test < -20 OR Test > 50 DO
+        	OUTPUT "Temperature out of range. Please re-enter:" //Validating temperatures
+            INPUT Test
+        ENDWHILE
+        
+        Readings[X,Y] ← ROUND(Test,1) //Ensuring all temperatures are rounded to 1 decimal place
+
+   	NEXT Y
+NEXT X
+
+FUNCTION Average(Temps : ARRAY OF REAL, Len : INTEGER) RETURNS REAL
+	DECLARE Total : REAL
+    
+    FOR X ← 1 TO Len
+    	Total ← Total + Temps[X]
+    NEXT X
+    
+    RETURN ROUND((Total / Len),1)
+ENDFUNCTION //Function to calculate the average
+
+FOR Y ← 1 TO 7
+	AverageTemp[Y] ← Average(Readings[Y],24) //Calculating and storing average temperature for each day
+NEXT Y
+
+DECLARE WholeWeekAverage : REAL
+WholeWeekAverage ← Average(AverageTemp, 7) //Calculating and storing average temperature for the whole week
+
+FUNCTION ConvToFahrenheit(Celsius : REAL) RETURNS REAL
+	RETURN Celsius * 9/5 + 32
+ENDFUNCTION
+
+FOR X ← 1 TO 7
+	OUTPUT Days[X],": ",AverageTemp[X],"°C, ",ConvToFahrenheit(AverageTemp[X]),"°C fahrenheit."
+NEXT X //Outputting the average temperature in Celsius and in Fahrenheit for each day 
+
+OUTPUT "Average for the whole week: ",WholeWeekAverage,"°C, ",ConvToFahrenheit(WholeWeekAverage),"°C fahrenheit."
+//Output the overall average temperature in Celsius and in Fahrenheit for the whole week.

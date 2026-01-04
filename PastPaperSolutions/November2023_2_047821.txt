@@ -1,0 +1,69 @@
+DECLARE Evening : ARRAY[1:10, 1:20] OF BOOLEAN
+
+FOR X ← 1 TO 10
+	FOR Y ← 1 TO 20
+    	IF ROUND(RANDOM() * 1,0) = 1
+        	THEN
+            	Evening[X,Y] ← TRUE
+            ELSE
+            	Evening[X,Y] ← FALSE
+        ENDIF
+    NEXT Y
+NEXT X //Using randomised test data - Feel free to use your own!
+
+
+DECLARE AlreadyBooked : INTEGER
+
+FOR X ← 1 TO 10
+	FOR Y ← 1 TO 20
+    	IF Evening[X,Y]
+        	THEN
+            	AlreadyBooked ← AlreadyBooked + 1 //Calculating seats already booked
+        ENDIF
+    NEXT Y
+NEXT X
+
+
+
+DECLARE Booking : INTEGER
+
+OUTPUT "Seats already booked: ",AlreadyBooked,". How many seats would you like to book?"
+INPUT Booking //Outputs seats already booked, then inputs how many new seats to book
+
+WHILE Booking < 1 OR Booking > 4 DO
+	OUTPUT "You must book from 1 to 4 seats inclusive. Please re-enter:"
+    INPUT Booking
+ENDWHILE //Validating booking count
+
+IF 200 - AlreadyBooked > Booking //Checks if enough seats are available
+	THEN
+
+		DECLARE BookingDetails : ARRAY[1:Booking, 1:2] OF INTEGER
+        
+        DECLARE CanBook : BOOLEAN
+        
+        FOR X ← 1 TO Booking 
+        	CanBook ← TRUE
+            FOR Y ← 1 TO 10
+            	FOR Z ← 1 TO 20
+                	IF CanBook AND (NOT Evening[Y,Z]) THEN
+                    	CanBook ← FALSE //Flag set to false until next person
+                        Evening[Y,Z] ← TRUE //Changing status of seat
+                        BookingDetails[X,1] ← Y //Saving the row number
+                        BookingDetails[X,2] ← Z //Saving the seat number
+            		ENDIF
+                NEXT Z
+           NEXT Y
+		NEXT X
+        
+		FOR X ← 1 TO Booking
+			OUTPUT "Person ",X,": Row number:",BookingDetails[X,1],", Seat number: ",BookingDetails[X,2]
+		NEXT X //Outputs the row number and seat number for each seat booked
+  ELSE
+      IF AlreadyBooked = 200
+          THEN
+              OUTPUT "House full" //If all seats booked
+          ELSE
+          	  OUTPUT "Cannot book because only ", 200 - AlreadyBooked, " seats left."//Otherwise shows seats left
+      ENDIF
+ENDIF

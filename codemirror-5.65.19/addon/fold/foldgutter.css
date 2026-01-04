@@ -1,0 +1,100 @@
+.CodeMirror-foldmarker {
+
+  position: relative;
+  font-family:  consolas;
+  cursor: pointer;
+
+  color: rgb(150, 150, 150);
+
+  font-size: calc(0.65 * var(--editor-font-size));
+
+}
+
+
+.CodeMirror-foldgutter {
+  /*.17em&*/
+  width: 1.5em !important;
+
+}
+.CodeMirror-foldgutter-open,
+.CodeMirror-foldgutter-folded {
+  cursor: pointer;
+  stroke: var(--text-color);
+}
+
+.CodeMirror-foldgutter-open {
+
+  opacity: 0;
+  transition: opacity linear 0.3s;
+
+}
+
+.CodeMirror.show-fold-markers .CodeMirror-foldgutter-open {
+
+  opacity: 1;
+  transition: opacity linear 0.2s;
+
+}
+
+.CodeMirror-foldgutter-folded {
+
+  opacity: 1;
+
+}
+
+.CodeMirror-foldgutter-open:after,
+.CodeMirror-foldgutter-folded:after {
+
+  content: '';
+  display: inline-block;
+  background-color: var(--text-color); 
+  -webkit-mask-size: contain;
+  mask-size: contain;
+
+}
+
+.CodeMirror-foldgutter-open:after {
+
+  -webkit-mask: url("/Assets/SVGs/chevron-down.svg") no-repeat center;
+  mask: url("/Assets/SVGs/chevron-down.svg") no-repeat center;
+
+  width: calc(0.75 * var(--editor-font-size));
+  height: calc(0.75 * var(--editor-font-size));
+
+}
+.CodeMirror-foldgutter-folded:after {
+
+  -webkit-mask: url("/Assets/SVGs/chevron-right.svg") no-repeat center;
+  mask: url("/Assets/SVGs/chevron-right.svg") no-repeat center;
+
+  width: calc(0.9 * var(--editor-font-size));
+  height: calc(0.75 * var(--editor-font-size));
+
+}
+
+.CodeMirror-foldgutter-open:after,
+.CodeMirror-foldgutter-folded:after {
+  font-size: 1em;
+  padding-left: 0.75em;
+}
+
+
+
+.cm-foldmarker-show {
+
+  opacity: 1;
+
+}
+
+.CodeMirror-widget {
+
+
+  padding: 0.3em;
+  position: relative;
+}
+
+/*
+.CodeMirror-foldgutter-open:hover:after {
+  opacity: 1;
+  transition: opacity 0.2s ease;
+}*/

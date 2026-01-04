@@ -1,0 +1,47 @@
+FUNCTION Reverse(word : STRING) RETURNS STRING
+	DECLARE StringNorm : ARRAY[1:LENGTH(word)] OF CHAR
+    
+    FOR X ← 1 TO LENGTH(word)
+    	StringNorm[X] ← SUBSTRING(word, X, 1)
+    NEXT X
+    
+    DECLARE RawReversed : ARRAY[1:LENGTH(word)] OF CHAR
+    
+    FOR X ← 1 TO LENGTH(word)
+    	RawReversed[X] ← StringNorm[LENGTH(word)-X+1]
+    NEXT X
+    
+    DECLARE Block : STRING
+    
+    FOR X ← 1 TO LENGTH(word)
+    	Block ← Block,RawReversed[X]
+    NEXT X
+    
+    RETURN Block
+    
+ENDFUNCTION
+
+FUNCTION IsPalindrome(test : STRING) RETURNS BOOLEAN
+	CONSTANT Use ← UCASE(test)
+    CONSTANT Rev ← UCASE(Reverse(test))
+    
+    IF Use = Rev
+    	THEN	
+        	RETURN TRUE
+        ELSE
+        	RETURN FALSE
+    ENDIF
+ENDFUNCTION
+
+DECLARE TestingWord : STRING
+OUTPUT "Enter the word to test:"
+INPUT TestingWord
+
+IF IsPalindrome(TestingWord)
+	THEN
+    	OUTPUT TestingWord, " is a palindrome!"
+    ELSE
+    	OUTPUT TestingWord, " is not a palindrome. Sorry!"
+ENDIF
+    
+        

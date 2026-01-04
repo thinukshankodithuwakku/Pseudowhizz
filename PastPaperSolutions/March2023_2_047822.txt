@@ -1,0 +1,74 @@
+DECLARE LeagueSize : INTEGER //You do not need to initalise in the exam, but must do in the interpreter
+LeagueSize ← 10
+
+DECLARE TeamName : ARRAY[1:LeagueSize] OF STRING 
+TeamName ← ["Steelhaven Titans", "Crimson Blizzards", "Shadowvale Strikers", "Ironfang Wolves", "Thunderforge" ,"Chargers", "Blackwater Raptors", "Stormhollow Mariners", "Granite City Guardians", "Wildfire Vortex"]
+
+DECLARE MatchNo : INTEGER
+MatchNo ← 5 //In our example we will set MatchNo to 5
+
+DECLARE TeamPoints : ARRAY[1:LeagueSize, 1:MatchNo] OF INTEGER
+
+FOR X ← 1 TO LeagueSize
+	FOR Y ← 1 TO MatchNo
+    	TeamPoints[X,Y] ← ROUND(RANDOM() * 3,0) //Using randomized test data
+    NEXT Y
+NEXT X
+
+DECLARE TotalPoints : ARRAY[1:LeagueSize] OF INTEGER //This will store total points for each team
+DECLARE MatchBreakdown : ARRAY[1:LeagueSize, 0:3] OF INTEGER //Stores match result count for each team
+
+
+FOR X ← 1 TO LeagueSize
+	FOR Y ← 1 TO MatchNo
+    	TotalPoints[X] ← TotalPoints[X] + TeamPoints[X,Y]
+    NEXT Y
+NEXT X //Calculates the total points for all matches played for each team
+
+FOR X ← 1 TO LeagueSize
+	FOR Y ← 1 TO MatchNo
+    	CASE OF TeamPoints[X,Y]
+        	3 : MatchBreakdown[X,3] ← MatchBreakdown[X,3] + 1
+            2 : MatchBreakdown[X,2] ← MatchBreakdown[X,2] + 1
+            1 : MatchBreakdown[X,1] ← MatchBreakdown[X,1] + 1 
+            0 : MatchBreakdown[X,0] ← MatchBreakdown[X,0] + 1
+        ENDCASE
+    NEXT Y
+NEXT X //Counts the total number of away wins, home wins, drawn matches and lost matches for each team
+
+DECLARE Highest : INTEGER 
+Highest ← -1 
+DECLARE HighestName : STRING
+
+FOR X ← 1 TO LeagueSize
+	IF TotalPoints[X] > Highest
+    	THEN
+        	Highest ← TotalPoints[X]
+            HighestName ← TeamName[X]  //Finding the team with the highest points
+    ENDIF
+NEXT X
+
+DECLARE Lowest : INTEGER 
+Lowest ← 100 
+DECLARE LowestName : STRING
+
+FOR X ← 1 TO LeagueSize
+	IF TotalPoints[X] < Lowest
+    	THEN
+        	Lowest ← TotalPoints[X]
+            LowestName ← TeamName[X]  //Finding the team with the lowest points
+    ENDIF
+NEXT X
+
+FOR X ← 1 TO LeagueSize
+	OUTPUT "Team name: ",TeamName[X],", Total Points: ",TotalPoints[X]
+    OUTPUT "Away wins: ",MatchBreakdown[X,3]
+    OUTPUT "Home wins: ",MatchBreakdown[X,2]
+    OUTPUT "Drawn matches: ",MatchBreakdown[X,1]
+    OUTPUT "Lost matches: ",MatchBreakdown[X,0]
+    OUTPUT " "
+NEXT X //Outputs details for each team
+
+OUTPUT "Team with the highest points: ",HighestName //Outputs the name of the team with the highest total points
+OUTPUT "Team with the lowest points: ",LowestName //Outputs the name of the team with the lowest total point
+
