@@ -1678,6 +1678,7 @@ async function trans_varDecl(lead : string,v : VarDeclaration, env : Environment
   const declaration = await eval_var_declaration(v, env, [initial_frame]);
 
   let over = "";
+  let value = "";
 
   for(const name of v.identifier){
     
@@ -1686,7 +1687,7 @@ async function trans_varDecl(lead : string,v : VarDeclaration, env : Environment
 
     var_type_map.set(name, v.dataType);
 
-    let value = ""; 
+     
     if(v.value){
       variables.set(name, v.value[0]);
       const sec = await trans_concat(lead, v.value, env, ',');
@@ -1742,10 +1743,12 @@ async function trans_varDecl(lead : string,v : VarDeclaration, env : Environment
 
     }
 
-    const msg = name + ' = ' + value;
-
-    over += add_comment(msg, v.comment);
+    
   }
+
+  const msg = v.identifier.join(' = ') + ' = ' + value;
+
+  over += add_comment(msg, v.comment);
 
   return over;
   

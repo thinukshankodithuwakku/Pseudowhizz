@@ -1468,7 +1468,7 @@
 
         })
 
-        const FnDescBox = new DescBox();
+        const FnDescBox = new DescBox(editor);
 
         function splitWords(text) {
             const result = [];
@@ -1565,7 +1565,8 @@
             const extra_natives = ["MOD", "DIV"];
 
 
-            const navigation_keys = ['(', ',', 'ArrowLeft', 'ArrowRight'];
+            const navigation_keys = ['(', ',', 'ArrowLeft', 'ArrowRight', 'Control'];
+
 
             if(editor.hasFocus() && navigation_keys.includes(e.key)){
                 
@@ -1579,8 +1580,10 @@
 
 
                 construct = insertAt(construct, cursor.ch, '()');
-
+                construct.substring()
                 const trace = construct.substring(0, cursor.ch + 1);
+
+                const co_ords = editor.cursorCoords();
 
                 if(e.key == '('){
                     active = true;
@@ -1589,20 +1592,20 @@
                     if(at && (/(?:SUBSTRING|EOF|NUM_TO_STR|STR_TO_NUM|MOD|DIV|ROUND|RANDOM|LCASE|UCASE|LENGTH)\s*\($/.test(trace))){
 
                         
-                        FnDescBox.tick(at, editor.cursorCoords(), 0);
+                        FnDescBox.tick(at, co_ords, 0);
                         
                     }
                 }
                 else if(e.key == ','){
                     active = true;
                     const struct = insertAt(info.text, cursor.ch, ',').substring(0, cursor.ch + 1);
-                    FnDescBox.countParameters(struct, editor.cursorCoords(),0, 'comma');
+                    FnDescBox.countParameters(struct, co_ords,0, 'comma');
 
                 }
                 else if(active){
 
                     const struct = insertAt(info.text, cursor.ch, ',').substring(0, cursor.ch + 1);
-                    const params = FnDescBox.countParameters(struct, editor.cursorCoords(),-1, 'arrow');
+                    const params = FnDescBox.countParameters(struct, co_ords, -1, 'arrow');
 
                     if(params == undefined || params < 0){ 
                         active = false;
@@ -1613,6 +1616,79 @@
             
             }
             else{
+
+                
+
+                FnDescBox.close();
+                active = false;
+
+            }
+            
+
+        })
+
+        document.addEventListener("paste", (k) => {
+
+            const clipboardData = k.clipboardData || window.clipboardData;
+            const e = {key: clipboardData.getData("text")};
+
+            const cursor = editor.getCursor();
+            const lineTokens = editor.getLineTokens(cursor.line).filter(t => t.string.trim() !== '');
+
+            const extra_natives = ["MOD", "DIV"];
+
+
+            const navigation_keys = ['(', ',', 'ArrowLeft', 'ArrowRight', 'Control'];
+
+
+            if(editor.hasFocus() && navigation_keys.includes(e.key)){
+            
+
+                const lineNumber = editor.getCursor().line;
+
+                const info = editor.lineInfo(lineNumber);
+
+                let construct = info.text;
+
+                construct.substring()
+                const trace = construct.substring(0, cursor.ch + 1);
+
+                const co_ords = editor.cursorCoords();
+
+                if(e.key == '('){
+
+                    active = true;
+                    const at = trace.split(' ').at(-1).trim().slice(0, -1);
+
+                    if(at && (/(?:SUBSTRING|EOF|NUM_TO_STR|STR_TO_NUM|MOD|DIV|ROUND|RANDOM|LCASE|UCASE|LENGTH)\s*\($/.test(trace))){
+
+                        
+                        FnDescBox.tick(at, co_ords, 0);
+                        
+                    }
+                }
+                else if(e.key == ','){
+                    active = true;
+                    const struct = insertAt(info.text, cursor.ch, ',').substring(0, cursor.ch + 1);
+                    FnDescBox.countParameters(struct, co_ords,0, 'comma');
+
+                }
+                else if(active){
+
+                    const struct = insertAt(info.text, cursor.ch, ',').substring(0, cursor.ch + 1);
+                    const params = FnDescBox.countParameters(struct, co_ords, -1, 'arrow');
+
+                    if(params == undefined || params < 0){ 
+                        active = false;
+                        FnDescBox.close();
+                    }
+
+                }
+            
+            }
+            else{
+
+                
 
                 FnDescBox.close();
                 active = false;
@@ -3681,6 +3757,7 @@
 
                 document.documentElement.style.setProperty('--editor-portion', '90%');
                 document.getElementById('mini-map-collumn').style.display = "flex";
+                build_map(editor.getValue(), selectedTab.endsWith('.txt'));
             }
             else{
 
@@ -5462,62 +5539,6 @@
         document.getElementById('mailIcon').addEventListener('click', () => {
             openGmailCompose('pseudowhizz@gmail.com');
         });
-
-        /*const cnsl_resizer = document.getElementById('console-resizer');
-
-        const MIN_Y = 120;
-        const MAX_Y = 420;
-
-        let startY1 = 0;
-        let startTop2 = 0;
-        let activePointerId = null;
-
-        cnsl_resizer.addEventListener("pointerdown", (e) => {
-            activePointerId = e.pointerId;
-            cnsl_resizer.setPointerCapture(e.pointerId);
-            
-            startY1 = e.clientY;
-            startTop2 = cnsl_resizer.offsetTop;
-        });
-
-        cnsl_resizer.addEventListener("pointermove", (e) => {
-            
-            
-
-            if (e.pointerId !== activePointerId) return;
-
-            
-
-
-
-            let newTop = startTop2 + (e.clientY - startY1);
-            newTop = Math.max(MIN_Y, Math.min(MAX_Y, newTop));
-
-            console.log(newTop);
-
-            //cnsl_resizer.style.top = `${newTop}px`;
-
-            const deltaHeight = MAX_Y - parseInt(cnsl_resizer.style.top.slice(0,-2));
-            const inverseDelta = parseInt(cnsl_resizer.style.top.slice(0,-2)) - cnsl_resizer.clientHeight;
-
-            const height = 150 * (deltaHeight / (MAX_Y - MIN_Y));
-            
-            const editorHeight = inverseDelta /  420;
-
-
-            
-        });
-
-        cnsl_resizer.addEventListener("pointerup", release);
-        cnsl_resizer.addEventListener("pointercancel", release);
-
-        function release(e) {
-            if (e.pointerId !== activePointerId) return;
-            cnsl_resizer.releasePointerCapture(e.pointerId);
-            activePointerId = null;
-        }*/
-
-
 
     </script>
 

@@ -1923,22 +1923,6 @@ export async function eval_iteration_Stmt(iterStmt : IterationStmt, env : Enviro
         condition = conv_memex_to_val(condition as MemberExprVal);
       }
 
-
-
-      if((condition as BooleanVal).value){
-
-        if(iterStmt.returnExpressions.length > 0){
-          //StackFrames.push({expr: pcon.stringify(iterStmt.returnExpressions), ln: iterStmt.ln, context: current.context})
-          return evaluate(iterStmt.returnExpressions[0], current, StackFrames);
-        }
-        else{
-          
-          return res;
-        }
-
-        
-      }
-
       if(condition.type == "null"){
 
         condition = MK_BOOL(false);
@@ -1947,11 +1931,7 @@ export async function eval_iteration_Stmt(iterStmt : IterationStmt, env : Enviro
         return MK_NULL();
       }
 
-
-      iterations ++;  
-
-
-      while(!(condition as BooleanVal).value){
+      do {
 
         closures = [new Environment(env.context,scpe)];
         const current = closures[closures.length - 1];
@@ -2032,7 +2012,7 @@ export async function eval_iteration_Stmt(iterStmt : IterationStmt, env : Enviro
           throw "Exceeded max excecution count. You may want to consider switching to a WHILE or FOR loop.";
         }
         
-      }
+      } while(!(condition as BooleanVal).value);
 
       return MK_NULL();
 

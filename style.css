@@ -2446,14 +2446,14 @@ input[type=number]:focus {
     align-items: center;
 
     position: absolute;
-    z-index: 15;
+    z-index: 100;
     max-width: 40vw;
     background-color: var(--codeMirror-bg);
     filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.289));
 
     color: var(--unselected-text);
     font-family: var(--editor-font-fam);
-    font-size: smaller;
+    font-size: small;
 
     border: solid 1px #454545;
 

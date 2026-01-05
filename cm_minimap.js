@@ -1,59 +1,165 @@
-import { tokenize_line, Tokens } from "./Frontend/Lexer.js";
 import { methods, constants, procedures } from "./Main.js";
-function parse_primary(tk) {
-    const keywords = [
-        "READFILE", "WRITEFILE", "OPENFILE", "CLOSEFILE", "DECLARE",
-        "CONSTANT", "OUTPUT", "INPUT", "FUNCTION", "ENDFUNCTION",
-        "PROCEDURE", "ENDPROCEDURE"
-    ];
-    const datatypes = [
-        "ARRAY", "INTEGER", "REAL", "CHAR", "STRING", "BOOLEAN"
-    ];
-    const booleanValues = [
-        "TRUE", "FALSE"
-    ];
-    const native = [
-        "LCASE", "UCASE", "NUM_TO_STR", "STR_TO_NUM", "SUBSTRING",
-        "EOF", "ROUND", "RANDOM", "LENGTH", "MOD", "DIV"
-    ];
-    const control = [
-        "ELSEIF", "IF", "ELSE", "ENDIF", "THEN", "CASE", "OF", "ENDCASE",
-        "OTHERWISE", "RETURNS", "RETURN", "READ", "WRITE", "STEP", "FOR",
-        "TO", "CALL", "NEXT", "WHILE", "REPEAT", "ENDWHILE", "DO", "UNTIL"
-    ];
-    const logical = [
-        "NOT", "AND", "OR"
-    ];
-    if (keywords.includes(tk.value)) {
-        return '<span class="cm-keyword">' + tk.value + '</span>';
-    }
-    else if (datatypes.includes(tk.value)) {
-        return '<span class="cm-datatype">' + tk.value + '</span>';
-    }
-    else if (control.includes(tk.value)) {
-        return '<span class="cm-other-token">' + tk.value + '</span>';
-    }
-    else if (booleanValues.includes(tk.value)) {
-        return '<span class="cm-boolean">' + tk.value + '</span>';
-    }
-    else if (native.includes(tk.value)) {
-        return '<span class="cm-native">' + tk.value + '</span>';
-    }
-    else if (logical.includes(tk.value)) {
-        return '<span class="cm-logical">' + tk.value + '</span>';
-    }
-    else if (tk.type == Tokens.StringLiteral) {
-        if (tk.value.length == 1) {
-            return '<span class="cm-char">' + tk.value + '</span>';
+const keywords = /^(READFILE|WRITEFILE|OPENFILE|CLOSEFILE|DECLARE|CONSTANT|OUTPUT|INPUT|FUNCTION|ENDFUNCTION|PROCEDURE|ENDPROCEDURE)$/i;
+const datatypes = /^(ARRAY|INTEGER|REAL|CHAR|STRING|BOOLEAN)$/i;
+const boolean = /^(TRUE|FALSE)$/i;
+const native = /^(LCASE|UCASE|NUM_TO_STR|STR_TO_NUM|SUBSTRING|EOF|ROUND|RANDOM|LENGTH)$/i;
+const control = /^(ELSEIF|IF|ELSE|ENDIF|THEN|CASE|OF|ENDCASE|OTHERWISE|RETURNS|RETURN|READ|WRITE|STEP|FOR|TO|CALL|NEXT|WHILE|REPEAT|ENDWHILE|DO|UNTIL)$/i;
+const logical = /^(MOD|DIV|NOT|AND|OR|)$/i;
+function mmp_tokenise_line(line) {
+    const chars = line.split('');
+    const Tokens = [];
+    while (chars.length > 0) {
+        if (chars[0] == ' ') {
+            let holder = '';
+            while (chars[0] == ' ' && chars.length > 0) {
+                holder += chars.shift();
+            }
+            Tokens.push({
+                type: "whitespace",
+                value: holder,
+            });
+        }
+        else if (/^[A-Za-z]+$/.test(chars[0])) {
+            let holder = '';
+            while (/^[A-Za-z]+$/.test(chars[0]) && chars.length > 0) {
+                holder += chars.shift();
+            }
+            let tokenType;
+            if (keywords.test(holder))
+                tokenType = "keyword";
+            else if (control.test(holder))
+                tokenType = "control";
+            else if (datatypes.test(holder))
+                tokenType = "datatype";
+            else if (boolean.test(holder))
+                tokenType = "boolean";
+            else if (native.test(holder))
+                tokenType = "function";
+            else if (logical.test(holder))
+                tokenType = "operator";
+            else
+                tokenType = "identifier";
+            Tokens.push({
+                type: tokenType,
+                value: holder,
+            });
+        }
+        else if (chars[0] == '.') {
+            let holder = chars.shift();
+            if (chars[0] && /^[0-9]$/.test(chars[0])) {
+                while (/^[0-9]$/.test(chars[0]) && chars.length > 0) {
+                    holder += chars.shift();
+                }
+                Tokens.push({
+                    type: "number",
+                    value: holder,
+                });
+            }
+            else {
+                Tokens.push({
+                    type: "symbol",
+                    value: holder,
+                });
+            }
+        }
+        else if (/^[0-9]$/.test(chars[0])) {
+            let holder = '';
+            let dpCount = 0;
+            while ((/^[0-9]$/.test(chars[0]) || (chars[0] == '.' && dpCount == 0)) && chars.length > 0) {
+                if (chars[0] == '.')
+                    dpCount++;
+                holder += chars.shift();
+            }
+            Tokens.push({
+                type: "number",
+                value: holder,
+            });
+        }
+        else if (chars[0] == '/') {
+            chars.shift();
+            if (chars[0] == '/') {
+                chars.shift();
+                let holder = '';
+                while (chars.length > 0) {
+                    holder += chars.shift();
+                }
+                Tokens.push({
+                    type: "comment",
+                    value: holder,
+                });
+            }
+            else {
+                Tokens.push({
+                    type: "symbol",
+                    value: '/',
+                });
+            }
+        }
+        else if (chars[0] == '"') {
+            chars.shift();
+            let holder = '';
+            while (chars.length > 0 && chars[0] != '"') {
+                holder += chars.shift();
+            }
+            if (chars[0] == '"')
+                chars.shift();
+            Tokens.push({
+                type: "string",
+                value: holder,
+            });
+        }
+        else if (chars[0] == "'") {
+            chars.shift();
+            let holder = '';
+            while (chars.length > 0 && chars[0] != "'") {
+                holder += chars.shift();
+            }
+            if (chars[0] == "'")
+                chars.shift();
+            Tokens.push({
+                type: "char",
+                value: holder,
+            });
         }
         else {
-            return '<span class="cm-string">' + tk.value + '</span>';
+            Tokens.push({
+                type: "symbol",
+                value: chars.shift(),
+            });
         }
     }
-    else if (tk.type == Tokens.NumericLiteral) {
+    Tokens.push({ type: "EOL", value: "EOL" });
+    return Tokens;
+}
+function parse_primary(tk) {
+    if (tk.type == "keyword") {
+        return '<span class="cm-keyword">' + tk.value + '</span>';
+    }
+    else if (tk.type == "datatype") {
+        return '<span class="cm-datatype">' + tk.value + '</span>';
+    }
+    else if (tk.type == "control") {
+        return '<span class="cm-other-token">' + tk.value + '</span>';
+    }
+    else if (tk.type == "boolean") {
+        return '<span class="cm-boolean">' + tk.value + '</span>';
+    }
+    else if (tk.type == "function") {
+        return '<span class="cm-native">' + tk.value + '</span>';
+    }
+    else if (tk.type == "operator") {
+        return '<span class="cm-logical">' + tk.value + '</span>';
+    }
+    else if (tk.type == "string") {
+        return '<span class="cm-string">' + tk.value + '</span>';
+    }
+    else if (tk.type == "char") {
+        return '<span class="cm-char">' + tk.value + '</span>';
+    }
+    else if (tk.type == "number") {
         return '<span class="cm-number" style="color: var(--number)">' + tk.value + '</span>';
     }
-    else if (tk.type == Tokens.Identifier) {
+    else if (tk.type == "identifier") {
         if (methods.includes(tk.value)) {
             return '<span class="cm-userFn">' + tk.value + '</span>';
         }
@@ -67,62 +173,24 @@ function parse_primary(tk) {
             return '<span class="cm-variable">' + tk.value + '</span>';
         }
     }
-    else if (tk.type == Tokens.Comment) {
+    else if (tk.type == "comment") {
         return '<span class="cm-comment">' + tk.value + '</span>';
     }
-    else if (tk.type == Tokens.EOL) {
+    else if (tk.type == "EOL") {
         return '\n';
     }
-    else if (tk.type == Tokens.EOF || !tk.value || tk.value === undefined) {
+    else if (tk.type == "whitespace")
+        return tk.value;
+    else if (!tk.value || tk.value === undefined) {
         return "";
     }
     else {
         return '<span class="cm-other">' + tk.value + '</span>';
     }
 }
-function extract_whitespace(ln) {
-    let ws = [];
-    const chars = ln.split('');
-    let ws_tk = "";
-    for (const char of chars) {
-        if (char === " ") {
-            ws_tk += " ";
-        }
-        else {
-            if (ws_tk != "") {
-                ws.push(ws_tk);
-            }
-            ws_tk = "";
-        }
-    }
-    return ws;
-}
 function format_line(ln) {
-    const tokens = tokenize_line(ln, 1);
-    let ws = ln.match(/\s+/g);
-    if (!ws) {
-        ws = [];
-    }
-    ws.push("");
-    let out = "";
-    for (const tk of tokens) {
-        if (ln.startsWith(" ")) {
-            if (ws && ws.length > 0 && ws[0] != "") {
-                out += ws.shift() + parse_primary(tk);
-            }
-            else {
-                out += parse_primary(tk);
-            }
-        }
-        else {
-            if (ws && ws.length > 0 && ws[0] != "") {
-                out += parse_primary(tk) + ws.shift();
-            }
-            else {
-                out += parse_primary(tk);
-            }
-        }
-    }
+    const tokens = mmp_tokenise_line(ln);
+    const out = tokens.map(tk => parse_primary(tk)).join('');
     return out;
 }
 function format_src(src, txtFile) {

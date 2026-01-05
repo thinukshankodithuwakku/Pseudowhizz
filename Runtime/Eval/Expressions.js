@@ -1170,23 +1170,13 @@ export async function eval_iteration_Stmt(iterStmt, env, StackFrames) {
             if (condition.type == "MemberExprVal") {
                 condition = conv_memex_to_val(condition);
             }
-            if (condition.value) {
-                if (iterStmt.returnExpressions.length > 0) {
-                    //StackFrames.push({expr: pcon.stringify(iterStmt.returnExpressions), ln: iterStmt.ln, context: current.context})
-                    return evaluate(iterStmt.returnExpressions[0], current, StackFrames);
-                }
-                else {
-                    return res;
-                }
-            }
             if (condition.type == "null") {
                 condition = MK_BOOL(false);
             }
             else if (kill_program()) {
                 return MK_NULL();
             }
-            iterations++;
-            while (!condition.value) {
+            do {
                 closures = [new Environment(env.context, scpe)];
                 const current = closures[closures.length - 1];
                 for (const stmt of iterStmt.body) {
@@ -1233,7 +1223,7 @@ export async function eval_iteration_Stmt(iterStmt, env, StackFrames) {
                 if (iterations > Limit) {
                     throw "Exceeded max excecution count. You may want to consider switching to a WHILE or FOR loop.";
                 }
-            }
+            } while (!condition.value);
             return MK_NULL();
         case "pre-condition":
             const schaufe = new Environment(env.context, env);

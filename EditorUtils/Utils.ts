@@ -267,7 +267,7 @@ export class DescBox {
     public descBox : HTMLDivElement;
     public active : boolean = false;
 
-    constructor(){
+    constructor(cm){
 
         this.descBox = document.createElement("div");
         const name = document.createTextNode("None");
@@ -294,7 +294,7 @@ export class DescBox {
 
         
 
-        document.body.appendChild(this.descBox);
+        document.documentElement.appendChild(this.descBox);
 
 
 
@@ -310,7 +310,6 @@ export class DescBox {
 
     public tick(fn_name : string, co_ords, parameter? : number) {
 
-        
 
         const name = this.scan(fn_name);
         
@@ -375,9 +374,13 @@ export class DescBox {
             this.descBox.childNodes[0].childNodes[0].nodeValue = FnTempRec[name];
             this.descBox.childNodes[2].childNodes[0].nodeValue = desc;
         }
+
+        const line_height = co_ords.bottom - co_ords.top;
         
+        console.log(co_ords.left);
+
         this.descBox.style.left = co_ords.left + 'px';
-        this.descBox.style.top = (co_ords.top - this.descBox.offsetHeight) + 'px';
+        this.descBox.style.top = (co_ords.top + line_height) + 'px';
 
 
         this.open();
