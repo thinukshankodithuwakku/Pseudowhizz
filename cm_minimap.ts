@@ -9,12 +9,12 @@ interface mmpToken {
 
 }
 
-const keywords = /^(READFILE|WRITEFILE|OPENFILE|CLOSEFILE|DECLARE|CONSTANT|OUTPUT|INPUT|FUNCTION|ENDFUNCTION|PROCEDURE|ENDPROCEDURE)$/i;
-const datatypes = /^(ARRAY|INTEGER|REAL|CHAR|STRING|BOOLEAN)$/i;
-const boolean = /^(TRUE|FALSE)$/i;
-const native = /^(LCASE|UCASE|NUM_TO_STR|STR_TO_NUM|SUBSTRING|EOF|ROUND|RANDOM|LENGTH)$/i;
-const control = /^(ELSEIF|IF|ELSE|ENDIF|THEN|CASE|OF|ENDCASE|OTHERWISE|RETURNS|RETURN|READ|WRITE|STEP|FOR|TO|CALL|NEXT|WHILE|REPEAT|ENDWHILE|DO|UNTIL)$/i;
-const logical = /^(MOD|DIV|NOT|AND|OR|)$/i;
+const keywords = /^(READFILE|WRITEFILE|OPENFILE|CLOSEFILE|DECLARE|CONSTANT|OUTPUT|INPUT|FUNCTION|ENDFUNCTION|PROCEDURE|ENDPROCEDURE)$/;
+const datatypes = /^(ARRAY|INTEGER|REAL|CHAR|STRING|BOOLEAN)$/;
+const boolean = /^(TRUE|FALSE)$/;
+const native = /^(LCASE|UCASE|NUM_TO_STR|STR_TO_NUM|SUBSTRING|EOF|ROUND|RANDOM|LENGTH)$/;
+const control = /^(ELSEIF|IF|ELS\E|ENDIF|THEN|CASE|OF|ENDCASE|OTHERWISE|RETURNS|RETURN|READ|WRITE|STEP|FOR|TO|CALL|NEXT|WHILE|REPEAT|ENDWHILE|DO|UNTIL)$/;
+const logical = /^(MOD|DIV|NOT|AND|OR|)$/;
 
 
 function mmp_tokenise_line(line : string){ //Special tokenizer just for the minimap
@@ -172,14 +172,19 @@ function mmp_tokenise_line(line : string){ //Special tokenizer just for the mini
 
             }
 
-            if(chars[0] == '"') chars.shift();
+            if(chars[0] == '"'){ 
+                chars.shift();
 
-            Tokens.push({
+                Tokens.push({
 
-                type: "string",
-                value: holder,
+                    type: "string",
+                    value: holder,
 
-            })
+                })
+            }
+            else mmp_tokenise_line(holder).forEach(tk => Tokens.push(tk));
+
+            
 
         }
         else if(chars[0] == "'"){
@@ -194,14 +199,19 @@ function mmp_tokenise_line(line : string){ //Special tokenizer just for the mini
 
             }
 
-            if(chars[0] == "'") chars.shift();
+            if(chars[0] == "'"){ 
+                chars.shift();
 
-            Tokens.push({
+                Tokens.push({
 
-                type: "char",
-                value: holder,
+                    type: "char",
+                    value: holder,
 
-            })
+                })
+            }
+            else mmp_tokenise_line(holder).forEach(tk => Tokens.push(tk));
+
+            
 
         }
         else{
