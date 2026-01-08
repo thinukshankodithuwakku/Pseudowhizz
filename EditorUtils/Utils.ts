@@ -81,6 +81,7 @@ const FnTempRec : Record<string, string> = {
 
 function spit_html(func_name : string, current_parameter : number) : {bef: string, hl: string, aft : string}{
 
+
     switch(func_name){
 
         case "RANDOM":
@@ -376,8 +377,6 @@ export class DescBox {
         }
 
         const line_height = co_ords.bottom - co_ords.top;
-        
-        console.log(co_ords.left);
 
         this.descBox.style.left = co_ords.left + 'px';
         this.descBox.style.top = (co_ords.top + line_height) + 'px';
@@ -434,8 +433,29 @@ export class DescBox {
 
         slice.pop();
 
-        const currentParameter = slice.filter(tk => tk.type == Tokens.Comma).length + offset;
+        
 
+        let currentParameter = 0;
+
+        i = slice.length - 1;
+
+        bracs = 0;
+        let sqrBracs = 0;
+
+        while(i >= 0){
+
+            const at = slice[i];
+            
+            if(at.type == Tokens.CloseBracket) bracs--;
+            else if(at.type == Tokens.OpenBracket) bracs++;
+            else if(at.type == Tokens.CloseSquareBracket) sqrBracs--;
+            else if(at.type == Tokens.OpenSquareBracket) sqrBracs++;
+            else if(at.type == Tokens.Comma && bracs == 0 && sqrBracs == 0) currentParameter++;
+
+            i--;
+        }
+
+        currentParameter += offset;
 
         this.tick(func_name, co_ords, currentParameter);
 

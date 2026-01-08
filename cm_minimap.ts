@@ -199,7 +199,7 @@ function mmp_tokenise_line(line : string){ //Special tokenizer just for the mini
 
             }
 
-            if(chars[0] == "'"){ 
+            if(chars[0] == "'" && holder.length == 1){ 
                 chars.shift();
 
                 Tokens.push({
@@ -208,6 +208,18 @@ function mmp_tokenise_line(line : string){ //Special tokenizer just for the mini
                     value: holder,
 
                 })
+            }
+            else if(chars[0] == "'"){
+
+                chars.shift();
+
+                Tokens.push({
+
+                    type: "symbol",
+                    value: holder,
+
+                })
+
             }
             else mmp_tokenise_line(holder).forEach(tk => Tokens.push(tk));
 

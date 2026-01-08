@@ -859,6 +859,7 @@
 
         import { default_code } from './Prewritten/Default.js';
         import {DescBox, select_all, highlight_all_tokens} from './EditorUtils/Utils.js';
+        import { tokenize, tokenize_line, Tokens } from "./Frontend/Lexer.js";
         let selectedTab = "none";
         
 
@@ -1002,8 +1003,77 @@
 
         CodeMirror.defineMode("CIEpseudocode", function () {
 
-        
             
+
+
+            function search(src, request){
+
+
+                const src_tokens = tokenize(src);
+                const req_tokens = tokenize_line(request);
+                req_tokens.pop();
+
+                let res = false;
+
+                for(let i = 0; i <= src_tokens.length - req_tokens.length; i++){
+
+                    let match = true;
+
+                    for(let j = 0; j < req_tokens.length; j++){
+
+                        if(src_tokens[i + j].type != req_tokens[j].type || src_tokens[i + j].value != req_tokens[j].value){
+
+                            match = false;
+                            break;
+
+                        }
+
+                    }
+
+                    if(match){
+
+                        res = true;
+                        break;
+
+                    }
+
+                }
+
+                return res;
+            
+            }
+            
+
+            function findArrayPrim(codeVal, read){
+
+                
+
+                if(search(codeVal, `DECLARE ${read} : ARRAY`)) {
+
+                    let i = 0;
+                    
+                    const tkns = tokenize(codeVal);
+
+                    while(i < tkns.length - 3){
+                        if(tkns[i].type == Tokens.Declare && tkns[i + 1].type == Tokens.Identifier && tkns[i + 1].value == read && tkns[i + 2].type == Tokens.Colon && tkns[i + 3].type == Tokens.Array){
+                            break;
+                        }
+
+                        i++;
+                    }
+                    
+                    i += 3;
+                    
+                    const data_types = [Tokens.Integer, Tokens.Real, Tokens.Boolean, Tokens.String, Tokens.Char];
+
+                    while(!data_types.includes(tkns[i].type) && tkns[i].type != Tokens.EOL && i < tkns.length) i++;
+
+                    return data_types.includes(tkns[i].type) ? tkns[i].value : "none";
+
+                }
+                else return "none";
+
+            }
 
             const keywords = /^(READFILE|WRITEFILE|OPENFILE|CLOSEFILE|DECLARE|CONSTANT|OUTPUT|INPUT|FUNCTION|ENDFUNCTION|PROCEDURE|ENDPROCEDURE)$/i;
             const datatypes = /^(ARRAY|INTEGER|REAL|CHAR|STRING|BOOLEAN)$/i;
@@ -1023,35 +1093,19 @@
                     if (selectedTab.endsWith('.pseudo')) {
                         keywordList = [...native_keywords, ...vars, ...methods, ...constants, ...procedures, ...filenames];
                         
-                        const codeVal = trimAll(editor.getValue());
+                        const codeVal = editor.getValue();
 
                         for(const fn of methods){
-
-
-
-                            if(!codeVal.includes(`FUNCTION${fn}(`)){
-
-                                ns.refresh("methods", fn);
-                                //methods = methods.filter(f => f != fn);
-
-                            }
-
+                            if(!search(codeVal, `FUNCTION ${fn} (`)) ns.refresh("methods", fn);
                         } 
 
                         for(const p of procedures){
-
-                            if(!codeVal.includes(`PROCEDURE${p}(`)){
-
-                                ns.refresh("procedures", p);
-                                //procedures = procedures.filter(i => i != p);
-
-                            }
-
+                            if(!search(codeVal, `PROCEDURE ${p} (`)) ns.refresh("procedures", p);
                         }
 
                         for(const c of constants){
 
-                            if(!codeVal.includes(`CONSTANT${c}<`) && !codeVal.includes(`CONSTANT${c}←`)){
+                            if(!search(codeVal, `CONSTANT ${c} ←`)){
 
                                 constTypeMap.delete(c);
                                 //constants = constants.filter(i => i != c);
@@ -1063,7 +1117,12 @@
 
                         for(const v of vars){
 
-                            if(!codeVal.includes(`DECLARE${v}:`)){
+                            if(!search(codeVal, `DECLARE ${v} : INTEGER`) 
+                            && !search(codeVal, `DECLARE ${v} : REAL`)
+                            && !search(codeVal, `DECLARE ${v} : BOOLEAN`)
+                            && !search(codeVal, `DECLARE ${v} : STRING`)
+                            && !search(codeVal, `DECLARE ${v} : CHAR`)
+                            && findArrayPrim(codeVal, v) == "none"){
 
                                 vars = vars.filter(i => i != v);
                                 varTypeMap.delete(v);
@@ -1075,7 +1134,7 @@
 
                         for(const f of filenames){
         
-                            if(!codeVal.includes(`OPENFILE${f}FORREAD`) && !codeVal.includes(`OPENFILE${f}FORWRITE`)){
+                            if(!search(codeVal, `OPENFILE ${f}.txt FOR READ`) && !search(codeVal, `OPENFILE ${f}.txt FOR WRITE`)){
 
 
 
@@ -1160,17 +1219,22 @@
 
                             let type = "variable";
 
-                            const is_fn = codeVal.includes(`FUNCTION${read}(`);
+                            const is_fn = search(codeVal, `FUNCTION ${read} (`);
 
-                            const is_prcdr = codeVal.includes(`PROCEDURE${read}(`);
+                            const is_prcdr = search(codeVal, `PROCEDURE ${read} (`);
 
                             
 
-                            const is_const = codeVal.includes(`CONSTANT${read}<`) || codeVal.includes(`CONSTANT${read}←`);
+                            const is_const = search(codeVal, `CONSTANT ${read} ←`);
 
-                            const is_var = new RegExp(`DECLARE${String(read).replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}:(REAL|INTEGER|BOOLEAN|STRING|CHAR|ARRAY\\[.*?\\]OF(REAL|INTEGER|BOOLEAN|STRING|CHAR))`).test(codeVal);
+                            const is_var = search(codeVal, `DECLARE ${read} : INTEGER`) 
+                            || search(codeVal, `DECLARE ${read} : REAL`) 
+                            || search(codeVal, `DECLARE ${read} : BOOLEAN`) 
+                            || search(codeVal, `DECLARE ${read} : STRING`) 
+                            || search(codeVal, `DECLARE ${read} : CHAR`) 
+                            || findArrayPrim(codeVal, read) != "none";
 
-                            const is_file = codeVal.includes(`OPENFILE${read}.txtFORREAD`) || codeVal.includes(`OPENFILE${read}.txtFORWRITE`)
+                            const is_file = codeVal.includes(`OPENFILE ${read}.txt FOR READ`) || codeVal.includes(`OPENFILE ${read}.txt FOR WRITE`)
 
                             if(is_fn && !methods.includes(read)) methods.push(read);
 
@@ -1184,18 +1248,12 @@
 
                                 vars.push(read);
 
-                                if(codeVal.includes(`DECLARE${read}:INTEGER`)) varTypeMap.set(read, 'INTEGER');
-                                else if(codeVal.includes(`DECLARE${read}:REAL`)) varTypeMap.set(read, 'REAL');
-                                else if(codeVal.includes(`DECLARE${read}:BOOLEAN`)) varTypeMap.set(read, 'BOOLEAN');
-                                else if(codeVal.includes(`DECLARE${read}:STRING`)) varTypeMap.set(read, 'STRING');
-                                else if(codeVal.includes(`DECLARE${read}:CHAR`)) varTypeMap.set(read, 'CHAR');
-                                else if(codeVal.includes(`DECLARE${read}:ARRAY`)){ 
-                                    if(new RegExp(`DECLARE${String(read).replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}:ARRAY\\[.*?\\]OFINTEGER`).test(codeVal))varTypeMap.set(read, 'ARRAY OF INTEGER');
-                                    else if(new RegExp(`DECLARE${String(read).replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}:ARRAY\\[.*?\\]OFREAL`).test(codeVal))varTypeMap.set(read, 'ARRAY OF REAL');
-                                    else if(new RegExp(`DECLARE${String(read).replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}:ARRAY\\[.*?\\]OFBOOLEAN`).test(codeVal))varTypeMap.set(read, 'ARRAY OF BOOLEAN');
-                                    else if(new RegExp(`DECLARE${String(read).replace(/[.*+?^${}()|[\]\\]/g,"\\$&")}:ARRAY\\[.*?\\]OFSTRING`).test(codeVal))varTypeMap.set(read, 'ARRAY OF STRING');
-                                    else if(new RegExp(`DECLARE${String(read).replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}:ARRAY\\[.*?\\]OFCHAR`).test(codeVal))varTypeMap.set(read, 'ARRAY OF CHAR');
-                                }; 
+                                if(search(codeVal, `DECLARE ${read} : INTEGER`)) varTypeMap.set(read, 'INTEGER');
+                                else if(search(codeVal, `DECLARE ${read} : REAL`)) varTypeMap.set(read, 'REAL');
+                                else if(search(codeVal, `DECLARE ${read} : BOOLEAN`)) varTypeMap.set(read, 'BOOLEAN');
+                                else if(search(codeVal, `DECLARE ${read} : STRING`)) varTypeMap.set(read, 'STRING');
+                                else if(search(codeVal, `DECLARE ${read} : CHAR`)) varTypeMap.set(read, 'CHAR');
+                                else if(findArrayPrim(codeVal, read) != "none") varTypeMap.set(read, findArrayPrim(codeVal, read));
 
                             }
                             else if(is_file && !filenames.includes(`${read}.txt`)) filenames.push(`${read}.txt`);
@@ -1719,6 +1777,7 @@
 
 
         import {files, pseudoFiles, makeError, running, halt_program} from "./Main.js";
+
         window.files = files;
         window.pseudoFiles = pseudoFiles;
 
@@ -4420,14 +4479,6 @@
             const settings = {
 
                 origin: "native",
-                Ln: Ln_toggle.checked,
-                Lw: Lw_toggle.checked,
-                Ac: Ac_toggle.checked,
-                Dpf: dpf_toggle.checked,
-                Lg: Lg_toggle.checked,
-                Af: Af_toggle.checked,
-                Mmp: Mmp_toggle.checked,
-                Flmd: flmd_toggle.checked,
                 Kw: keyword.value,
                 Ctrl: other.value,
                 Dt: datatype.value,
@@ -4471,63 +4522,7 @@
         function loadPreset(p) {
 
             if(p.origin || p.Ff){
-                
-                if(Ln_toggle.checked != p.Ln){
-
-                    Ln_toggle.click();
-
-                }
-
-                if(Lw_toggle.checked != p.Lw){
-
-                    Lw_toggle.click();
-
-                }
-
-                if(Ac_toggle.checked != p.Ac){
-
-                    Ac_toggle.click();
-
-                }
-
-                if(dpf_toggle.checked != p.Dpf){
-
-                    dpf_toggle.click();
-
-                }
-
-                if(Af_toggle.checked != p.Af){
-
-                    Af_toggle.click();
-
-                }
-
-                if(Mmp_toggle.checked != p.Mmp){
-
-                    Mmp_toggle.click();
-
-                }
-
-                if(Lg_toggle.checked != p.Lg){
-
-                    Lg_toggle.click();
-
-                }
-
-                if(Mmp_toggle.checked != p.Mmp){
-
-                    Mmp_toggle.click();
-
-                }
-
-                if(flmd_toggle.checked != p.Flmd){
-
-                    flmd_toggle.click();
-
-                }
-
-
-
+            
                 {
 
                     ChangeColourSafely(keyword, p.Kw);

@@ -1,6 +1,5 @@
 import { makeError, commentLog } from "../Main.js";
 let inF = false;
-let context_chain = ["<module>"];
 export var Tokens;
 (function (Tokens) {
     //Initialisers 
@@ -8,19 +7,19 @@ export var Tokens;
     Tokens[Tokens["Constant"] = 1] = "Constant";
     //Variable reference
     Tokens[Tokens["Identifier"] = 2] = "Identifier";
-    //Manipulators
+    //Operators
     Tokens[Tokens["BinaryOperator"] = 3] = "BinaryOperator";
     Tokens[Tokens["UnaryOperator"] = 4] = "UnaryOperator";
     Tokens[Tokens["Assign"] = 5] = "Assign";
     Tokens[Tokens["Of"] = 6] = "Of";
-    //Verifiers
+    //Relational operators
     Tokens[Tokens["Equals"] = 7] = "Equals";
     Tokens[Tokens["NotEquals"] = 8] = "NotEquals";
     Tokens[Tokens["Greater"] = 9] = "Greater";
     Tokens[Tokens["Less"] = 10] = "Less";
     Tokens[Tokens["GreaterEquals"] = 11] = "GreaterEquals";
     Tokens[Tokens["LessEquals"] = 12] = "LessEquals";
-    //Containment
+    //Delimiters
     Tokens[Tokens["OpenSquareBracket"] = 13] = "OpenSquareBracket";
     Tokens[Tokens["CloseSquareBracket"] = 14] = "CloseSquareBracket";
     Tokens[Tokens["OpenBracket"] = 15] = "OpenBracket";
@@ -37,7 +36,7 @@ export var Tokens;
     Tokens[Tokens["Any"] = 25] = "Any";
     Tokens[Tokens["String"] = 26] = "String";
     Tokens[Tokens["Null"] = 27] = "Null";
-    //Conditionals
+    //Selection
     Tokens[Tokens["If"] = 28] = "If";
     Tokens[Tokens["Then"] = 29] = "Then";
     Tokens[Tokens["Else"] = 30] = "Else";
@@ -46,7 +45,7 @@ export var Tokens;
     Tokens[Tokens["Case"] = 33] = "Case";
     Tokens[Tokens["Endcase"] = 34] = "Endcase";
     Tokens[Tokens["Otherwise"] = 35] = "Otherwise";
-    //Loops
+    //Iteration
     Tokens[Tokens["For"] = 36] = "For";
     Tokens[Tokens["Endfor"] = 37] = "Endfor";
     Tokens[Tokens["While"] = 38] = "While";
@@ -61,7 +60,7 @@ export var Tokens;
     Tokens[Tokens["StringLiteral"] = 46] = "StringLiteral";
     Tokens[Tokens["NumericLiteral"] = 47] = "NumericLiteral";
     Tokens[Tokens["Array"] = 48] = "Array";
-    //Functions & Procedures
+    //Methods
     Tokens[Tokens["Function"] = 49] = "Function";
     Tokens[Tokens["Endfunction"] = 50] = "Endfunction";
     Tokens[Tokens["Procedure"] = 51] = "Procedure";
@@ -69,11 +68,11 @@ export var Tokens;
     Tokens[Tokens["Returns"] = 53] = "Returns";
     Tokens[Tokens["Return"] = 54] = "Return";
     Tokens[Tokens["Call"] = 55] = "Call";
-    //Logic operators
+    //Logical operators
     Tokens[Tokens["AND"] = 56] = "AND";
     Tokens[Tokens["OR"] = 57] = "OR";
     Tokens[Tokens["NOT"] = 58] = "NOT";
-    //User
+    //Interface
     Tokens[Tokens["Output"] = 59] = "Output";
     Tokens[Tokens["Input"] = 60] = "Input";
     Tokens[Tokens["Comment"] = 61] = "Comment";

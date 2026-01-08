@@ -1,10 +1,6 @@
 import { makeError, commentLog } from "../Main.js";
 
 let inF : boolean = false;
-let context_chain = ["<module>"];
-
-
-
 
 export enum Tokens {
     //Initialisers 
@@ -16,13 +12,13 @@ export enum Tokens {
     //Variable reference
     Identifier,  //4
 
-    //Manipulators
+    //Operators
     BinaryOperator,
     UnaryOperator,  //5
     Assign,  //6
     Of,  //7
 
-    //Verifiers
+    //Relational operators
     Equals,  //8
     NotEquals,  //9
     Greater,  //10
@@ -30,7 +26,7 @@ export enum Tokens {
     GreaterEquals,  //12
     LessEquals,  //13
 
-    //Containment
+    //Delimiters
     OpenSquareBracket,  //14
     CloseSquareBracket,  //15
     OpenBracket,  //16
@@ -49,7 +45,7 @@ export enum Tokens {
     String,  //26
     Null,  //27
 
-    //Conditionals
+    //Selection
     If,  //28
     Then,  //29
     Else,
@@ -59,7 +55,7 @@ export enum Tokens {
     Endcase,  //33
     Otherwise,
 
-    //Loops
+    //Iteration
     For,  //34
     Endfor,  //35
     While,  //36
@@ -76,7 +72,7 @@ export enum Tokens {
     NumericLiteral,  //41
     Array,
 
-    //Functions & Procedures
+    //Methods
     Function,
     Endfunction,
     Procedure,
@@ -85,12 +81,12 @@ export enum Tokens {
     Return,
     Call,
 
-    //Logic operators
+    //Logical operators
     AND,
     OR,
     NOT,
 
-    //User
+    //Interface
     Output,
     Input,
 
