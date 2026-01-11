@@ -83,6 +83,7 @@ export var Tokens;
     Tokens[Tokens["Read"] = 66] = "Read";
     Tokens[Tokens["Write"] = 67] = "Write";
     Tokens[Tokens["Filename"] = 68] = "Filename";
+    //Other
     Tokens[Tokens["Ampersand"] = 69] = "Ampersand";
     Tokens[Tokens["Unrecognised"] = 70] = "Unrecognised";
 })(Tokens || (Tokens = {}));

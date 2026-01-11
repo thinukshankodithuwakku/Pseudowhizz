@@ -3,7 +3,7 @@ import { SetupGlobalScope } from "./Runtime/Environment.js";
 import { evaluate } from "./Runtime/Interpreter.js";
 import { MK_NULL } from "./Runtime/Value.js";
 import { tokenize, Tokens } from "./Frontend/Lexer.js";
-import { produce_py_program } from "./Runtime/PythonTranslator.js";
+import { PyT, JST } from "./Runtime/Translators.js";
 export let outputLog = [];
 export let errorLog = [];
 export let errorLines = [];
@@ -16,6 +16,7 @@ export const func_map = new Map();
 export let err;
 //The above map: <filename, [r/w mode, using file]
 export let cur_fl = "Main.pseudo";
+export let natives = ["LCASE", "UCASE", "LEN", "RND", "INT", "STR", "ASC", "CHR", "VAL", "SIN", "COS", "TAN", "LOG", "EXP", "SQRT", "POW", "ABS", "MID", "LEFT", "RIGHT", "JOIN", "SPLIT"];
 export const initial_frame = {
     context: "<module>",
     ln: undefined,
@@ -23,6 +24,7 @@ export const initial_frame = {
 };
 let e = [];
 export let my_state = "unknown";
+const trans = new JST();
 if (localStorage.getItem("Saved") !== null && localStorage.getItem("Saved") !== "") {
     localStorage.setItem("Default", localStorage.getItem("Saved"));
 }
@@ -290,8 +292,25 @@ export async function repl(src, pF, filename, request) {
             errorLog = [];
             pauseLog = [];
             contexts = [];
-            const evaluatedProgam = await produce_py_program(program, env);
-            outputLog = evaluatedProgam.split('\n');
+            const translator = new PyT();
+            const translatedProgam = await translator.produce_py_program(program, env);
+            outputLog = translatedProgam.split('\n');
+            return outputLog;
+        }
+    }
+    else if (request == "javascript") {
+        my_state = "translating";
+        program = parser.produceAST(src);
+        if (loose_expr("<module>", program)) {
+            return ["// Cannot finish translation due to a potential syntax error", '// Evaluate your program and check that there are no errors first before translating!'];
+        }
+        else {
+            errorLog = [];
+            pauseLog = [];
+            contexts = [];
+            const translator = new JST();
+            const translatedProgam = await translator.produce_JS_program(program);
+            outputLog = translatedProgam.split('\n');
             return outputLog;
         }
     }

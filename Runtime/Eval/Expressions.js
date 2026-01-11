@@ -660,7 +660,7 @@ export async function eval_selectionStmt_expr(declaration, env, StackFrames) {
         }
         //const temp = StackFrames.pop();
         //StackFrames.push({expr: pcon.stringify(condition as Expr), ln: condition.ln, context: env.context})
-        if ((await evaluate(condition, env, StackFrames)).value) {
+        if (condition.kind == "DefaultCase" || (await evaluate(condition, env, StackFrames)).value) {
             //StackFrames.pop();
             //StackFrames.push(temp);
             scopes.push(new Environment(env.context, env));

@@ -182,7 +182,7 @@ function mmp_tokenise_line(line : string){ //Special tokenizer just for the mini
 
                 })
             }
-            else mmp_tokenise_line(holder).forEach(tk => Tokens.push(tk));
+            else mmp_tokenise_line(holder).forEach(tk => {if(tk.type !== "EOL") Tokens.push(tk)});
 
             
 
@@ -221,7 +221,7 @@ function mmp_tokenise_line(line : string){ //Special tokenizer just for the mini
                 })
 
             }
-            else mmp_tokenise_line(holder).forEach(tk => Tokens.push(tk));
+            else mmp_tokenise_line(holder).forEach(tk => {if(tk.type !== "EOL") Tokens.push(tk)});
 
             
 

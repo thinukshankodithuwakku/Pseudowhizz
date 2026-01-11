@@ -14,7 +14,7 @@ import {
   SelectionStmtDeclaration,
   IterationStmt,
   OutputExpr,
-  inputExpr,
+  InputExpr,
   FileExpr,
   FileUse,
   UnaryExpr,
@@ -176,7 +176,7 @@ export async function evaluate(astNode: Stmt, env: Environment, StackFrames : St
 
       case "InputExpr":
 
-        return await eval_input_expr(astNode as inputExpr, env, SF_BYREF);
+        return await eval_input_expr(astNode as InputExpr, env, SF_BYREF);
         
 
       case "FileExpr":

@@ -1,4 +1,4 @@
-import { Stmt, CallExpr, AssignmentExpr, BinaryExpr, Expr, Identifier, NumericLiteral,  StringLiteral, FunctionDeclaration, SelectionStmtDeclaration, IterationStmt, OutputExpr, inputExpr, FileUse, CharString, UnaryExpr, ReturnStmt, NewObjectLiteralExpr, NewMemberExpr, FileNameExpr, VarDeclaration  } from "../../Frontend/AST.js";
+import { Stmt, CallExpr, AssignmentExpr, BinaryExpr, Expr, Identifier, NumericLiteral,  StringLiteral, FunctionDeclaration, SelectionStmtDeclaration, IterationStmt, OutputExpr, InputExpr, FileUse, CharString, UnaryExpr, ReturnStmt, NewObjectLiteralExpr, NewMemberExpr, FileNameExpr, VarDeclaration  } from "../../Frontend/AST.js";
 import Environment, { arityCheck, SetupGlobalScope } from "../Environment.js";
 import { evaluate } from "../Interpreter.js";
 import { Pause, primitiveValue, FileNameVal,NativeFnValue, MemberExprVal, NumberVal, RuntimeVal, MK_NULL, ValueType, BooleanVal, FunctionValue, StringVal, CharVal, NullVal, SelectionStmt, MK_STRING, MK_BOOL, MK_NUMBER, endClosureVal, NewObjectVal, MK_CHAR } from "../Value.js";
@@ -1068,7 +1068,7 @@ export async function eval_selectionStmt_expr(
       //const temp = StackFrames.pop();
       //StackFrames.push({expr: pcon.stringify(condition as Expr), ln: condition.ln, context: env.context})
 
-      if((await evaluate(condition as Expr, env, StackFrames) as BooleanVal).value){
+      if(condition.kind == "DefaultCase" || (await evaluate(condition as Expr, env, StackFrames) as BooleanVal).value){
         //StackFrames.pop();
         //StackFrames.push(temp);
         
@@ -1077,7 +1077,7 @@ export async function eval_selectionStmt_expr(
 
 
         for(const stmt of declaration.body.get(condition)[1]){
-          
+
           //StackFrames.push({context: env.context, expr: pcon.stringify(stmt), ln: stmt.ln} as StackFrame);
 
           if(kill_program()){
@@ -1299,7 +1299,7 @@ export async function emergency_pause(msg : string) : Promise<RuntimeVal> {
 
 }
 
-export async function eval_input_expr(inpExpr : inputExpr, env : Environment, StackFrames : StackFrame[]) : Promise <RuntimeVal> {
+export async function eval_input_expr(inpExpr : InputExpr, env : Environment, StackFrames : StackFrame[]) : Promise <RuntimeVal> {
 
 
   

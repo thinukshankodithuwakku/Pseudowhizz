@@ -16,7 +16,7 @@ import {
   IterationStmt,
   OutputExpr,
   CharString,
-  inputExpr,
+  InputExpr,
   FileExpr,
   FileUse,
   UnaryExpr,
@@ -26,6 +26,7 @@ import {
   NewMemberExpr,
   FileNameExpr,
   CommentExpr,
+  DefaultCase,
 
 } from "./AST.js"
 
@@ -564,7 +565,7 @@ export default class Parser {
           assigne: assigne,
           promptMessage: message,
           ln: ln,
-        } as inputExpr;
+        } as InputExpr;
 
         if(this.at().type == Tokens.Comment){
 
@@ -1495,14 +1496,11 @@ export default class Parser {
 
         }
 
-        const mkTrue = {
-          kind: "Identifier",
-          symbol: "TRUE",
-        } as Identifier;
+
 
         Statements.push({kind: "EndClosureExpr"} as EndClosureExpr);
 
-        body.set(mkTrue, [comment, Statements]);
+        body.set({kind: "DefaultCase"} as Expr, [comment, Statements]);
       }
       
 
@@ -1627,7 +1625,7 @@ export default class Parser {
         }
         
 
-        while(this.at().type !== Tokens.Otherwise && this.at().type !== Tokens.Endcase){
+        while(this.not_eof() && this.at().type !== Tokens.Otherwise && this.at().type !== Tokens.Endcase){
           if(this.classify(check) == "Expr"){
             Statements = [];
             condition = {
@@ -1685,7 +1683,7 @@ export default class Parser {
           Statements = [];
           this.eat();
 
-          const comment = this.at().type == Tokens.Comment ? this.eat().value : "";
+          const comment = this.at() && this.at().type == Tokens.Comment ? this.eat().value : "";
 
           if(!this.not_eol || this.at().type == Tokens.Endcase){
             return this.MK_Err(context,"Statements expected!");
@@ -1725,12 +1723,11 @@ export default class Parser {
 
             }
 
-            const MK_TRUE = {
-              kind: "Identifier",
-              symbol: "TRUE"
-            } as Identifier;
+            const MK_DEFAULT = {
+              kind: "DefaultCase",
+            } as DefaultCase;
 
-            body.set(MK_TRUE, [comment, Statements]);
+            body.set(MK_DEFAULT, [comment, Statements]);
             
           }
         }
@@ -1748,6 +1745,8 @@ export default class Parser {
     if(!ifStatement){
       this.expect(context,Tokens.Endcase, "Expecting 'ENDCASE' token!");
     }
+
+    if(errorLog.length > 0) return this.MK_NULL_PARSER();
     
     if(this.at().type == Tokens.Comment){
 
@@ -1777,10 +1776,6 @@ export default class Parser {
       ifStmt.footer_comment = footer_comment;
 
     }
-
-    //throw "The if statement returns: " + JSON.stringify(ReturnExpressions);
-
-
 
     return ifStmt;
 
@@ -3725,7 +3720,7 @@ export default class Parser {
         
       case Tokens.OpenBracket:
         this.eat(); //remove opening bracket
-
+        
         if(this.at().type == Tokens.CloseBracket){
 
           return this.MK_Err(context,"Expression expected!");

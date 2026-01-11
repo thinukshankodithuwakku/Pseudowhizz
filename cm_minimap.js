@@ -109,7 +109,8 @@ function mmp_tokenise_line(line) {
                 });
             }
             else
-                mmp_tokenise_line(holder).forEach(tk => Tokens.push(tk));
+                mmp_tokenise_line(holder).forEach(tk => { if (tk.type !== "EOL")
+                    Tokens.push(tk); });
         }
         else if (chars[0] == "'") {
             chars.shift();
@@ -132,7 +133,8 @@ function mmp_tokenise_line(line) {
                 });
             }
             else
-                mmp_tokenise_line(holder).forEach(tk => Tokens.push(tk));
+                mmp_tokenise_line(holder).forEach(tk => { if (tk.type !== "EOL")
+                    Tokens.push(tk); });
         }
         else {
             Tokens.push({

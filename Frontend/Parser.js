@@ -900,12 +900,8 @@ export default class Parser {
                         }
                     }
                 }
-                const mkTrue = {
-                    kind: "Identifier",
-                    symbol: "TRUE",
-                };
                 Statements.push({ kind: "EndClosureExpr" });
-                body.set(mkTrue, [comment, Statements]);
+                body.set({ kind: "DefaultCase" }, [comment, Statements]);
             }
             if (this.at().type !== Tokens.Endif && this.at().type !== Tokens.EOL && this.not_eof()) {
                 this.expect(context, Tokens.EOL, "Expecting new line before ENDIF token!");
@@ -982,7 +978,7 @@ export default class Parser {
                 else if (this.classify(parsed) == "Expr") {
                     check = parsed;
                 }
-                while (this.at().type !== Tokens.Otherwise && this.at().type !== Tokens.Endcase) {
+                while (this.not_eof() && this.at().type !== Tokens.Otherwise && this.at().type !== Tokens.Endcase) {
                     if (this.classify(check) == "Expr") {
                         Statements = [];
                         condition = {
@@ -1029,7 +1025,7 @@ export default class Parser {
                 if (this.at().type == Tokens.Otherwise) {
                     Statements = [];
                     this.eat();
-                    const comment = this.at().type == Tokens.Comment ? this.eat().value : "";
+                    const comment = this.at() && this.at().type == Tokens.Comment ? this.eat().value : "";
                     if (!this.not_eol || this.at().type == Tokens.Endcase) {
                         return this.MK_Err(context, "Statements expected!");
                     }
@@ -1057,11 +1053,10 @@ export default class Parser {
                                 }
                             }
                         }
-                        const MK_TRUE = {
-                            kind: "Identifier",
-                            symbol: "TRUE"
+                        const MK_DEFAULT = {
+                            kind: "DefaultCase",
                         };
-                        body.set(MK_TRUE, [comment, Statements]);
+                        body.set(MK_DEFAULT, [comment, Statements]);
                     }
                 }
             }
@@ -1072,6 +1067,8 @@ export default class Parser {
         if (!ifStatement) {
             this.expect(context, Tokens.Endcase, "Expecting 'ENDCASE' token!");
         }
+        if (errorLog.length > 0)
+            return this.MK_NULL_PARSER();
         if (this.at().type == Tokens.Comment) {
             footer_comment = this.eat().value;
         }
@@ -1089,7 +1086,6 @@ export default class Parser {
         if (footer_comment) {
             ifStmt.footer_comment = footer_comment;
         }
-        //throw "The if statement returns: " + JSON.stringify(ReturnExpressions);
         return ifStmt;
     }
     conv_tk_to_expr(tk) {

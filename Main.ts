@@ -4,8 +4,9 @@ import Environment, {SetupGlobalScope} from "./Runtime/Environment.js";
 import { evaluate } from "./Runtime/Interpreter.js";
 import { RuntimeVal, MK_NULL } from "./Runtime/Value.js";
 import { Token, tokenize, Tokens } from "./Frontend/Lexer.js";
-import { produce_py_program } from "./Runtime/PythonTranslator.js";
-import { eval_var_declaration } from "./Runtime/Eval/Statements.js";
+import {PyT, JST} from "./Runtime/Translators.js";
+
+
 
 
 export let outputLog : string[] = [];
@@ -20,6 +21,7 @@ export const func_map = new Map<string, "FUNCTION" | "PROCEDURE">();
 export let err : error;
 //The above map: <filename, [r/w mode, using file]
 export let cur_fl = "Main.pseudo";
+export let natives = ["LCASE", "UCASE", "LEN", "RND", "INT", "STR", "ASC", "CHR", "VAL", "SIN", "COS", "TAN", "LOG", "EXP", "SQRT", "POW", "ABS", "MID",  "LEFT", "RIGHT", "JOIN", "SPLIT"]
 
 export interface StackFrame {
 
@@ -41,6 +43,9 @@ let e = [];
 
 type functionState = "translating" | "interpreting" | "unknown"; 
 export let my_state : functionState = "unknown";
+
+
+const trans = new JST();
 
 
 if(localStorage.getItem("Saved") !== null && localStorage.getItem("Saved") !== ""){
@@ -230,6 +235,8 @@ export function configureFileMemory(filename : string, mode: "READ" | "WRITE", o
 
 
 }
+
+
 
 export type error = "syntax" | "runtime" | "type" | "lexer" | "math" | "index" | "name" | "ZeroDivision";
 export let running = false;
@@ -499,10 +506,37 @@ export async function repl(src : string, pF : string, filename : string, request
       pauseLog = [];
       contexts = [];
 
+      const translator = new PyT();
+      const translatedProgam =  await translator.produce_py_program(program, env);
 
-      const evaluatedProgam =  await produce_py_program(program, env);
+      outputLog = translatedProgam.split('\n')
 
-      outputLog = evaluatedProgam.split('\n')
+      return outputLog;
+    }
+
+  }
+  else if(request == "javascript"){
+
+    my_state = "translating";
+
+    program = parser.produceAST(src);
+    
+
+    if(loose_expr("<module>",program)){
+
+      return ["// Cannot finish translation due to a potential syntax error", '// Evaluate your program and check that there are no errors first before translating!'];
+
+    }
+    else{
+
+      errorLog = [];
+      pauseLog = [];
+      contexts = [];
+
+      const translator = new JST();
+      const translatedProgam = await translator.produce_JS_program(program);
+
+      outputLog = translatedProgam.split('\n')
 
       return outputLog;
     }

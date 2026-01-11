@@ -16,7 +16,7 @@ import {
   IterationStmt,
   OutputExpr,
   CharString,
-  inputExpr,
+  InputExpr,
   FileExpr,
   FileUse,
   UnaryExpr,
@@ -53,7 +53,7 @@ export default class PCON {
                 return `OUTPUT ${this.concatenate((expr as OutputExpr).value)}`;
 
             case "InputExpr":
-                return `INPUT ${this.concatenate((expr as inputExpr).promptMessage)}`;
+                return `INPUT ${this.concatenate((expr as InputExpr).promptMessage)}`;
 
             case "BooleanLiteral":
                 return `TRUE`;

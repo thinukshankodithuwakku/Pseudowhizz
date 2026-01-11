@@ -527,6 +527,7 @@
                                 <option value="tokens" class="repl-node" id="repl-tokenise">Tokenise</option>
                                 <option value="ast" class="repl-node" id="repl-ast">AST</option>
                                 <option value="python" class="repl-node" id="repl-python">Python</a>
+                                <option value="javascript" class="repl-node" id="repl-javascript">JavaScript</a>
                             </select>
 
                         </div>
@@ -860,9 +861,24 @@
         import { default_code } from './Prewritten/Default.js';
         import {DescBox, select_all, highlight_all_tokens} from './EditorUtils/Utils.js';
         import { tokenize, tokenize_line, Tokens } from "./Frontend/Lexer.js";
-        let selectedTab = "none";
-        
 
+        let const_default = '';
+
+        fetch('/Prewritten/Default.txt')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.text(); // Use .json() if it's JSON
+            })
+            .then(data => {
+                const_default = data;
+            })
+            .catch(error => {
+                console.error("Error fetching file:", error);
+            });
+
+        let selectedTab = "none";
 
         let repl_request = "program";
 
@@ -2096,19 +2112,12 @@
 
                         }
 
-
-                        localStorage.setItem('Saved', default_code); // Store the solution in localStorage
-
                         if(selectedTab.endsWith('.pseudo')){
 
+                            editor.setValue(const_default);
+                            localStorage.setItem('Saved', default_code);
 
-
-                            editor.setValue(default_code);
                         }
-
-                        
-
-                        
                     }
                 }
 
@@ -2342,9 +2351,9 @@
                     outLog.textContent = "";
 
 
-                    
+                    const languages = ["python", "javascript", "java", "vbnet"];
 
-                    if(repl_request == "python"){
+                    if(languages.includes(repl_request) && result){
                         let adapted = "";
 
                         for(const log of result){
@@ -2360,7 +2369,7 @@
 
                         outLog.textContent = adapted;
                     }
-                    else if(errorLog.length > 0 && repl_request != "python"){
+                    else if(errorLog.length > 0 && !languages.includes(repl_request)){
                         
 
                         
@@ -2835,6 +2844,38 @@
             }
         }
 
+        async function saveJSFile(defaultName, contents) {
+            // Prompt user for a file handle
+
+
+
+            const opts = {
+                suggestedName: defaultName,
+
+
+
+                types: [
+                    {
+                        description: 'JavaScript Files',
+                        accept: {'text/javascript': ['.js']},
+                    },
+                ],
+            };
+
+            try {
+
+                const fileHandle = await (window).showSaveFilePicker(opts);
+                const writable = await fileHandle.createWritable();
+                
+                await writable.write(contents);
+                await writable.close();
+
+
+            } catch (err) {
+                console.error('File save cancelled or failed:', err);
+            }
+        }
+
 
         function removeSuffix(str, suffix) {
             if (str.endsWith(suffix)) {
@@ -2864,24 +2905,14 @@
 
                 switch(repl_request){
 
-
-                    case "python":
-
-                        if(localStorage.getItem("dpf") === "true"){
-
-                            savePyFile(fn, toCopy);
-                        
-
-                        }
-                        else{
-
-                            saveTextFile(fn, toCopy);
-
-                        }
-
+                    case "javascript":
+                        if(localStorage.getItem("dpf") === "true") saveJSFile(fn, toCopy);
+                        else saveTextFile(fn, toCopy);
                         break;
-
-                        
+                    case "python":
+                        if(localStorage.getItem("dpf") === "true") savePyFile(fn, toCopy);
+                        else saveTextFile(fn, toCopy);
+                        break;
                     default:
                         saveTextFile(fn, toCopy);
                         break;
@@ -5445,7 +5476,10 @@
 
         document.getElementById('js-btn').addEventListener("click", () => {
 
-            alert("Javascript translator coming soon!");
+            alert("Console will now output JavaScript translation");
+            document.getElementById('repl-nodes').value = "javascript";
+            repl_request = "javascript";
+            localStorage.setItem('output-mode', 'javascript');
 
         });
 

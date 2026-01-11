@@ -36,6 +36,7 @@ export type NodeType =
   | "EndClosureExpr"
   | "FileNameExpr"
   | "CommentExpr"
+  | "DefaultCase"
   | "InputExpr";
 
 /**
@@ -92,7 +93,7 @@ export interface Expr extends Stmt {
 
 
 
-export interface inputExpr extends Expr {
+export interface InputExpr extends Expr {
   kind: "InputExpr",
   assigne: Expr[],
   promptMessage: Expr[],
@@ -106,6 +107,12 @@ export interface FileNameExpr extends Expr {
   value: string,
   comment?:string,
   ln: number,
+
+}
+
+export interface DefaultCase extends Expr {
+
+  kind: "DefaultCase",
 
 }
 
