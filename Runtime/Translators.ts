@@ -2451,7 +2451,9 @@ export class JST {
 
   private async trans_obj_literal(expr : NewObjectLiteralExpr) : Promise<string> {
 
-    if(expr.exprs && !expr.start && !expr.end) return `[${await this.conc('', expr.exprs)}]`;
+    console.log(expr);
+
+    if(expr.exprs && expr.exprs.length > 0) return `[${await this.conc('', expr.exprs)}]`;
 
 
 
