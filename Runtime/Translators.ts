@@ -24,6 +24,7 @@ import {
   NewMemberExpr,
   FileNameExpr,
   CommentExpr,
+  DefaultCase,
 
 
 } from "../Frontend/AST.js";
@@ -2199,6 +2200,14 @@ export class PyT {
 
 }
 
+interface TernaryExpr {
+
+  assigne : Expr,
+  conditions : Expr[],
+  default: Expr[],
+
+}
+
 export class JST {
 
   private var_map = new Map<string, [dataType, Expr]>();
@@ -2209,6 +2218,25 @@ export class JST {
 
     "readline-sync" : 'rl',
     "fs" : "fs",
+
+  }
+
+  private async trans_ternary_expr(tab : string, expr : TernaryExpr) : Promise<string> {
+
+    let out = tab + `${await this.translate('', expr.assigne)} = `;
+
+    const stringConds : string[] = [];
+
+    for(const cond of expr.conditions){
+
+      stringConds.push(await this.translate('', cond));
+
+    }
+
+    out += stringConds.join(' ? ') + ' : ' + await this.conc(expr.default);
+
+    return out;
+
 
   }
   
@@ -2235,7 +2263,7 @@ export class JST {
 
   }
   
-  public async translate(tab : string, stmt : Stmt) : Promise<string> {
+  public async translate(tab : string, stmt : Stmt, ixOvwrt = false) : Promise<string> {
 
     switch(stmt.kind){
 
@@ -2267,10 +2295,10 @@ export class JST {
         return await this.trans_var_decl(tab, stmt as VarDeclaration);
 
       case "BinaryExpr":
-        return await this.trans_binary_expr(tab, stmt as BinaryExpr);
+        return await this.trans_binary_expr('', stmt as BinaryExpr);
 
       case "UnaryExpr":
-        return await this.trans_unary_expr(tab, stmt as UnaryExpr);
+        return await this.trans_unary_expr('', stmt as UnaryExpr);
 
       case "AssignmentExpr":
         return await this.trans_assignment_expr(tab, stmt as AssignmentExpr);
@@ -2285,7 +2313,7 @@ export class JST {
         return await this.trans_call_expr(tab, stmt as CallExpr);
 
       case "MemberExpr":
-        return await this.trans_member_expr(stmt as NewMemberExpr);
+        return await this.trans_member_expr(stmt as NewMemberExpr, ixOvwrt);
 
       case "ReturnStmt":
         return await this.trans_return_stmt(tab, stmt as ReturnStmt);
@@ -2317,24 +2345,24 @@ export class JST {
       
   }
 
-  private async trans_member_expr(expr : NewMemberExpr) : Promise<string> {
+  private async trans_member_expr(expr : NewMemberExpr, ixOvwrt = false) : Promise<string> {
 
-      let out = await this.translate('', expr.object);
+    let out = await this.translate('', expr.object);
 
-      for(let i = 0; i < expr.indexes.length; i++){
+    for(let i = 0; i < expr.indexes.length; i++){
 
-          const start = await this.translate('', (this.var_map.get((expr.object as Identifier).symbol)[1] as NewObjectLiteralExpr).indexPairs.get(i + 1)[0]);
-          const raw = await this.translate('',expr.indexes[i]);
+      const start = (this.var_map.get((expr.object as Identifier).symbol)[1] as NewObjectLiteralExpr).indexPairs
+      ? await this.translate('', (this.var_map.get((expr.object as Identifier).symbol)[1] as NewObjectLiteralExpr).indexPairs.get(i + 1)[0])
+      : '1';
 
-          const ix = start == '0' ? raw : this.eval_safe([raw, `-${start}`]);
+      const raw = await this.translate('',expr.indexes[i]);
 
-          out += `[${ix}]`;
+      const ix = start == '0' ? raw : this.eval_safe([raw, `-${start}`]);
 
-      }
+      out += `[${ix}]`;
+    }
 
-      
-
-      return out;
+    return out;
 
   }
 
@@ -2354,7 +2382,8 @@ export class JST {
             return `${await this.translate('', call.args[0])}.toUpperCase()`;
 
         case "LENGTH":
-            return `${await this.translate('', call.args[0])}.length`;
+
+          return `${await this.translate('', call.args[0])}.length`.trim();
 
         case "RANDOM":
 
@@ -2389,7 +2418,7 @@ export class JST {
 
             if(await this.translate('', call.args[1]) == '0'){
 
-                return `Math.round(${await this.translate('', call.args[0])})`;
+              return `Math.round(${await this.translate('', call.args[0])})`;
 
             }
 
@@ -2427,12 +2456,22 @@ export class JST {
     const nums = args.filter(arg => !Number.isNaN(Number(arg))).map(Number);
 
     let sum = nums.reduce((a, n) => a + n).toString();
-    if(sum.startsWith('-')) sum = ' - ' + sum;
+    if(sum.startsWith('-')) sum = ' - ' + sum.slice(1);
     else sum = ' + ' + sum;
     
     const e = exprs.join(' ');
 
     let out = '';
+
+
+    if(sum.trim() == '0' || sum.trim() == '+ 0' || sum.trim() == '- 0'){ 
+      let out_e = e.trim();
+
+      if(out_e.startsWith('+') || out_e.startsWith('-')) out_e = out_e.slice(1).trim();
+
+      return out_e;
+
+    }
 
     if(e.startsWith('-') && !sum.trim().startsWith('-')) out = ((sum.trim().startsWith('+') ? sum.slice(1).trim() + ' ' : sum.trim() + ' ') + e).trim();
     else out = (e + sum).trim();
@@ -2451,9 +2490,9 @@ export class JST {
 
   private async trans_obj_literal(expr : NewObjectLiteralExpr) : Promise<string> {
 
-    console.log(expr);
+    const empty_array = (expr.start.kind == "NumericLiteral" && (expr.start as NumericLiteral).value == 1) && (expr.end.kind == "NumericLiteral" && (expr.end as NumericLiteral).value == 1) && expr.exprs.length == 0;
 
-    if(expr.exprs && expr.exprs.length > 0) return `[${await this.conc('', expr.exprs)}]`;
+    if(empty_array || expr.exprs && expr.exprs.length > 0) return `[${await this.conc(expr.exprs)}]`;
 
 
 
@@ -2489,6 +2528,9 @@ export class JST {
 
     let out = filler;
 
+
+    
+
     for(let i = dims.length - 1; i >= 0; i--){
 
 
@@ -2497,8 +2539,9 @@ export class JST {
 
       let range = lb == '0' ? ub : this.eval_safe([ub, `-${lb}`, '1']);
 
+      if(dims.length == 1) return `Array(${range}).fill(${out})`;
 
-      out = `Array(${range}).fill(${out})`;
+      out = `Array({length: ${range}}, () => ${out})`;
 
 
     }
@@ -2508,15 +2551,15 @@ export class JST {
   }
 
   
-  private async conc(tab : string, exprs : Expr[]) : Promise<string> {
+  private async conc(exprs : Expr[], m : ',' | ' +' = ',') : Promise<string> {
 
     const translated_exprs = [];
 
     for(const e of exprs){
-      translated_exprs.push(await this.translate(tab, e));
+      translated_exprs.push(await this.translate('', e));
     }
 
-    const out = translated_exprs.join(', ');
+    const out = translated_exprs.join(`${m} `);
     
     return out;
 
@@ -2525,12 +2568,11 @@ export class JST {
   
   private async trans_var_decl(tab : string, decl : VarDeclaration) : Promise<string> {
 
-
-    let out = tab + (decl.constant ? 'const ' : 'let ');
+    let out = tab + ((decl.constant)  ? 'const ' : 'let ');
 
     out += decl.identifier.join(', ')
     
-    if(decl.value)  out += ' = ' + await this.conc(tab, decl.value);
+    if(decl.value)  out += ' = ' + await this.conc(decl.value);
 
     if(out.endsWith('\n')) out = out.slice(0,-1);
     out += ';';
@@ -2547,19 +2589,36 @@ export class JST {
   
   private async trans_assignment_expr(tab : string, expr : AssignmentExpr) : Promise<string> {
 
-      let out = tab + await this.translate('', expr.assigne) + ' = ' + await this.conc(tab, expr.value) + ';';
+    if(expr.value.length == 1 && expr.value[0].kind == "BinaryExpr" 
+      && JSON.stringify((expr.value[0] as BinaryExpr).left) === JSON.stringify(expr.assigne)){
+
+      const lhs = await this.translate('', expr.assigne);
+      const op = ' ' + this.trans_op((expr.value[0] as BinaryExpr).operator) + '= ';
+      const rhs = await this.translate('', (expr.value[0] as BinaryExpr).right);
+
+      if(rhs.trim() == '1' && op.trim() == '+=') return this.add_comment(tab + lhs + '++', expr.comment)
+      else if(rhs.trim() == '1' && op.trim() == '-=') return this.add_comment(tab + lhs + '--', expr.comment);
+
+
+      let out = tab + lhs + op + rhs;
 
       return this.add_comment(out, expr.comment);
 
+    }
+    else{
 
+      let out = tab + await this.translate('', expr.assigne) + ' = ' + await this.conc(expr.value, ' +') + ';';
+
+      return this.add_comment(out, expr.comment);
+    }
   }
 
   
   private async trans_output_expr(tab : string, expr : OutputExpr) : Promise<string> {
 
-      let out = tab + 'console.log(' + await this.conc(tab, expr.value) + ');';
+    let out = tab + 'console.log(' + await this.conc(expr.value) + ');';
 
-      return this.add_comment(out, expr.comment);
+    return this.add_comment(out, expr.comment);
 
   }
 
@@ -2595,60 +2654,60 @@ export class JST {
 
     switch(expr.kind){
 
-        case "NumericLiteral":
-            return (expr as NumericLiteral).numberKind;
+      case "NumericLiteral":
+          return (expr as NumericLiteral).numberKind;
 
-        case "StringLiteral":
-            return Tokens.String;
+      case "StringLiteral":
+          return Tokens.String;
 
-        case "CharString":
-            return Tokens.Char;
+      case "CharString":
+          return Tokens.Char;
 
-        case "Identifier":
+      case "Identifier":
 
-            const name = (expr as Identifier).symbol;
+          const name = (expr as Identifier).symbol;
 
-            if(name == "TRUE" || name == "FALSE") return Tokens.Boolean;
+          if(name == "TRUE" || name == "FALSE") return Tokens.Boolean;
 
-            return this.var_map.get(name)[0];
+          return this.var_map.get(name)[0];
 
-        case "ObjectLiteral":
-            return (expr as NewObjectLiteralExpr).dataType as dataType;
+      case "ObjectLiteral":
+          return (expr as NewObjectLiteralExpr).dataType as dataType;
 
-        case "CallExpr":
-            const call = expr as CallExpr;
+      case "CallExpr":
+          const call = expr as CallExpr;
 
-            const call_name = (call.callee as Identifier).symbol.toUpperCase();
+          const call_name = (call.callee as Identifier).symbol.toUpperCase();
 
-            switch(call_name){
-                case "LCASE":
-                    return Tokens.String;
-                case "UCASE":
-                    return Tokens.String;
-                case "LENGTH":
-                    return Tokens.Integer;
-                case "RANDOM":
-                    return call.args.length == 2 ? Tokens.Integer : Tokens.Real;
-                case "STR_TO_NUM":
-                    return Tokens.Real;
-                case "NUM_TO_STR":
-                    return Tokens.String;
-                case "SUBSTRING":
-                    return Tokens.String;
-                case "ROUND":
-                    return Tokens.Real;
-                case "DIV":
-                    return Tokens.Integer;
-                case "MOD":
-                    return Tokens.Integer;
-                case "EOF":
-                    return Tokens.Boolean;
-                default:
-                    return this.var_map.get((call.callee as Identifier).symbol)[0];
-            }
-        
-        default:
-            return Tokens.Any;
+          switch(call_name){
+            case "LCASE":
+              return Tokens.String;
+            case "UCASE":
+              return Tokens.String;
+            case "LENGTH":
+              return Tokens.Integer;
+            case "RANDOM":
+              return call.args.length == 2 ? Tokens.Integer : Tokens.Real;
+            case "STR_TO_NUM":
+              return Tokens.Real;
+            case "NUM_TO_STR":
+              return Tokens.String;
+            case "SUBSTRING":
+              return Tokens.String;
+            case "ROUND":
+              return Tokens.Real;
+            case "DIV":
+              return Tokens.Integer;
+            case "MOD":
+              return Tokens.Integer;
+            case "EOF":
+              return Tokens.Boolean;
+            default:
+              return this.var_map.get((call.callee as Identifier).symbol)[0];
+          }
+      
+      default:
+          return Tokens.Any;
     }
   }
 
@@ -2657,11 +2716,11 @@ export class JST {
 
     this.imports.add('readline-sync');
 
-    let out = tab + `${await this.translate('', expr.assigne[0])} = rl.question(${await this.conc('', expr.promptMessage)});`;
+    let out = tab + `${await this.translate('', expr.assigne[0])} = rl.question(${await this.conc(expr.promptMessage)});`;
 
     if(this.resolve_data_type(expr.assigne[0]) != Tokens.String && this.resolve_data_type(expr.assigne[0]) != Tokens.Char && this.type_to_caster(this.resolve_data_type(expr.assigne[0])) != ''){
 
-      out = tab + `${await this.translate('', expr.assigne[0])} = ${this.type_to_caster(this.resolve_data_type(expr.assigne[0]))}(rl.question(${await this.conc('', expr.promptMessage)}));`;
+      out = tab + `${await this.translate('', expr.assigne[0])} = ${this.type_to_caster(this.resolve_data_type(expr.assigne[0]))}(rl.question(${await this.conc(expr.promptMessage)}));`;
 
 
     }
@@ -2677,7 +2736,7 @@ export class JST {
     const name = (expr.callee as Identifier).symbol.toUpperCase();
     
     
-    const e = natives.includes(name) ? await this.trans_native_fn(expr) : (expr.callee as Identifier).symbol + '(' + await this.conc(tab, expr.args) + ')';
+    const e = natives.includes(name) ? await this.trans_native_fn(expr) : (expr.callee as Identifier).symbol + '(' + await this.conc(expr.args) + ')';
     let out = tab + e;
 
     if(expr.wasCallKeywordUsed){ 
@@ -2713,7 +2772,7 @@ export class JST {
 
   private async trans_return_stmt(tab : string, stmt : ReturnStmt) : Promise<string> {
 
-      let out = tab + 'return ' + await this.conc(tab, stmt.value) + ';';
+      let out = tab + 'return ' + await this.conc(stmt.value) + ';';
 
 
       return this.add_comment(out, stmt.comment);
@@ -2727,60 +2786,66 @@ export class JST {
     switch(stmt.iterationKind){
 
       case "count-controlled":
-          let step = '';
+        let step = '';
 
-          if(stmt.step){
+        if(stmt.step){
 
-            const str = (await this.translate(tab, stmt.step)).trim();
+          const str = (await this.translate(tab, stmt.step)).trim();
 
-            if(str == '-1') step = '--';
-            else if(str.startsWith('-')) step = `-= ${str.slice(1)}`;
-            else if(str == '1') step = '++';
-            else step = `+= ${str}`;
+          if(str == '-1') step = '--';
+          else if(str.startsWith('-')) step = `-= ${str.slice(1)}`;
+          else if(str == '1') step = '++';
+          else step = `+= ${str}`;
 
-          }
-          else step = '++';
+        }
+        else step = '++';
 
-          let op = step.startsWith('-') ? '>=' : '<=';
+        let op = step.startsWith('-') ? '>=' : '<=';
 
-          const i = (stmt.iterator as Identifier).symbol;
-          out = tab + this.add_comment(`for(let ${i} = ${await this.translate(tab, stmt.startVal)}; ${i} ${op} ${await this.translate(tab, stmt.endVal)}; ${i}${step}) {`, stmt.header_comment);
-          
-          for(const s of stmt.body){
+        const i = (stmt.iterator as Identifier).symbol;
+        out = tab + this.add_comment(`for(let ${i} = ${await this.translate('', stmt.startVal)}; ${i} ${op} ${await this.translate('', stmt.endVal)}; ${i}${step}) {`, stmt.header_comment);
+        
+        for(const s of stmt.body){
 
-              if(s.kind != "EndClosureExpr") out += await this.translate(tab + '    ', s);
+          if(s.kind != "EndClosureExpr") out += await this.translate(tab + '    ', s);
 
-          }
+        }
 
-          out += tab + this.add_comment('}', stmt.footer_comment);
+        if(stmt.body.filter(s => s.kind != "EndClosureExpr").length == 1 && (!stmt.footer_comment || stmt.footer_comment.trim() == '')){ 
+          return tab + this.add_comment(`for(let ${i} = ${await this.translate('', stmt.startVal)}; ${i} ${op} ${await this.translate('', stmt.endVal)}; ${i}${step}) ${await this.translate('', stmt.body[0])}`, stmt.header_comment);
+        }
 
-          return out;
+        out += tab + this.add_comment('}', stmt.footer_comment);
+
+        return out;
 
       case "pre-condition":
-          out = tab + this.add_comment(`while(${await this.translate(tab, stmt.iterationCondition)}) {`, stmt.header_comment);
+        out = tab + this.add_comment(`while(${await this.translate(tab, stmt.iterationCondition)}) {`, stmt.header_comment);
 
-          for(const s of stmt.body){
+        if((!stmt.footer_comment || stmt.footer_comment.trim() == '') && stmt.body.filter(s => s.kind != "EndClosureExpr").length == 1) return this.add_comment(`while(${await this.translate(tab, stmt.iterationCondition)}) ${await this.translate('', stmt.body[0])}`, stmt.header_comment)
 
-              if(s.kind != "EndClosureExpr") out += await this.translate(tab + '    ', s);
+        for(const s of stmt.body){
 
-          }
+          if(s.kind != "EndClosureExpr") out += await this.translate(tab + '    ', s);
 
-          out += tab + this.add_comment('}', stmt.footer_comment);
+        }
 
-          return out;
+        out += tab + this.add_comment('}', stmt.footer_comment);
+
+        return out;
 
       case "post-condition":
-          out = tab + this.add_comment('do {', stmt.header_comment);
+        out = tab + this.add_comment('do {', stmt.header_comment);
 
-          for(const s of stmt.body){
+        for(const s of stmt.body){
 
-              if(s.kind != "EndClosureExpr") out += await this.translate(tab + '    ', s);
+          if(s.kind != "EndClosureExpr") out += await this.translate(tab + '    ', s);
 
-          }
+        }
 
-          out += tab + this.add_comment(`} while(${await this.translate(tab, stmt.iterationCondition)});`, stmt.footer_comment);
+        out += tab + this.add_comment(`} while(${await this.translate(tab, stmt.iterationCondition)});`, stmt.footer_comment);
 
-          return out;
+        return out;
 
       default:
         return '';
@@ -2813,15 +2878,13 @@ export class JST {
         }
         else{
 
-          let return_used = false;
+          const return_used = stmt.body.get(cond)[1].map(stmt => stmt.kind).includes("ReturnStmt");
 
           const case_val = (await this.translate('', (cond as BinaryExpr).right)).trim();
           out += tab + '    ' + this.add_comment(`case ${case_val}:`, stmt.body.get(cond)[0]);
           for(const s of stmt.body.get(cond)[1]){
 
-              if(s.kind == "ReturnStmt") return_used = true;
-
-              out += await this.translate(tab + '        ', s);
+            out += await this.translate(tab + '        ', s);
 
           }
           if(!return_used) out += tab + '        ' + 'break;\n';
@@ -2845,23 +2908,23 @@ export class JST {
         const cond = conds[i];
 
         if(i == 0){
-          out += tab + '    ' + this.add_comment(`if(${await this.translate(tab, cond)}) {`, stmt.body.get(cond)[0]);
+          out += tab + this.add_comment(`if(${await this.translate(tab, cond)}) {`, stmt.body.get(cond)[0]);
         }
         else if(cond.kind == "DefaultCase"){
-          out += tab + '    ' + this.add_comment(`else {`, stmt.body.get(cond)[0]);
+          out += tab + this.add_comment(`else {`, stmt.body.get(cond)[0]);
         }
         else{
-          out += tab + '    ' + this.add_comment(`else if(${await this.translate(tab, cond)}) {`, stmt.body.get(cond)[0]);
+          out += tab + this.add_comment(`else if(${await this.translate(tab, cond)}) {`, stmt.body.get(cond)[0]);
         }
 
         for(const s of stmt.body.get(cond)[1]){
 
-            out += await this.translate(tab + '        ', s);
+          out += await this.translate(tab + '  ', s);
         }
 
-          out += tab + '    }';
+          out += tab + '}';
 
-          if(i != conds.length - 1) out += '\n';
+        if(i != conds.length - 1) out += '\n';
 
       }
 
@@ -2871,23 +2934,63 @@ export class JST {
 
   private async trans_fn_declaration(tab : string, decl : FunctionDeclaration) : Promise<string> {
 
-      this.var_map.set(decl.name, [this.resolve_data_type(decl.returns), decl]);
+    this.var_map.set(decl.name, [this.resolve_data_type(decl.returns), decl]);
 
-      let out = tab + `function ${decl.name}(`;
+    let out = tab + `function ${decl.name}(`;
 
-      out += decl.parameters ? [...decl.parameters.keys()].join(', ') : '';
+    out += decl.parameters ? [...decl.parameters.keys()].join(', ') : '';
 
-      out += this.add_comment(') {', decl.header_comment);
+    for(const param of [...decl.parameters.keys()]){
 
-      for(const stmt of decl.body){
+      const expr = decl.parameters.get(param);
 
-          out += await this.translate(tab + '    ', stmt);   
+      let dataType : dataType;
+
+      switch(expr.kind){
+
+        case "ObjectLiteral":
+          dataType = (expr as NewObjectLiteralExpr).dataType as dataType;
+          break;
+
+        case "StringLiteral":
+          dataType = Tokens.String;
+          break;
+
+        case "CharString":
+          dataType = Tokens.Char;
+          break;
+
+        case "NumericLiteral":
+          dataType = (expr as NumericLiteral).numberKind;
+          break;
+
+        case "Identifier":
+          dataType = Tokens.Boolean;
+          break;
+
+        default:
+          dataType = Tokens.Null;
 
       }
 
-      out += tab + this.add_comment('}', decl.footer_comment);
+      this.var_map.set(param, [dataType, expr]);
 
-      return out;
+    }
+
+
+    out += this.add_comment(') {', decl.header_comment);
+
+    for(const stmt of decl.body){
+
+      out += await this.translate(tab + '    ', stmt, true);   
+
+    }
+
+    out += tab + this.add_comment('}', decl.footer_comment);
+
+    for(const param of [...decl.parameters.keys()]) this.var_map.delete(param);
+
+    return out;
 
 
   }
@@ -2987,7 +3090,7 @@ export class JST {
     }
     else {
 
-      out = tab + `fs.writeFileSync("${expr.fileName}", ${await this.conc('', expr.assigne)} + '\\n');`;
+      out = tab + `fs.writeFileSync("${expr.fileName}", ${await this.conc(expr.assigne)} + '\\n');`;
 
     }
 
@@ -2998,7 +3101,7 @@ export class JST {
 
   private add_comment(raw : string, comment : string) : string {
 
-    return comment && comment.trim() !== '' ? `${raw} //${comment}\n` : raw + '\n';
+    return comment && comment.trim() !== ''  && comment.trim() !== '\n' && comment.trim() !== '\t' ? `${raw} //${comment}\n` : raw + '\n';
 
   }
 } 

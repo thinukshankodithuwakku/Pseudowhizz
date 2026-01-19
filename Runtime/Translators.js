@@ -1167,6 +1167,15 @@ export class JST {
             "fs": "fs",
         };
     }
+    async trans_ternary_expr(tab, expr) {
+        let out = tab + `${await this.translate('', expr.assigne)} = `;
+        const stringConds = [];
+        for (const cond of expr.conditions) {
+            stringConds.push(await this.translate('', cond));
+        }
+        out += stringConds.join(' ? ') + ' : ' + await this.conc(expr.default);
+        return out;
+    }
     async produce_JS_program(p) {
         let program = '';
         if (errorLog.length > 0 || p.body.filter(stmt => stmt.kind == "ErrorExpr").length > 0)
@@ -1180,7 +1189,7 @@ export class JST {
         program = "// ## JavaScript representation result ##\n\n// IMPORTANT! Always manually review translated scripts before excecution\n\n" + program;
         return program;
     }
-    async translate(tab, stmt) {
+    async translate(tab, stmt, ixOvwrt = false) {
         switch (stmt.kind) {
             case "Program":
                 return await this.produce_JS_program(stmt);
@@ -1202,9 +1211,9 @@ export class JST {
             case "VarDeclaration":
                 return await this.trans_var_decl(tab, stmt);
             case "BinaryExpr":
-                return await this.trans_binary_expr(tab, stmt);
+                return await this.trans_binary_expr('', stmt);
             case "UnaryExpr":
-                return await this.trans_unary_expr(tab, stmt);
+                return await this.trans_unary_expr('', stmt);
             case "AssignmentExpr":
                 return await this.trans_assignment_expr(tab, stmt);
             case "OutputExpr":
@@ -1214,7 +1223,7 @@ export class JST {
             case "CallExpr":
                 return await this.trans_call_expr(tab, stmt);
             case "MemberExpr":
-                return await this.trans_member_expr(stmt);
+                return await this.trans_member_expr(stmt, ixOvwrt);
             case "ReturnStmt":
                 return await this.trans_return_stmt(tab, stmt);
             case "IterationStmt":
@@ -1235,10 +1244,12 @@ export class JST {
                 return '';
         }
     }
-    async trans_member_expr(expr) {
+    async trans_member_expr(expr, ixOvwrt = false) {
         let out = await this.translate('', expr.object);
         for (let i = 0; i < expr.indexes.length; i++) {
-            const start = await this.translate('', this.var_map.get(expr.object.symbol)[1].indexPairs.get(i + 1)[0]);
+            const start = this.var_map.get(expr.object.symbol)[1].indexPairs
+                ? await this.translate('', this.var_map.get(expr.object.symbol)[1].indexPairs.get(i + 1)[0])
+                : '1';
             const raw = await this.translate('', expr.indexes[i]);
             const ix = start == '0' ? raw : this.eval_safe([raw, `-${start}`]);
             out += `[${ix}]`;
@@ -1253,7 +1264,7 @@ export class JST {
             case "UCASE":
                 return `${await this.translate('', call.args[0])}.toUpperCase()`;
             case "LENGTH":
-                return `${await this.translate('', call.args[0])}.length`;
+                return `${await this.translate('', call.args[0])}.length`.trim();
             case "RANDOM":
                 if (call.args.length == 2 && call.args[0] && call.args[1]) {
                     const min = await this.translate('', call.args[0]);
@@ -1296,11 +1307,17 @@ export class JST {
         const nums = args.filter(arg => !Number.isNaN(Number(arg))).map(Number);
         let sum = nums.reduce((a, n) => a + n).toString();
         if (sum.startsWith('-'))
-            sum = ' - ' + sum;
+            sum = ' - ' + sum.slice(1);
         else
             sum = ' + ' + sum;
         const e = exprs.join(' ');
         let out = '';
+        if (sum.trim() == '0' || sum.trim() == '+ 0' || sum.trim() == '- 0') {
+            let out_e = e.trim();
+            if (out_e.startsWith('+') || out_e.startsWith('-'))
+                out_e = out_e.slice(1).trim();
+            return out_e;
+        }
         if (e.startsWith('-') && !sum.trim().startsWith('-'))
             out = ((sum.trim().startsWith('+') ? sum.slice(1).trim() + ' ' : sum.trim() + ' ') + e).trim();
         else
@@ -1310,8 +1327,9 @@ export class JST {
         return out;
     }
     async trans_obj_literal(expr) {
-        if (expr.exprs && !expr.start && !expr.end)
-            return `[${await this.conc('', expr.exprs)}]`;
+        const empty_array = (expr.start.kind == "NumericLiteral" && expr.start.value == 1) && (expr.end.kind == "NumericLiteral" && expr.end.value == 1) && expr.exprs.length == 0;
+        if (empty_array || expr.exprs && expr.exprs.length > 0)
+            return `[${await this.conc(expr.exprs)}]`;
         let filler = '';
         switch (expr.dataType) {
             case Tokens.Integer:
@@ -1338,23 +1356,25 @@ export class JST {
             const ub = await this.translate('', expr.indexPairs.get(dims[i])[1]);
             const lb = await this.translate('', expr.indexPairs.get(dims[i])[0]);
             let range = lb == '0' ? ub : this.eval_safe([ub, `-${lb}`, '1']);
-            out = `Array(${range}).fill(${out})`;
+            if (dims.length == 1)
+                return `Array(${range}).fill(${out})`;
+            out = `Array({length: ${range}}, () => ${out})`;
         }
         return out;
     }
-    async conc(tab, exprs) {
+    async conc(exprs, m = ',') {
         const translated_exprs = [];
         for (const e of exprs) {
-            translated_exprs.push(await this.translate(tab, e));
+            translated_exprs.push(await this.translate('', e));
         }
-        const out = translated_exprs.join(', ');
+        const out = translated_exprs.join(`${m} `);
         return out;
     }
     async trans_var_decl(tab, decl) {
-        let out = tab + (decl.constant ? 'const ' : 'let ');
+        let out = tab + ((decl.constant) ? 'const ' : 'let ');
         out += decl.identifier.join(', ');
         if (decl.value)
-            out += ' = ' + await this.conc(tab, decl.value);
+            out += ' = ' + await this.conc(decl.value);
         if (out.endsWith('\n'))
             out = out.slice(0, -1);
         out += ';';
@@ -1362,11 +1382,25 @@ export class JST {
         return this.add_comment(out, decl.comment);
     }
     async trans_assignment_expr(tab, expr) {
-        let out = tab + await this.translate('', expr.assigne) + ' = ' + await this.conc(tab, expr.value) + ';';
-        return this.add_comment(out, expr.comment);
+        if (expr.value.length == 1 && expr.value[0].kind == "BinaryExpr"
+            && JSON.stringify(expr.value[0].left) === JSON.stringify(expr.assigne)) {
+            const lhs = await this.translate('', expr.assigne);
+            const op = ' ' + this.trans_op(expr.value[0].operator) + '= ';
+            const rhs = await this.translate('', expr.value[0].right);
+            if (rhs.trim() == '1' && op.trim() == '+=')
+                return this.add_comment(tab + lhs + '++', expr.comment);
+            else if (rhs.trim() == '1' && op.trim() == '-=')
+                return this.add_comment(tab + lhs + '--', expr.comment);
+            let out = tab + lhs + op + rhs;
+            return this.add_comment(out, expr.comment);
+        }
+        else {
+            let out = tab + await this.translate('', expr.assigne) + ' = ' + await this.conc(expr.value, ' +') + ';';
+            return this.add_comment(out, expr.comment);
+        }
     }
     async trans_output_expr(tab, expr) {
-        let out = tab + 'console.log(' + await this.conc(tab, expr.value) + ');';
+        let out = tab + 'console.log(' + await this.conc(expr.value) + ');';
         return this.add_comment(out, expr.comment);
     }
     type_to_caster(tk) {
@@ -1435,15 +1469,15 @@ export class JST {
     }
     async trans_input_expr(tab, expr) {
         this.imports.add('readline-sync');
-        let out = tab + `${await this.translate('', expr.assigne[0])} = rl.question(${await this.conc('', expr.promptMessage)});`;
+        let out = tab + `${await this.translate('', expr.assigne[0])} = rl.question(${await this.conc(expr.promptMessage)});`;
         if (this.resolve_data_type(expr.assigne[0]) != Tokens.String && this.resolve_data_type(expr.assigne[0]) != Tokens.Char && this.type_to_caster(this.resolve_data_type(expr.assigne[0])) != '') {
-            out = tab + `${await this.translate('', expr.assigne[0])} = ${this.type_to_caster(this.resolve_data_type(expr.assigne[0]))}(rl.question(${await this.conc('', expr.promptMessage)}));`;
+            out = tab + `${await this.translate('', expr.assigne[0])} = ${this.type_to_caster(this.resolve_data_type(expr.assigne[0]))}(rl.question(${await this.conc(expr.promptMessage)}));`;
         }
         return this.add_comment(out, expr.comment);
     }
     async trans_call_expr(tab, expr) {
         const name = expr.callee.symbol.toUpperCase();
-        const e = natives.includes(name) ? await this.trans_native_fn(expr) : expr.callee.symbol + '(' + await this.conc(tab, expr.args) + ')';
+        const e = natives.includes(name) ? await this.trans_native_fn(expr) : expr.callee.symbol + '(' + await this.conc(expr.args) + ')';
         let out = tab + e;
         if (expr.wasCallKeywordUsed) {
             out + ';';
@@ -1467,7 +1501,7 @@ export class JST {
         return raw;
     }
     async trans_return_stmt(tab, stmt) {
-        let out = tab + 'return ' + await this.conc(tab, stmt.value) + ';';
+        let out = tab + 'return ' + await this.conc(stmt.value) + ';';
         return this.add_comment(out, stmt.comment);
     }
     async trans_iter_stmt(tab, stmt) {
@@ -1490,15 +1524,20 @@ export class JST {
                     step = '++';
                 let op = step.startsWith('-') ? '>=' : '<=';
                 const i = stmt.iterator.symbol;
-                out = tab + this.add_comment(`for(let ${i} = ${await this.translate(tab, stmt.startVal)}; ${i} ${op} ${await this.translate(tab, stmt.endVal)}; ${i}${step}) {`, stmt.header_comment);
+                out = tab + this.add_comment(`for(let ${i} = ${await this.translate('', stmt.startVal)}; ${i} ${op} ${await this.translate('', stmt.endVal)}; ${i}${step}) {`, stmt.header_comment);
                 for (const s of stmt.body) {
                     if (s.kind != "EndClosureExpr")
                         out += await this.translate(tab + '    ', s);
+                }
+                if (stmt.body.filter(s => s.kind != "EndClosureExpr").length == 1 && (!stmt.footer_comment || stmt.footer_comment.trim() == '')) {
+                    return tab + this.add_comment(`for(let ${i} = ${await this.translate('', stmt.startVal)}; ${i} ${op} ${await this.translate('', stmt.endVal)}; ${i}${step}) ${await this.translate('', stmt.body[0])}`, stmt.header_comment);
                 }
                 out += tab + this.add_comment('}', stmt.footer_comment);
                 return out;
             case "pre-condition":
                 out = tab + this.add_comment(`while(${await this.translate(tab, stmt.iterationCondition)}) {`, stmt.header_comment);
+                if ((!stmt.footer_comment || stmt.footer_comment.trim() == '') && stmt.body.filter(s => s.kind != "EndClosureExpr").length == 1)
+                    return this.add_comment(`while(${await this.translate(tab, stmt.iterationCondition)}) ${await this.translate('', stmt.body[0])}`, stmt.header_comment);
                 for (const s of stmt.body) {
                     if (s.kind != "EndClosureExpr")
                         out += await this.translate(tab + '    ', s);
@@ -1530,12 +1569,10 @@ export class JST {
                     }
                 }
                 else {
-                    let return_used = false;
+                    const return_used = stmt.body.get(cond)[1].map(stmt => stmt.kind).includes("ReturnStmt");
                     const case_val = (await this.translate('', cond.right)).trim();
                     out += tab + '    ' + this.add_comment(`case ${case_val}:`, stmt.body.get(cond)[0]);
                     for (const s of stmt.body.get(cond)[1]) {
-                        if (s.kind == "ReturnStmt")
-                            return_used = true;
                         out += await this.translate(tab + '        ', s);
                     }
                     if (!return_used)
@@ -1551,18 +1588,18 @@ export class JST {
             for (let i = 0; i < conds.length; i++) {
                 const cond = conds[i];
                 if (i == 0) {
-                    out += tab + '    ' + this.add_comment(`if(${await this.translate(tab, cond)}) {`, stmt.body.get(cond)[0]);
+                    out += tab + this.add_comment(`if(${await this.translate(tab, cond)}) {`, stmt.body.get(cond)[0]);
                 }
                 else if (cond.kind == "DefaultCase") {
-                    out += tab + '    ' + this.add_comment(`else {`, stmt.body.get(cond)[0]);
+                    out += tab + this.add_comment(`else {`, stmt.body.get(cond)[0]);
                 }
                 else {
-                    out += tab + '    ' + this.add_comment(`else if(${await this.translate(tab, cond)}) {`, stmt.body.get(cond)[0]);
+                    out += tab + this.add_comment(`else if(${await this.translate(tab, cond)}) {`, stmt.body.get(cond)[0]);
                 }
                 for (const s of stmt.body.get(cond)[1]) {
-                    out += await this.translate(tab + '        ', s);
+                    out += await this.translate(tab + '  ', s);
                 }
-                out += tab + '    }';
+                out += tab + '}';
                 if (i != conds.length - 1)
                     out += '\n';
             }
@@ -1573,11 +1610,37 @@ export class JST {
         this.var_map.set(decl.name, [this.resolve_data_type(decl.returns), decl]);
         let out = tab + `function ${decl.name}(`;
         out += decl.parameters ? [...decl.parameters.keys()].join(', ') : '';
+        for (const param of [...decl.parameters.keys()]) {
+            const expr = decl.parameters.get(param);
+            let dataType;
+            switch (expr.kind) {
+                case "ObjectLiteral":
+                    dataType = expr.dataType;
+                    break;
+                case "StringLiteral":
+                    dataType = Tokens.String;
+                    break;
+                case "CharString":
+                    dataType = Tokens.Char;
+                    break;
+                case "NumericLiteral":
+                    dataType = expr.numberKind;
+                    break;
+                case "Identifier":
+                    dataType = Tokens.Boolean;
+                    break;
+                default:
+                    dataType = Tokens.Null;
+            }
+            this.var_map.set(param, [dataType, expr]);
+        }
         out += this.add_comment(') {', decl.header_comment);
         for (const stmt of decl.body) {
-            out += await this.translate(tab + '    ', stmt);
+            out += await this.translate(tab + '    ', stmt, true);
         }
         out += tab + this.add_comment('}', decl.footer_comment);
+        for (const param of [...decl.parameters.keys()])
+            this.var_map.delete(param);
         return out;
     }
     trans_op(op) {
@@ -1633,11 +1696,11 @@ export class JST {
             out += tab + `${names} = ${name}.shift();`;
         }
         else {
-            out = tab + `fs.writeFileSync("${expr.fileName}", ${await this.conc('', expr.assigne)} + '\\n');`;
+            out = tab + `fs.writeFileSync("${expr.fileName}", ${await this.conc(expr.assigne)} + '\\n');`;
         }
         return this.add_comment(out, expr.comment);
     }
     add_comment(raw, comment) {
-        return comment && comment.trim() !== '' ? `${raw} //${comment}\n` : raw + '\n';
+        return comment && comment.trim() !== '' && comment.trim() !== '\n' && comment.trim() !== '\t' ? `${raw} //${comment}\n` : raw + '\n';
     }
 }

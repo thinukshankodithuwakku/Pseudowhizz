@@ -4,7 +4,7 @@ import Environment from "../Environment.js";
 import { evaluate } from "../Interpreter.js";
 import { RuntimeVal, MK_NULL, MK_NUMBER, MK_STRING, MK_BOOL, MK_CHAR, ValueType, FunctionValue, SelectionStmt, StringVal, NumberVal } from "../Value.js";
 import { configureFileMemory, errorLog, makeError, pauseLog, func_map, StackFrame } from "../../Main.js";
-import { concantate_exprs } from "./Expressions.js";
+import { concantate_exprs, hoist } from "./Expressions.js";
 
 const initial_frame = {
   expr: undefined,
@@ -18,14 +18,11 @@ export async function eval_program(program: Program, env: Environment): Promise<
   let lastEvaluated: RuntimeVal = MK_NULL();
   program.body = program.body.filter(item => item.kind != "CommentExpr");
 
-  const fn_decls = program.body.filter(c => c.kind == "FunctionDeclaration");
-  const rest = program.body.filter(c => c.kind != "FunctionDeclaration");
-
-  program.body = [...fn_decls, ...rest];
+  const body = hoist(program.body)
 
 
 
-  for (const statement of program.body) {
+  for (const statement of body) {
 
     if(statement.kind == "CallExpr"){
 

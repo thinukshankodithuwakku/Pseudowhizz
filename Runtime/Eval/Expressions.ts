@@ -1074,9 +1074,9 @@ export async function eval_selectionStmt_expr(
         
         scopes.push(new Environment(env.context, env));
 
+        const body = hoist(declaration.body.get(condition)[1]);
 
-
-        for(const stmt of declaration.body.get(condition)[1]){
+        for(const stmt of body){
 
           //StackFrames.push({context: env.context, expr: pcon.stringify(stmt), ln: stmt.ln} as StackFrame);
 
@@ -1120,12 +1120,6 @@ export async function eval_selectionStmt_expr(
 
         
         return result;
-      }
-      else{
-
-        //StackFrames.pop();
-        //StackFrames.push(temp);
-
       }
 
     }
@@ -1546,9 +1540,21 @@ export async function eval_return_stmt(node : ReturnStmt, env : Environment, Sta
 
 }
 
+export function hoist(body : Stmt[]) : Stmt[] {
+
+
+  const decs = body.filter(stmt => stmt.kind == "FunctionDeclaration");
+  const otr = body.filter(stmt => stmt.kind != "FunctionDeclaration");
+
+  return [...decs, ...otr];
+
+}
+
 export async function eval_iteration_Stmt(iterStmt : IterationStmt, env : Environment, StackFrames : StackFrame[]) : Promise<RuntimeVal> {
 
   let closures : Environment[] = [];
+
+  iterStmt.body = hoist(iterStmt.body);
 
 
   if(pauseLog.length > 0){return MK_NULL()};
@@ -3823,27 +3829,14 @@ export async function eval_call_expr(expr : CallExpr, env : Environment, StackFr
 
     let result : RuntimeVal = MK_NULL();
     
+    const body = hoist(func.body);
 
-
-    for(const stmt of func.body){
-
-      const Frame = {context: name, ln: stmt.ln, expr: pcon.stringify(stmt)} as StackFrame;
-
-      //StackFrames.push(Frame);
-
-
+    for(const stmt of body){
 
       
       if(stmt.kind == "SelectionStmtDeclaration"){
 
-
-        
-        //StackFrames.pop();
         result = await evaluate(stmt, scope, StackFrames);
-        
-
-
-        //const selec_bod = Array.from((stmt as SelectionStmtDeclaration).body);
 
     
         if(result){
@@ -3977,29 +3970,29 @@ export async function eval_call_expr(expr : CallExpr, env : Environment, StackFr
     }
 
     
-      if(!func.isProcedure){
-        for(const expr of func.returnExpressions){
-          result = await evaluate(expr, scope, StackFrames);
+    if(!func.isProcedure){
+      for(const expr of func.returnExpressions){
+        result = await evaluate(expr, scope, StackFrames);
 
-          if(result){
-            if(result.type == "MemberExprVal"){
-              result = conv_memex_to_val(result as MemberExprVal);
-            }
-          }
-          
-
-          const returnType = conv_runtimeval_dt(await evaluate(func.returnType, scope, StackFrames));
-
-          const returnToken = conv_dt_runtimeval(returnType);
-          result = auto_caster(result, returnToken);
-
-
-          if(!func.isProcedure && !kindMatchesToken(result, returnType,env)){
-             makeError( `Return type is not ${result.type},
-            !`, "type", expr.ln, StackFrames);
+        if(result){
+          if(result.type == "MemberExprVal"){
+            result = conv_memex_to_val(result as MemberExprVal);
           }
         }
+        
+
+        const returnType = conv_runtimeval_dt(await evaluate(func.returnType, scope, StackFrames));
+
+        const returnToken = conv_dt_runtimeval(returnType);
+        result = auto_caster(result, returnToken);
+
+
+        if(!func.isProcedure && !kindMatchesToken(result, returnType,env)){
+            makeError( `Return type is not ${result.type},
+          !`, "type", expr.ln, StackFrames);
+        }
       }
+    }
 
 
     return result;

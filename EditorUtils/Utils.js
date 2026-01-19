@@ -30,7 +30,7 @@ const FnArgDesc = {
 };
 const FnTempRec = {
     "SUBSTRING": "SUBSTRING(<identifier> : STRING, <start> : INTEGER, <length> : INTEGER) RETURNS STRING",
-    "LENGTH": "LENGTH(<identifier> : INTEGER) RETURNS INTEGER",
+    "LENGTH": "LENGTH(<identifier> : STRING) RETURNS INTEGER",
     "LCASE": "LCASE(<identifier> : STRING|CHAR) RETURNS STRING|CHAR",
     "UCASE": "UCASE(<identifier> : STRING|CHAR) RETURNS STRING|CHAR",
     "RANDOM": "RANDOM() RETURNS REAL",

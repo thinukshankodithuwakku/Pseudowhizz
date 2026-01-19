@@ -6,6 +6,8 @@ interface mmpToken {
 
     type: tokenType,
     value: string,
+    start: number,
+    end: number,
 
 }
 
@@ -17,10 +19,12 @@ const control = /^(ELSEIF|IF|ELS\E|ENDIF|THEN|CASE|OF|ENDCASE|OTHERWISE|RETURNS|
 const logical = /^(MOD|DIV|NOT|AND|OR|)$/;
 
 
-function mmp_tokenise_line(line : string){ //Special tokenizer just for the minimap
+function mmp_tokenise_line(line : string, ch : number = 0){ //Special tokenizer just for the minimap
 
     const chars = line.split('');
     const Tokens : mmpToken[] = [];
+
+    let start = ch;
 
     while(chars.length > 0){
 
@@ -28,9 +32,12 @@ function mmp_tokenise_line(line : string){ //Special tokenizer just for the mini
 
             let holder = '';
 
+            start = ch;
+
             while(chars[0] == ' ' && chars.length > 0){
 
                 holder += chars.shift();
+                ch++;
 
             }
 
@@ -38,17 +45,24 @@ function mmp_tokenise_line(line : string){ //Special tokenizer just for the mini
 
                 type: "whitespace",
                 value: holder,
+                start: start,
+                end: ch,
 
             })
+
+            ch++
 
         }
         else if(/^[A-Za-z]+$/.test(chars[0])){
 
             let holder = '';
 
+            start = ch;
+
             while(/^[A-Za-z]+$/.test(chars[0]) && chars.length > 0){
 
                 holder += chars.shift();
+                ch++;
 
             }
 
@@ -66,20 +80,27 @@ function mmp_tokenise_line(line : string){ //Special tokenizer just for the mini
 
                 type: tokenType,
                 value: holder,
+                start: start,
+                end: ch,
 
             })
+
+            ch++
 
         }
         else if(chars[0] == '.'){
 
+            start = ch;
+
             let holder = chars.shift();
+            ch++;
 
             if(chars[0] && /^[0-9]$/.test(chars[0])){
 
                 while(/^[0-9]$/.test(chars[0]) && chars.length > 0){
 
                     holder += chars.shift();
-
+                    ch++;
 
                 }
 
@@ -87,6 +108,8 @@ function mmp_tokenise_line(line : string){ //Special tokenizer just for the mini
 
                     type: "number",
                     value: holder,
+                    start: start,
+                    end: ch,
 
                 })
 
@@ -97,9 +120,13 @@ function mmp_tokenise_line(line : string){ //Special tokenizer just for the mini
 
                     type: "symbol",
                     value: holder,
+                    start: start,
+                    end: ch,
 
                 })
             }
+
+            ch++
         }
         else if(/^[0-9]$/.test(chars[0])){
 
@@ -107,12 +134,14 @@ function mmp_tokenise_line(line : string){ //Special tokenizer just for the mini
 
             let dpCount = 0;
 
+            start = ch;
+
             while((/^[0-9]$/.test(chars[0]) || (chars[0] == '.' && dpCount == 0)) && chars.length > 0){
 
                 if(chars[0] == '.') dpCount++;
 
                 holder += chars.shift();
-
+                ch++
 
             }
 
@@ -120,23 +149,31 @@ function mmp_tokenise_line(line : string){ //Special tokenizer just for the mini
 
                 type: "number",
                 value: holder,
+                start: start,
+                end: ch,
 
             })
+
+            ch++
 
         }
         else if(chars[0] == '/'){
 
             chars.shift();
+            start = ch;
+            ch++;
 
             if(chars[0] == '/'){
 
                 chars.shift();
+                ch++;
 
-                let holder = '';
+                let holder = '//';
 
                 while(chars.length > 0){
 
                     holder += chars.shift();
+                    ch++
 
                 }
 
@@ -144,6 +181,8 @@ function mmp_tokenise_line(line : string){ //Special tokenizer just for the mini
 
                     type: "comment",
                     value: holder,
+                    start: start,
+                    end: ch,
 
                 })
 
@@ -154,41 +193,51 @@ function mmp_tokenise_line(line : string){ //Special tokenizer just for the mini
 
                     type: "symbol",
                     value: '/',
+                    start: start,
+                    end: ch,
 
                 })
 
             }
 
+            ch++
+
         }
         else if(chars[0] == '"'){
 
+            start = ch;
             chars.shift();
-
+            ch++;
             let holder = '';
 
             while(chars.length > 0 && chars[0] != '"'){
 
                 holder += chars.shift();
+                ch++;
 
             }
 
             if(chars[0] == '"'){ 
                 chars.shift();
 
+                ch++;
                 Tokens.push({
 
                     type: "string",
-                    value: holder,
+                    value: `"${holder}"`,
+                    start: start,
+                    end: ch,
 
                 })
             }
-            else mmp_tokenise_line(holder).forEach(tk => {if(tk.type !== "EOL") Tokens.push(tk)});
+            else mmp_tokenise_line(holder, ch).forEach(tk => {if(tk.type !== "EOL") Tokens.push(tk)});
 
-            
+            ch++
 
         }
         else if(chars[0] == "'"){
 
+            start = ch;
             chars.shift();
 
             let holder = '';
@@ -196,6 +245,7 @@ function mmp_tokenise_line(line : string){ //Special tokenizer just for the mini
             while(chars.length > 0 && chars[0] != "'"){
 
                 holder += chars.shift();
+                ch++
 
             }
 
@@ -205,47 +255,56 @@ function mmp_tokenise_line(line : string){ //Special tokenizer just for the mini
                 Tokens.push({
 
                     type: "char",
-                    value: holder,
+                    value: `'${holder}'`,
+                    start: start,
+                    end: ch,
 
                 })
             }
             else if(chars[0] == "'"){
 
                 chars.shift();
+                ch++
 
                 Tokens.push({
 
                     type: "symbol",
-                    value: holder,
+                    value: `'${holder}'`,
+                    start: start,
+                    end: ch,
 
                 })
 
             }
-            else mmp_tokenise_line(holder).forEach(tk => {if(tk.type !== "EOL") Tokens.push(tk)});
+            else mmp_tokenise_line(holder, ch).forEach(tk => {if(tk.type !== "EOL") Tokens.push(tk)});
 
-            
+            ch++
 
         }
         else{
+
 
             Tokens.push({
 
                 type: "symbol",
                 value: chars.shift(),
+                start: ch,
+                end: ch,
 
             })
+
+
+            ch++
 
         }
 
     }
 
-    Tokens.push({type: "EOL", value: "EOL"});
+    Tokens.push({type: "EOL", value: "EOL", start: null, end: null});
 
     return Tokens;
 
 }
-
-
 
 
 function parse_primary(tk : mmpToken) : string {
@@ -368,7 +427,31 @@ function format_src(src : string, txtFile : boolean) : string[] {
 
 let building = false;
 
-export function build_map(src : string, txtFile : boolean) {
+function isLineHidden(cm, line : number) : boolean {
+    if (line < 0 || line >= cm.lineCount()) return false;
+
+    const marks = cm.findMarksAt({ line, ch: 0 });
+
+
+    for (const m of marks) {
+    if (m.__isFold) {
+        const range = m.find();
+            if (range && range.from.line < line && line <= range.to.line) {
+            return true;
+        }
+    }
+    }
+
+    return false;
+}
+
+
+
+
+
+export function build_map(cm, txtFile : boolean) {
+
+    const src = cm.getValue() as string;
 
     if(building) return;
 
@@ -381,8 +464,11 @@ export function build_map(src : string, txtFile : boolean) {
         const lines = format_src(src, txtFile);
         let lineCount = 0;
 
-        for(const line of lines){
+        for(let i = 0; i < lines.length; i++){
             
+            const line = lines[i];
+
+
             const ln = document.createElement("div");
             ln.className = "mini-map-line";
 
@@ -390,9 +476,14 @@ export function build_map(src : string, txtFile : boolean) {
             ln.innerHTML = line;
             ln.id = "line-" + lineCount;
 
+            const node = cm.lineInfo(i);
+            if(node && node.wrapClass && node.wrapClass.includes('cm-line-folded')) ln.classList.add('cm-line-folded');
+            else if(ln.classList.contains('cm-line-folded')) ln.classList.remove('cm-line-folded');
+
             const classNames = ['cm-s-idea', 'cm-s-darcula'];
 
-    
+            let add = !isLineHidden(cm, i);
+
             classNames.forEach(className => {
 
                 const elements = document.querySelectorAll(`.${className}`);
@@ -403,7 +494,9 @@ export function build_map(src : string, txtFile : boolean) {
                 });
             });
 
-            map.appendChild(ln);
+
+            if(add) map.appendChild(ln);
+
             lineCount++;
 
         }   
@@ -433,6 +526,23 @@ export function clear_error_lines(){
     }
 
 }
+
+
+
+
+
+function normalize(raw) {
+  if (
+    raw.anchor.line < raw.head.line ||
+    (raw.anchor.line === raw.head.line && raw.anchor.ch <= raw.head.ch)
+  ) {
+    return { from: raw.anchor, to: raw.head };
+  } else {
+    return { from: raw.head, to: raw.anchor };
+  }
+}
+
+
 
 
 

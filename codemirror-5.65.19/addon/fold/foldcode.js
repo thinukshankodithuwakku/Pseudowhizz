@@ -49,6 +49,7 @@
     if (!range || range.cleared || force === "unfold") return;
 
     var myWidget = makeWidget(cm, options, range);
+
     CodeMirror.on(myWidget, "mousedown", function(e) {
       myRange.clear();
       CodeMirror.e_preventDefault(e);
@@ -76,6 +77,7 @@
       widget = document.createElement("span");
       widget.appendChild(text);
       widget.className = "CodeMirror-foldmarker";
+
     } else if (widget) {
       widget = widget.cloneNode(true)
     }

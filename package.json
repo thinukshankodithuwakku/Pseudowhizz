@@ -4,6 +4,7 @@
     "didyoumean2": "^7.0.4",
     "fuse.js": "^7.1.0",
     "mathjs": "^15.1.0",
+    "readline-sync": "^1.4.10",
     "string-similarity": "^4.0.4"
   }
 }

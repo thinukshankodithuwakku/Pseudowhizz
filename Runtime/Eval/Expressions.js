@@ -664,7 +664,8 @@ export async function eval_selectionStmt_expr(declaration, env, StackFrames) {
             //StackFrames.pop();
             //StackFrames.push(temp);
             scopes.push(new Environment(env.context, env));
-            for (const stmt of declaration.body.get(condition)[1]) {
+            const body = hoist(declaration.body.get(condition)[1]);
+            for (const stmt of body) {
                 //StackFrames.push({context: env.context, expr: pcon.stringify(stmt), ln: stmt.ln} as StackFrame);
                 if (kill_program()) {
                     return null;
@@ -692,10 +693,6 @@ export async function eval_selectionStmt_expr(declaration, env, StackFrames) {
                 }
             }
             return result;
-        }
-        else {
-            //StackFrames.pop();
-            //StackFrames.push(temp);
         }
     }
     return result;
@@ -945,8 +942,14 @@ export async function eval_return_stmt(node, env, StackFrames) {
         return runtime;
     }
 }
+export function hoist(body) {
+    const decs = body.filter(stmt => stmt.kind == "FunctionDeclaration");
+    const otr = body.filter(stmt => stmt.kind != "FunctionDeclaration");
+    return [...decs, ...otr];
+}
 export async function eval_iteration_Stmt(iterStmt, env, StackFrames) {
     let closures = [];
+    iterStmt.body = hoist(iterStmt.body);
     if (pauseLog.length > 0) {
         return MK_NULL();
     }
@@ -2303,13 +2306,10 @@ export async function eval_call_expr(expr, env, StackFrames) {
             }
         }
         let result = MK_NULL();
-        for (const stmt of func.body) {
-            const Frame = { context: name, ln: stmt.ln, expr: pcon.stringify(stmt) };
-            //StackFrames.push(Frame);
+        const body = hoist(func.body);
+        for (const stmt of body) {
             if (stmt.kind == "SelectionStmtDeclaration") {
-                //StackFrames.pop();
                 result = await evaluate(stmt, scope, StackFrames);
-                //const selec_bod = Array.from((stmt as SelectionStmtDeclaration).body);
                 if (result) {
                     if (result.type !== "null" && stmt.returns.length > 0 && result.type != "end-closure") {
                         const returnType = await evaluate(func.returnType, scope, StackFrames);
@@ -2397,7 +2397,7 @@ export async function eval_call_expr(expr, env, StackFrames) {
                 result = auto_caster(result, returnToken);
                 if (!func.isProcedure && !kindMatchesToken(result, returnType, env)) {
                     makeError(`Return type is not ${result.type},
-            !`, "type", expr.ln, StackFrames);
+          !`, "type", expr.ln, StackFrames);
                 }
             }
         }

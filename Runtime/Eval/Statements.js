@@ -2,7 +2,7 @@ import { Tokens } from "../../Frontend/Lexer.js";
 import { evaluate } from "../Interpreter.js";
 import { MK_NULL, MK_NUMBER, MK_STRING, MK_BOOL, MK_CHAR } from "../Value.js";
 import { configureFileMemory, errorLog, makeError, pauseLog, func_map } from "../../Main.js";
-import { concantate_exprs } from "./Expressions.js";
+import { concantate_exprs, hoist } from "./Expressions.js";
 const initial_frame = {
     expr: undefined,
     ln: undefined,
@@ -11,10 +11,8 @@ const initial_frame = {
 export async function eval_program(program, env) {
     let lastEvaluated = MK_NULL();
     program.body = program.body.filter(item => item.kind != "CommentExpr");
-    const fn_decls = program.body.filter(c => c.kind == "FunctionDeclaration");
-    const rest = program.body.filter(c => c.kind != "FunctionDeclaration");
-    program.body = [...fn_decls, ...rest];
-    for (const statement of program.body) {
+    const body = hoist(program.body);
+    for (const statement of body) {
         if (statement.kind == "CallExpr") {
             const callee = await evaluate(statement.callee, env, [{ expr: undefined, ln: undefined, context: "<module>" }]);
             if (!callee.isProcedure) {

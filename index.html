@@ -3,6 +3,7 @@
 
 
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -451,9 +452,14 @@
                 <li>
 
                     <div class="container-any">
-                        Auto-complete
+                        IntelliSense
 
                         <input id="Ac-toggle" class="switch" type="checkbox">
+                        <button title="Auto-complete, code snippets and function descriptions" class="information-btn"
+                            
+                            onclick="alert('Auto-complete, code snippets and function descriptions')"
+
+                            >i</button>
 
                     </div>
 
@@ -1269,7 +1275,7 @@
                                 else if(search(codeVal, `DECLARE ${read} : BOOLEAN`)) varTypeMap.set(read, 'BOOLEAN');
                                 else if(search(codeVal, `DECLARE ${read} : STRING`)) varTypeMap.set(read, 'STRING');
                                 else if(search(codeVal, `DECLARE ${read} : CHAR`)) varTypeMap.set(read, 'CHAR');
-                                else if(findArrayPrim(codeVal, read) != "none") varTypeMap.set(read, findArrayPrim(codeVal, read));
+                                else if(findArrayPrim(codeVal, read) != "none") varTypeMap.set(read, 'ARRAY OF ' + findArrayPrim(codeVal, read));
 
                             }
                             else if(is_file && !filenames.includes(`${read}.txt`)) filenames.push(`${read}.txt`);
@@ -1363,16 +1369,228 @@
         const identifierSet = new Set();
 
 
+        CodeMirror.registerHelper("hint", "snippet", function(cm) {
 
-        CodeMirror.registerHelper("hint", "pseudocode", function(cm) {
-            
-            if(cm.getValue() != ""){
                 
+            const cursor = cm.getCursor();
+            const token = cm.getTokenAt(cursor);
+
+            const line = cm.getLine(cursor.line).split('');
+            const tabSize = cm.getOption("tabSize") || 4;
+
+            let tab = '';
+
+            while(line[0] == ' ' || line[0] == '\t'){
+                
+                if(line[0] == ' ') tab += ' ';
+                else if(line[0] == '\t') tab += ' '.repeat(tabSize);
+
+                line.shift();
+
+            }
+            
+            const word = token.string.slice(0, cursor.ch - token.start);
+
+            const keywords = ["INPUT","OUTPUT","ARRAY", "CONSTANT","STEP", "FOR", "DECLARE", "ELSE", "CASE", "IF", "WHILE", "REPEAT", "FUNCTION", "PROCEDURE", "OPENFILE", "CLOSEFILE","WRITEFILE", "READFILE"];
+            
+            
+
+            const snippets = {
+
+                CONSTANT : {token: "CONSTANT", label: "Constant Declaration", template : "CONSTANT <identifier> ← <value>"},
+                WHILE : {token: "WHILE", label: "While Statement", template: "WHILE <condition> DO\n" + tab + "\t<statements>\n" + tab + "ENDWHILE"},
+                REPEAT : {token: "REPEAT", label: "Repeat Statement", template: "REPEAT\n" + tab + "\t<statements>\n" + tab + "UNTIL <condition>"},
+                FUNCTION : {token: "FUNCTION", label: "Function Statement", template: "FUNCTION <identifier>(<param> : <datatype>) RETURNS <datatype>\n" + tab + "\t<statements>\n" + tab + "ENDFUNCTION" }, 
+                PROCEDURE : {token: "PROCEDURE", label: "Procedure Statement", template: "PROCEDURE <identifier>(<param> : <datatype>)\n" + tab + "\t<statements>\n" + tab + "ENDPROCEDURE" },
+                CASE : {token: "CASE", label: "Case Statement", template: "CASE OF <identifier>\n" + tab + "\t<value 1> : <statement>\n" + tab + "\tOTHERWISE <statement>\n" + tab + "ENDCASE"},
+                CALL : {token: "CALL", label: "Call Statement", template: "CALL <identifier>(Value)" },
+                OPENFILE : {token: "OPENFILE", label: "Open File", template: "OPENFILE <File identifier> FOR <File mode>"},
+                CLOSEFILE : {token: "CLOSEFILE", label: "Close File", template: "CLOSEFILE <File identifier>"},
+                READFILE : {token: "READFILE", label: "Read File",template: "READFILE <File identifier>, <Variable>"},
+                WRITEFILE : {token: "WRITEFILE", label: "Write File",template: "WRITEFILE <File identifier>, <Variable>"},
+                ELSE : {token: "IF-ELSE", label: "If-Else Statement",template: "IF <condition>\n" + tab + "\tTHEN\n" + tab + "\t\t<statements>\n" + tab + "\tELSE\n" + tab + "\t\t<statements>\n" + tab + "ENDIF" },
+                STEP: {token: "FOR-STEP", label: "For-Step Loop", template: "FOR <identifier> ← <value 1> TO <value 2> STEP <increment>\n" + tab + "\t<statements>\n" + tab + "NEXT <identifier>"},
+                INPUT : {token: "INPUT", label: "Input Statement", template: "INPUT <identifier>"},
+                OUTPUT : {token: "OUTPUT", label: "Output Statement", template: "OUTPUT <identifier>"},
+            
             }
 
-            
+            const stopCurs = function(cm, data, completion) {
+                const start = CodeMirror.Pos(cursor.line, token.start);
+                const end = CodeMirror.Pos(cursor.line, cursor.ch);
+                const cursorPos = cm.getCursor();
 
-            
+                cm.replaceRange(completion.text, start, end);
+                cm.setCursor(cursorPos);
+            }
+
+            const list = keywords
+            .filter(kw => kw.startsWith(word.toUpperCase()));
+
+            if(!list || list.length == 0) return;
+
+            const body = [];
+
+            const MKTok = (raw) => {
+
+                const regex = new RegExp(`(${word})`, "gi");
+                const token = raw.replace(regex, '<span class="hint-match">$1</span>');
+                
+                return token;
+
+            }
+
+            for(const kw of list){
+
+                switch(kw){
+
+                    case "ARRAY":
+                        body.push({
+
+                            text: "DECLARE <identifier> : ARRAY[<l>:<u>] OF <datatype>",
+                            render: function(element, self, data) {
+
+                                element.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><path fill="currentColor" fill-rule="evenodd" d="M1.5 4c0-.966.784-1.75 1.75-1.75h10c.966 0 1.75.784 1.75 1.75v6.5a.75.75 0 0 1-1.5 0V4a.25.25 0 0 0-.25-.25h-10A.25.25 0 0 0 3 4v6.5a.75.75 0 0 1-1.5 0V4Z" clip-rule="evenodd"/><path fill="currentColor" d="M2.25 13.5a.75.75 0 1 0 0-1.5a.75.75 0 0 0 0 1.5Zm12 0a.75.75 0 1 0 0-1.5a.75.75 0 0 0 0 1.5Zm-3 0a.75.75 0 1 0 0-1.5a.75.75 0 0 0 0 1.5Zm-6 0a.75.75 0 1 0 0-1.5a.75.75 0 0 0 0 1.5Zm3 0a.75.75 0 1 0 0-1.5a.75.75 0 0 0 0 1.5Z"/></svg>${MKTok('DECLARE 1-D ARRAY')}<span class="hint-type">1-D Array Declaration</span>`;
+                            },
+                            hint: stopCurs,
+
+                        },
+                        {
+
+                            text: "DECLARE <identifier> : ARRAY[<l1>:<u1>, <l1>:<u2>] OF <datatype>",
+                            render: function(element, self, data) {
+
+                                element.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><path fill="currentColor" fill-rule="evenodd" d="M1.5 4c0-.966.784-1.75 1.75-1.75h10c.966 0 1.75.784 1.75 1.75v6.5a.75.75 0 0 1-1.5 0V4a.25.25 0 0 0-.25-.25h-10A.25.25 0 0 0 3 4v6.5a.75.75 0 0 1-1.5 0V4Z" clip-rule="evenodd"/><path fill="currentColor" d="M2.25 13.5a.75.75 0 1 0 0-1.5a.75.75 0 0 0 0 1.5Zm12 0a.75.75 0 1 0 0-1.5a.75.75 0 0 0 0 1.5Zm-3 0a.75.75 0 1 0 0-1.5a.75.75 0 0 0 0 1.5Zm-6 0a.75.75 0 1 0 0-1.5a.75.75 0 0 0 0 1.5Zm3 0a.75.75 0 1 0 0-1.5a.75.75 0 0 0 0 1.5Z"/></svg>${MKTok('DECLARE 2-D ARRAY')}<span class="hint-type">2-D Array Declaration</span>`;
+                            },
+                            hint: stopCurs,
+
+                        });
+
+                        break;
+
+                    case "DECLARE" :
+                        body.push({
+
+                            text: "DECLARE <identifier> : <datatype>",
+                            render: function(element, self, data) {
+
+                                element.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><path fill="currentColor" fill-rule="evenodd" d="M1.5 4c0-.966.784-1.75 1.75-1.75h10c.966 0 1.75.784 1.75 1.75v6.5a.75.75 0 0 1-1.5 0V4a.25.25 0 0 0-.25-.25h-10A.25.25 0 0 0 3 4v6.5a.75.75 0 0 1-1.5 0V4Z" clip-rule="evenodd"/><path fill="currentColor" d="M2.25 13.5a.75.75 0 1 0 0-1.5a.75.75 0 0 0 0 1.5Zm12 0a.75.75 0 1 0 0-1.5a.75.75 0 0 0 0 1.5Zm-3 0a.75.75 0 1 0 0-1.5a.75.75 0 0 0 0 1.5Zm-6 0a.75.75 0 1 0 0-1.5a.75.75 0 0 0 0 1.5Zm3 0a.75.75 0 1 0 0-1.5a.75.75 0 0 0 0 1.5Z"/></svg>${MKTok('DECLARE')}<span class="hint-type">Variable Declaration</span>`;
+                            },
+                            hint: stopCurs,
+
+                        },
+                        {
+
+                            text: "DECLARE <identifier> : ARRAY[<l>:<u>] OF <datatype>",
+                            render: function(element, self, data) {
+
+                                element.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><path fill="currentColor" fill-rule="evenodd" d="M1.5 4c0-.966.784-1.75 1.75-1.75h10c.966 0 1.75.784 1.75 1.75v6.5a.75.75 0 0 1-1.5 0V4a.25.25 0 0 0-.25-.25h-10A.25.25 0 0 0 3 4v6.5a.75.75 0 0 1-1.5 0V4Z" clip-rule="evenodd"/><path fill="currentColor" d="M2.25 13.5a.75.75 0 1 0 0-1.5a.75.75 0 0 0 0 1.5Zm12 0a.75.75 0 1 0 0-1.5a.75.75 0 0 0 0 1.5Zm-3 0a.75.75 0 1 0 0-1.5a.75.75 0 0 0 0 1.5Zm-6 0a.75.75 0 1 0 0-1.5a.75.75 0 0 0 0 1.5Zm3 0a.75.75 0 1 0 0-1.5a.75.75 0 0 0 0 1.5Z"/></svg>${MKTok('DECLARE 1-D ARRAY')}<span class="hint-type">1-D Array Declaration</span>`;
+                            },
+                            hint: stopCurs,
+
+                        },
+                        {
+
+                            text: "DECLARE <identifier> : ARRAY[<l1>:<u1>, <l1>:<u2>] OF <datatype>",
+                            render: function(element, self, data) {
+
+                                element.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><path fill="currentColor" fill-rule="evenodd" d="M1.5 4c0-.966.784-1.75 1.75-1.75h10c.966 0 1.75.784 1.75 1.75v6.5a.75.75 0 0 1-1.5 0V4a.25.25 0 0 0-.25-.25h-10A.25.25 0 0 0 3 4v6.5a.75.75 0 0 1-1.5 0V4Z" clip-rule="evenodd"/><path fill="currentColor" d="M2.25 13.5a.75.75 0 1 0 0-1.5a.75.75 0 0 0 0 1.5Zm12 0a.75.75 0 1 0 0-1.5a.75.75 0 0 0 0 1.5Zm-3 0a.75.75 0 1 0 0-1.5a.75.75 0 0 0 0 1.5Zm-6 0a.75.75 0 1 0 0-1.5a.75.75 0 0 0 0 1.5Zm3 0a.75.75 0 1 0 0-1.5a.75.75 0 0 0 0 1.5Z"/></svg>${MKTok('DECLARE 2-D ARRAY')}<span class="hint-type">2-D Array Declaration</span>`;
+                            },
+                            hint: stopCurs,
+
+                        })
+
+                        break;
+
+                    case "IF" : 
+                        body.push({
+
+                            text: "IF <condition>\n" + tab + "\tTHEN\n" + tab + "\t\t<statements>\n" + tab + "ENDIF",
+                            render: function(element, self, data) {
+
+                                element.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><path fill="currentColor" fill-rule="evenodd" d="M1.5 4c0-.966.784-1.75 1.75-1.75h10c.966 0 1.75.784 1.75 1.75v6.5a.75.75 0 0 1-1.5 0V4a.25.25 0 0 0-.25-.25h-10A.25.25 0 0 0 3 4v6.5a.75.75 0 0 1-1.5 0V4Z" clip-rule="evenodd"/><path fill="currentColor" d="M2.25 13.5a.75.75 0 1 0 0-1.5a.75.75 0 0 0 0 1.5Zm12 0a.75.75 0 1 0 0-1.5a.75.75 0 0 0 0 1.5Zm-3 0a.75.75 0 1 0 0-1.5a.75.75 0 0 0 0 1.5Zm-6 0a.75.75 0 1 0 0-1.5a.75.75 0 0 0 0 1.5Zm3 0a.75.75 0 1 0 0-1.5a.75.75 0 0 0 0 1.5Z"/></svg>${MKTok('IF')}<span class="hint-type">If Statement</span>`;
+                            },
+                            hint: stopCurs,
+                            
+                        },
+                        {
+
+                            text: "IF <condition>\n" + tab + "\tTHEN\n" + tab + "\t\t<statements>\n" + tab + "\tELSE\n" + tab + "\t\t<statements>\n" + tab + "ENDIF",
+                            render: function(element, self, data) {
+
+                                element.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><path fill="currentColor" fill-rule="evenodd" d="M1.5 4c0-.966.784-1.75 1.75-1.75h10c.966 0 1.75.784 1.75 1.75v6.5a.75.75 0 0 1-1.5 0V4a.25.25 0 0 0-.25-.25h-10A.25.25 0 0 0 3 4v6.5a.75.75 0 0 1-1.5 0V4Z" clip-rule="evenodd"/><path fill="currentColor" d="M2.25 13.5a.75.75 0 1 0 0-1.5a.75.75 0 0 0 0 1.5Zm12 0a.75.75 0 1 0 0-1.5a.75.75 0 0 0 0 1.5Zm-3 0a.75.75 0 1 0 0-1.5a.75.75 0 0 0 0 1.5Zm-6 0a.75.75 0 1 0 0-1.5a.75.75 0 0 0 0 1.5Zm3 0a.75.75 0 1 0 0-1.5a.75.75 0 0 0 0 1.5Z"/></svg>${MKTok('IF-ELSE')}<span class="hint-type">If-Else Statement</span>`;
+                            },
+                            hint: stopCurs,
+                        })
+
+                        break;
+
+                    case "FOR" : 
+                        body.push({
+
+                            
+                            text: "FOR <identifier> ← <value 1> TO <value 2>\n" + tab + "\t<statements>\n" + tab + "NEXT <identifier>",
+                            render: function(element, self, data) {
+
+                                element.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><path fill="currentColor" fill-rule="evenodd" d="M1.5 4c0-.966.784-1.75 1.75-1.75h10c.966 0 1.75.784 1.75 1.75v6.5a.75.75 0 0 1-1.5 0V4a.25.25 0 0 0-.25-.25h-10A.25.25 0 0 0 3 4v6.5a.75.75 0 0 1-1.5 0V4Z" clip-rule="evenodd"/><path fill="currentColor" d="M2.25 13.5a.75.75 0 1 0 0-1.5a.75.75 0 0 0 0 1.5Zm12 0a.75.75 0 1 0 0-1.5a.75.75 0 0 0 0 1.5Zm-3 0a.75.75 0 1 0 0-1.5a.75.75 0 0 0 0 1.5Zm-6 0a.75.75 0 1 0 0-1.5a.75.75 0 0 0 0 1.5Zm3 0a.75.75 0 1 0 0-1.5a.75.75 0 0 0 0 1.5Z"/></svg>${MKTok('FOR')}<span class="hint-type">For Loop</span>`;
+                            },
+                            hint: stopCurs,
+                            
+                        },
+                        {
+
+                            
+                            text: "FOR <identifier> ← <value 1> TO <value 2> STEP <increment>\n" + tab + "\t<statements>\n" + tab + "NEXT <identifier>",
+                            render: function(element, self, data) {
+
+                                element.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><path fill="currentColor" fill-rule="evenodd" d="M1.5 4c0-.966.784-1.75 1.75-1.75h10c.966 0 1.75.784 1.75 1.75v6.5a.75.75 0 0 1-1.5 0V4a.25.25 0 0 0-.25-.25h-10A.25.25 0 0 0 3 4v6.5a.75.75 0 0 1-1.5 0V4Z" clip-rule="evenodd"/><path fill="currentColor" d="M2.25 13.5a.75.75 0 1 0 0-1.5a.75.75 0 0 0 0 1.5Zm12 0a.75.75 0 1 0 0-1.5a.75.75 0 0 0 0 1.5Zm-3 0a.75.75 0 1 0 0-1.5a.75.75 0 0 0 0 1.5Zm-6 0a.75.75 0 1 0 0-1.5a.75.75 0 0 0 0 1.5Zm3 0a.75.75 0 1 0 0-1.5a.75.75 0 0 0 0 1.5Z"/></svg>${MKTok('FOR-STEP')}<span class="hint-type">For-Step Loop</span>`;
+                            },
+                            hint: stopCurs,
+                            
+                        })
+
+                        break;
+
+                    default:
+
+                        if(!snippets[`${kw}`]) return;
+
+                        const regex = new RegExp(`(${word})`, "gi");
+                        const token = (snippets[`${kw}`].token).replace(regex, '<span class="hint-match">$1</span>');
+                        
+                        const template = snippets[`${kw}`].template;
+                        const label = snippets[`${kw}`].label;
+
+                        body.push({
+
+                            
+
+                            text: template,
+                            render: function(element, self, data) {
+
+                                element.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><path fill="currentColor" fill-rule="evenodd" d="M1.5 4c0-.966.784-1.75 1.75-1.75h10c.966 0 1.75.784 1.75 1.75v6.5a.75.75 0 0 1-1.5 0V4a.25.25 0 0 0-.25-.25h-10A.25.25 0 0 0 3 4v6.5a.75.75 0 0 1-1.5 0V4Z" clip-rule="evenodd"/><path fill="currentColor" d="M2.25 13.5a.75.75 0 1 0 0-1.5a.75.75 0 0 0 0 1.5Zm12 0a.75.75 0 1 0 0-1.5a.75.75 0 0 0 0 1.5Zm-3 0a.75.75 0 1 0 0-1.5a.75.75 0 0 0 0 1.5Zm-6 0a.75.75 0 1 0 0-1.5a.75.75 0 0 0 0 1.5Zm3 0a.75.75 0 1 0 0-1.5a.75.75 0 0 0 0 1.5Z"/></svg>${token}<span class="hint-type">${label}</span>`;
+
+                            },
+                            hint: stopCurs,
+
+
+                        })
+
+                }
+
+            }
+
+            return {
+                list: body,
+                from: CodeMirror.Pos(cursor.line, token.start),
+                to: CodeMirror.Pos(cursor.line, cursor.ch)
+                
+            };
+        });
+        
+
+        CodeMirror.registerHelper("hint", "pseudocode", function(cm) {
+
             const cursor = cm.getCursor();
             const token = cm.getTokenAt(cursor);
             const start = token.start;
@@ -1388,7 +1606,6 @@
                     text: item,
                     render: function(element, self, data) {
 
-   
 
                         const keywords = ["TO", "FALSE", "TRUE","OUTPUT", "INPUT", "CALL", "DECLARE", "CONSTANT","ELSE","FOR", "NEXT", "STEP", "WHILE", "DO", "ENDWHILE", "REPEAT", "UNTIL", "IF", "THEN", "ELSEIF", "ENDIF", "CASE", "OF", "OTHERWISE", "ENDCASE", "FUNCTION", "PROCEDURE", "RETURN", "RETURNS", "ENDFUNCTION", "ENDPROCEDURE", "OPENFILE", "CLOSEFILE", "READFILE", "WRITEFILE", "READ", "WRITE"];
                         const operators = ["NOT", "AND", "OR", "DIV", "MOD"];
@@ -1434,15 +1651,13 @@
                             element.innerHTML = `<svg id="function-svg" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><path fill="currentColor" d="m13.51 4l-5-3h-1l-5 3l-.49.86v6l.49.85l5 3h1l5-3l.49-.85v-6L13.51 4zm-6 9.56l-4.5-2.7V5.7l4.5 2.45v5.41zM3.27 4.7l4.74-2.84l4.74 2.84l-4.74 2.59L3.27 4.7zm9.74 6.16l-4.5 2.7V8.15l4.5-2.45v5.16z"/></svg>${highlighted}<span class="hint-type">PROCEDURE ${item}</span>`;
                         }
                         else{
-
-                            
-                            
                             element.innerHTML = `<svg id="name-svg" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><path fill="currentColor" fill-rule="evenodd" d="M2 5h2V4H1.5l-.5.5v8l.5.5H4v-1H2V5zm12.5-1H12v1h2v7h-2v1h2.5l.5-.5v-8l-.5-.5zm-2.74 2.57L12 7v2.51l-.3.45l-4.5 2h-.46l-2.5-1.5l-.24-.43v-2.5l.3-.46l4.5-2h.46l2.5 1.5zM5 9.71l1.5.9V9.28L5 8.38v1.33zm.58-2.15l1.45.87l3.39-1.5l-1.45-.87l-3.39 1.5zm1.95 3.17l3.5-1.56v-1.4l-3.5 1.55v1.41z" clip-rule="evenodd"/></svg>${highlighted}<span class="hint-type">${item}</span>`;
                         }
 
 
 
                     }
+                    
             }));
 
             const container = document.querySelector('.CodeMirror-hint-active');
@@ -1456,14 +1671,6 @@
                 container.style.position = "relative";
             }
             
-             
-
-
-
-            
-
-
-
             window.keywordList = keywordList;
 
             let returnList = [];
@@ -1483,7 +1690,20 @@
             
         });
 
-        
+        function combinedHint(cm){
+
+            const a = CodeMirror.hint.pseudocode(cm);
+            const b = CodeMirror.hint.snippet(cm);
+
+            return {
+
+                list: [...a.list, ...b.list],
+                from: a.from,
+                to: a.to,
+
+            };
+
+        }
 
         let editor = CodeMirror.fromTextArea(document.getElementById("sourceCode"), {   
             lineNumbers: true,
@@ -1633,6 +1853,8 @@
 
         document.addEventListener("keydown", (e) => {
 
+            if(localStorage.getItem('Ac') !== "true") return;
+
             const cursor = editor.getCursor();
             const lineTokens = editor.getLineTokens(cursor.line).filter(t => t.string.trim() !== '');
 
@@ -1774,10 +1996,33 @@
 
         
 
+        CodeMirror.hint.combine = function(...helpers) {
+            return function(cm) {
+                let list = [];
+                let from = null;
+                let to = null;
+
+                for (const helper of helpers) {
+                const result = helper(cm);
+                if (!result) continue;
+
+                if (!from) from = result.from;
+                if (!to) to = result.to;
+
+                list = list.concat(result.list);
+                }
+
+                if (!list.length) return null;
+                return { list, from, to };
+            };
+        };
 
 
         editor.setOption("hintOptions",{
-            hint: CodeMirror.hint.pseudocode
+            hint: CodeMirror.hint.combine(
+                CodeMirror.hint.pseudocode,
+                CodeMirror.hint.snippet,
+            )
         });
 
         editor.on("inputRead", function(cm, event) {
@@ -1929,7 +2174,7 @@
                     titleText.textContent = selectedTab;
                 }
 
-                build_map(editor.getValue(), selectedTab.endsWith('.txt') );
+                build_map(editor, selectedTab.endsWith('.txt') );
             }
 
 
@@ -2152,7 +2397,7 @@
             setTimeout(() => {
 
 
-                build_map(editor.getValue(), selectedTab.endsWith('.txt'));
+                build_map(editor, selectedTab.endsWith('.txt'));
 
             }, 1);
         
@@ -2258,12 +2503,9 @@
         ln.style.color = "var(--accent)";
         col.style.color = "var(--accent)";
         
-        
+
         
         editor.on('cursorActivity', function(instance) {
-            
- 
-            
             
             
             const cursor = instance.getCursor();
@@ -3020,6 +3262,8 @@
 
         function rename_file(originalName, newName){
 
+            newName = adapt_file_name(newName);
+
             ol_files[ol_files.indexOf(originalName)] = newName;
 
 
@@ -3180,6 +3424,7 @@
                 }
                 else{
 
+                    adapt_file_name(newName);
                     rename_file(org, newName);
 
                 }
@@ -3847,7 +4092,7 @@
 
                 document.documentElement.style.setProperty('--editor-portion', '90%');
                 document.getElementById('mini-map-collumn').style.display = "flex";
-                build_map(editor.getValue(), selectedTab.endsWith('.txt'));
+                build_map(editor, selectedTab.endsWith('.txt'));
             }
             else{
 
@@ -4875,6 +5120,7 @@
                 const contRange = scrollUsed.scrollHeight - scrollUsed.clientHeight;
 
                 scrollUsed.scrollTop = mainRatio * contRange;
+
         
             } //Mini-map
 
@@ -5055,9 +5301,9 @@
 
         editor.on("cursorActivity", cm => {
             
+            let line = cm.getCursor().line;
 
-
-            const line = cm.getCursor().line;
+            
 
             globalLineNum = line;
 
@@ -5073,8 +5319,22 @@
 
 
 
-                if(isLineFolded(editor, line)) editor.addLineClass(lastLineNode.line, "text", 'cm-fold-line-active');
-                else editor.addLineClass(lastLineNode.line, 'text', 'cm-line-active');
+                if(isLineFolded(editor, line) 
+                && lastLineNode.wrapClass 
+                && lastLineNode.wrapClass.includes('cm-line-folded')) editor.addLineClass(lastLineNode.line, "text", 'cm-fold-line-active');
+
+
+            }
+
+            for(let ln = 0; ln < editor.lineCount(); ln++){
+
+                const node = getLineDOM(editor, ln);
+                if(node.textClass && node.textClass.includes('cm-line-active') && ln !== editor.getCursor().line){
+
+                    editor.removeLineClass(ln, 'text', 'cm-line-active');
+
+                }
+
             }
         });
 
@@ -5098,14 +5358,43 @@
             else return null;
 
         }
+        
+        function isLineInsideFold(cm, line) {
+            if (line < 0 || line >= cm.lineCount()) return false;
+
+            const marks = cm.findMarksAt({ line, ch: 0 });
+
+            for (const mark of marks) {
+                if (mark.__isFold) {
+                const range = mark.find();
+                if (range && range.from.line < line && line <= range.to.line) {
+                    return true;
+                }
+                }
+            }
+
+            return false;
+        }
+
 
 
         editor.on('gutterClick', (cm, line, gutter, event) => {
 
-
             if (gutter === 'CodeMirror-foldgutter') {
 
                 const node = getLineDOM(cm, line);
+
+                let activeLineNo = editor.getCursor().line;
+
+                for(let i = 0; i < editor.lineCount(); i++){
+
+                    if(getLineDOM(cm, i).textClass && getLineDOM(cm, i).textClass.includes('cm-line-active')){
+
+                        activeLineNo = i;
+
+                    }
+
+                }
 
                 
 
@@ -5117,14 +5406,22 @@
                         
                         const pLine = findParentLine(cm, globalLineNum);
 
-                        if(pLine) cm.setCursor(pLine, 0);
+                        //if(pLine) cm.setCursor(pLine, 0);
                         editor.addLineClass(line, 'wrap', 'cm-line-folded');
-                        
-                        if(editor.getCursor().line == node.line){
+
+
+                        if(node.textClass && node.textClass.includes('cm-line-active')){
 
                             editor.removeLineClass(line, 'text', 'cm-line-active');
                             editor.addLineClass(line, 'text', 'cm-fold-line-active');
 
+                        }
+                        else editor.removeLineClass(line, 'text', 'cm-fold-line-active');
+
+                        if(isLineInsideFold(editor, activeLineNo)){
+
+                            editor.removeLineClass(activeLineNo, 'text', 'cm-line-active');
+                            editor.addLineClass(line, 'text', 'cm-fold-line-active');
 
                         }
 
@@ -5134,7 +5431,19 @@
                 else if (event.target.closest('.CodeMirror-foldgutter-folded')) {
                     editor.removeLineClass(line, 'wrap', 'cm-line-folded');
 
-                    if(editor.getCursor().line == node.line){
+                    for(let ln = 0; ln < editor.lineCount(); ln++){
+
+                        const nd = getLineDOM(editor, ln);
+
+                        if(nd.textClass && nd.textClass.includes('cm-line-active')){
+
+                            editor.removeLineClass(ln, 'text', 'cm-line-active');
+
+                        }
+
+                    }
+
+                    if(node.textClass && node.textClass.includes('cm-fold-line-active')){
 
                         editor.addLineClass(line, 'text', 'cm-line-active');
                         editor.removeLineClass(line, 'text', 'cm-fold-line-active');
@@ -5142,6 +5451,8 @@
 
                     }
                 }
+
+                build_map(editor, selectedTab.endsWith('.txt'));
             }
         });
 
@@ -5176,12 +5487,12 @@
 
             if(selectedTab.endsWith('.pseudo')){
                 document.getElementById('mini-map-content').style.whiteSpace = 'normal';
-                build_map(editor.getValue(), selectedTab.endsWith('.txt'));
+                build_map(editor, selectedTab.endsWith('.txt'));
                 
                 setTimeout(() => {
 
 
-                    build_map(editor.getValue(), selectedTab.endsWith('.txt'));
+                    build_map(editor, selectedTab.endsWith('.txt'));
 
                 }, 1000);
 
@@ -5278,6 +5589,7 @@
 
             for (const line of allLines) {
 
+                
                 if(line.innerHTML === `${ln_num}`){
 
    
@@ -5369,6 +5681,7 @@
             }
             else{
 
+                
 
                 const name = adapt_file_name(document.getElementById('project-name').value);
                 const compressedCode = LZString.compressToEncodedURIComponent(editor.getValue());
@@ -5568,6 +5881,30 @@
         document.getElementById('mailIcon').addEventListener('click', () => {
             openGmailCompose('pseudowhizz@gmail.com');
         });
+
+        function updateFoldChevronTitles(cm) {
+            const gutter = cm.getWrapperElement()
+                .querySelector('.CodeMirror-foldgutter');
+
+            if (!gutter) return;
+
+            gutter.querySelectorAll('.CodeMirror-foldgutter-open')
+                .forEach(el => {
+                el.title = 'Collapse region';
+                });
+
+            gutter.querySelectorAll('.CodeMirror-foldgutter-folded')
+                .forEach(el => {
+                el.title = 'Expand region';
+                });
+        }
+
+        editor.on('fold',   cm => updateFoldChevronTitles(cm));
+        editor.on('unfold', cm => updateFoldChevronTitles(cm));
+        editor.on('viewportChange', cm => updateFoldChevronTitles(cm));
+        editor.on('refresh', cm => updateFoldChevronTitles(cm));
+
+
 
     </script>
 
