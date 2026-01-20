@@ -248,7 +248,7 @@ function isIdentifiable(str) {
     return str == '.' || str == "_" || isAlpha(str) || !isNaN(Number(str)) && str.trim() !== "";
 }
 function isskippable(str) {
-    return str == " " || str == "\n" || str == "\t";
+    return str == " ";
 }
 function adapter(sentence) {
     return commentFilter(sentence, false);

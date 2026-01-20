@@ -222,13 +222,33 @@ export async function eval_output_expr(
     return MK_NULL();
   }
 
+  function parseEscapes(str) {
+    return str
+      .replace(/\\n/g, "\n")
+      .replace(/\\r/g, "\r")
+      .replace(/\\t/g, "\t")
+      .replace(/\\b/g, "\b")
+      .replace(/\\f/g, "\f")
+      .replace(/\\v/g, "\v")
+      .replace(/\\0/g, "\0")
+      .replace(/\\'/g, "'")
+      .replace(/\\"/g, '"')
+      .replace(/\\\\/g, "\\")    
+      .replace(/\\x([0-9A-Fa-f]{2})/g, (_, hex) =>
+        String.fromCharCode(parseInt(hex, 16))
+      )
+      .replace(/\\u\{([0-9A-Fa-f]+)\}/g, (_, codepoint) =>
+        String.fromCodePoint(parseInt(codepoint, 16))
+      )
+      .replace(/\\u([0-9A-Fa-f]{4})/g, (_, hex) => 
+        String.fromCharCode(parseInt(hex, 16))
+      );
+  }
 
 
   let message: string = convThisToStr(messageComponent).value;
 
-  outputLog.push(message);
-
-
+  outputLog.push(parseEscapes(message));
 
   access_console();
 

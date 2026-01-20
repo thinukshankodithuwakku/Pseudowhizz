@@ -361,7 +361,7 @@ export interface Token {
 }
 
 function isskippable(str: string) {
-  return str == " " || str == "\n" || str == "\t";
+  return str == " ";
 }
 
 

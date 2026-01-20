@@ -1397,7 +1397,7 @@
 
             const snippets = {
 
-                CONSTANT : {token: "CONSTANT", label: "Constant Declaration", template : "CONSTANT <identifier> ← <value>"},
+                CONSTANT : {token: "CONSTANT", label: "Constant Declaration", template : "CONSTANT <identifier> ← <value>", from: 3},
                 WHILE : {token: "WHILE", label: "While Statement", template: "WHILE <condition> DO\n" + tab + "\t<statements>\n" + tab + "ENDWHILE"},
                 REPEAT : {token: "REPEAT", label: "Repeat Statement", template: "REPEAT\n" + tab + "\t<statements>\n" + tab + "UNTIL <condition>"},
                 FUNCTION : {token: "FUNCTION", label: "Function Statement", template: "FUNCTION <identifier>(<param> : <datatype>) RETURNS <datatype>\n" + tab + "\t<statements>\n" + tab + "ENDFUNCTION" }, 
@@ -1419,6 +1419,8 @@
                 const start = CodeMirror.Pos(cursor.line, token.start);
                 const end = CodeMirror.Pos(cursor.line, cursor.ch);
                 const cursorPos = cm.getCursor();
+
+
 
                 cm.replaceRange(completion.text, start, end);
                 cm.setCursor(cursorPos);

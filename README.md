@@ -11,4 +11,13 @@ The site offers a sandbox-style environment in which pseudocode can be excecuted
   <li>Error messages ⚠️</li>
 </ul>
 
-Pseudowhizz is also one of the only editors to offer a free <b>pseudocode-python translator</b> 😉 <i>(With a JavaScript translator in the works!)</i>
+<h3>Advanced Editor Features</h3>
+<ul>
+  <li>Entire array assignment</li>
+  <li>'LENGTH' function can return length of arrays</li>
+  <li>Name chaining</li>
+  <li>'RANDOM' function can take start and end bounds.</li>
+  <li>Can access letter of word by index</li>
+</ul>
+
+Pseudowhizz is also one of the only editors to offer a free <b>pseudocode-python translator</b> and <b>pseudocode-JavaScript translator</b> 😉

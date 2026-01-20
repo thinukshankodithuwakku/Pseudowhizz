@@ -2236,8 +2236,6 @@ export class JST {
     out += stringConds.join(' ? ') + ' : ' + await this.conc(expr.default);
 
     return out;
-
-
   }
   
   public async produce_JS_program(p : Program) : Promise<string> {
@@ -2526,22 +2524,28 @@ export class JST {
 
     const dims = Array.from(expr.indexPairs.keys())
 
-    let out = filler;
-
-
     
 
-    for(let i = dims.length - 1; i >= 0; i--){
+    let ub = await this.translate('', expr.indexPairs.get(dims[dims.length - 1])[1]);
+    let lb = await this.translate('', expr.indexPairs.get(dims[dims.length - 1])[0]);
+
+    let range = lb == '0' ? ub : this.eval_safe([ub, `-${lb}`, '1']);
+    
+    let out = `Array(${range}).fill(${filler})`;
+
+    if(dims.length == 1) return out;
+
+    for(let i = dims.length - 2; i >= 0; i--){
 
 
-      const ub = await this.translate('', expr.indexPairs.get(dims[i])[1]);
-      const lb = await this.translate('', expr.indexPairs.get(dims[i])[0]);
+      ub = await this.translate('', expr.indexPairs.get(dims[i])[1]);
+      lb = await this.translate('', expr.indexPairs.get(dims[i])[0]);
 
-      let range = lb == '0' ? ub : this.eval_safe([ub, `-${lb}`, '1']);
+      range = lb == '0' ? ub : this.eval_safe([ub, `-${lb}`, '1']);
 
-      if(dims.length == 1) return `Array(${range}).fill(${out})`;
+      
 
-      out = `Array({length: ${range}}, () => ${out})`;
+      out = `Array.from({length: ${range}}, () => ${out})`;
 
 
     }

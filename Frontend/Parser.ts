@@ -3702,6 +3702,8 @@ export default class Parser {
 
         const t = this.eat();
 
+
+
         return {
           kind: "StringLiteral",
           text: t.value,
