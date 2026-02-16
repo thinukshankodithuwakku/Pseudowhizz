@@ -199,7 +199,7 @@ export default class PCON {
 
     private str_fileUse_expr(expr : FileUse) : string {
 
-        return `${expr.operation}FILE ${expr.fileName}, ${this.concatenate(expr.assigne)}`;
+        return `${expr.operation}FILE "${expr.fileName}", ${this.concatenate(expr.assigne)}`;
 
 
     }
@@ -207,12 +207,12 @@ export default class PCON {
     private str_file_expr(expr : FileExpr) : string {
 
         if(expr.operation == "OPEN"){
-            return `OPENFILE ${expr.fileName} FOR ${expr.mode}`;
+            return `OPENFILE "${expr.fileName}" FOR ${expr.mode}`;
 
         }
         else{
 
-            return `CLOSEFILE ${expr.fileName}`;
+            return `CLOSEFILE "${expr.fileName}"`;
 
         }
 

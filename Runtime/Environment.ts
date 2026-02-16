@@ -104,7 +104,7 @@ function best_match(input : string, candidates : string[]) : string | null {
 
 export function arityCheck(expected : number, got : number, ln: number){
   if(expected != got){
-    return makeError(`Expected ${expected} arguments but got ${got}!`, "type", ln);
+    return makeError(`Expected ${expected} arguments but got ${got}!`, "Type", ln);
   }
 }
 
@@ -127,7 +127,7 @@ export function SetupGlobalScope(){
 
         if(args[0].type == "Object" && localStorage.getItem('Af') != "true"){
 
-          return makeError(`"LENGTH()" method only takes parameters of type STRING. To return array lengths, enable "Support Non-Syllabus Features" in settings.`, "type", args[0].ln);
+          return makeError(`"LENGTH()" method only takes parameters of type STRING. To return array lengths, enable "Support Non-Syllabus Features" in settings.`, "Type", args[0].ln);
 
         }
 
@@ -162,7 +162,7 @@ export function SetupGlobalScope(){
         }
         else{
           
-          return makeError("LENGTH function only takes string (or object literal) parameters!", "type", subjectComponent.ln) ;
+          return makeError("LENGTH function only takes string (or object literal) parameters!", "Type", subjectComponent.ln) ;
         }
 
         return MK_NUMBER(length, Tokens.Integer);
@@ -183,7 +183,7 @@ export function SetupGlobalScope(){
         args = autoConvert(args);
 
         if(args[0].type != "string" && args[0].type != "char"){
-          return makeError("Argument is neither of string nor char type!", "type", args[0].ln) ;
+          return makeError("Argument is neither of string nor char type!", "Type", args[0].ln) ;
         }
 
 
@@ -211,7 +211,7 @@ export function SetupGlobalScope(){
         }
 
         if(args[0].type != "string" && args[0].type != "char"){
-          return makeError("Argument is neither of STRING nor CHAR type!", "type", args[0].ln) ;
+          return makeError("Argument is neither of STRING nor CHAR type!", "Type", args[0].ln) ;
         }
 
 
@@ -242,7 +242,7 @@ export function SetupGlobalScope(){
         args = autoConvert(args);
 
         if(args[0].type != "string" && args[0].type != "char"){
-          return makeError("First argument of a 'SUBSTRING' function must be of type STRING", "type", args[0].ln);
+          return makeError("First argument of a 'SUBSTRING' function must be of type STRING", "Type", args[0].ln);
         }
 
         const text = (args[0] as StringVal).value;
@@ -259,11 +259,11 @@ export function SetupGlobalScope(){
         const end : number = ((args[2] as NumberVal).value);
 
         if(start + 1 < 1){
-          return makeError("Start position must be above zero!", "runtime", args[0].ln);
+          return makeError("Start position must be above zero!", "Runtime", args[0].ln);
         }
 
         if(end < 1){
-          return makeError("Number of characters to be extracted must be above zero!", "runtime", args[0].ln);
+          return makeError("Number of characters to be extracted must be above zero!", "Runtime", args[0].ln);
         }
 
 
@@ -296,7 +296,7 @@ export function SetupGlobalScope(){
 
         args = autoConvert(args);
         if(args[0].type !== "number"){
-          return makeError("Argument 1 is not of type REAL!", "type", args[0].ln) ;
+          return makeError("Argument 1 is not of type REAL!", "Type", args[0].ln) ;
         }
 
         if(args[1].type == "number"){
@@ -304,17 +304,17 @@ export function SetupGlobalScope(){
 
           if(runtimeval.value < 0){
 
-            return makeError("Argument 2 of a 'ROUND' function must be above zero!", "runtime", args[0].ln);
+            return makeError("Argument 2 of a 'ROUND' function must be above zero!", "Runtime", args[0].ln);
 
           }
 
 
           if(!isint(runtimeval.value)){
-            return makeError("Argument 2 of is not of type INTEGER!", "type", args[0].ln) ;
+            return makeError("Argument 2 of is not of type INTEGER!", "Type", args[0].ln) ;
           }
         }
         else{
-          return makeError("Argument 2 of is not of type INTEGER!", "type", args[0].ln) ;
+          return makeError("Argument 2 of is not of type INTEGER!", "Type", args[0].ln) ;
         }
 
         const num = (args[0] as NumberVal).value;
@@ -334,13 +334,13 @@ export function SetupGlobalScope(){
       MK_NATIVE_FN((args, scope) => {
         args = autoConvert(args);
         if(args.length > 2 || args.length == 1){
-          return makeError(`Expected 0 OR 2 arguments but got ${args.length}!`, "runtime", args[0].ln);
+          return makeError(`Expected 0 OR 2 arguments but got ${args.length}!`, "Runtime", args[0].ln);
         }
 
 
         if(args && args.length != 0 && localStorage.getItem('Af') != "true"){
 
-          return makeError(`Expected 0 arguments but got ${args.length}!`, "runtime", args[0].ln);
+          return makeError(`Expected 0 arguments but got ${args.length}!`, "Runtime", args[0].ln);
 
         }
 
@@ -351,11 +351,11 @@ export function SetupGlobalScope(){
 
 
           if(args[0].type != "number"){
-            return makeError("First argument is not of type REAL!", "type", args[0].ln);
+            return makeError("First argument is not of type REAL!", "Type", args[0].ln);
           }
 
           if(args[1].type != "number"){
-            return makeError("Second argument is not of type REAL!", "type", args[0].ln)
+            return makeError("Second argument is not of type REAL!", "Type", args[0].ln)
           }
 
           const start = (args[0] as NumberVal).value;
@@ -381,11 +381,11 @@ export function SetupGlobalScope(){
         args = autoConvert(args);
 
         if(!isIntegerRuntime(args[0])){
-          return makeError("First argument is not of type INTEGER!", "type", args[0].ln);
+          return makeError("First argument is not of type INTEGER!", "Type", args[0].ln);
         }
         
         if(!isIntegerRuntime(args[1])){
-          return makeError("Second argument is not of type INTEGER!", "type", args[0].ln);
+          return makeError("Second argument is not of type INTEGER!", "Type", args[0].ln);
         }
 
         const num1 = (args[0] as NumberVal).value;
@@ -408,11 +408,11 @@ export function SetupGlobalScope(){
         args = autoConvert(args);
         
         if(!isIntegerRuntime(args[0])){
-          return makeError("First argument is not of type INTEGER!", "type", args[0].ln);
+          return makeError("First argument is not of type INTEGER!", "Type", args[0].ln);
         }
         
         if(!isIntegerRuntime(args[1])){
-          return makeError("Second argument is not of type INTEGER!", "type", args[0].ln);
+          return makeError("Second argument is not of type INTEGER!", "Type", args[0].ln);
         }
         
 
@@ -438,7 +438,7 @@ export function SetupGlobalScope(){
           args = autoConvert(args);
           
           if(!Confirm(args[0], Tokens.Real, args[0].ln, env, [initial_frame])){
-            return makeError("Expecting argument of type REAL", "type", args[0].ln);
+            return makeError("Expecting argument of type REAL", "Type", args[0].ln);
           }
 
         
@@ -446,7 +446,7 @@ export function SetupGlobalScope(){
         }
         else{
 
-          return makeError('"NUM_TO_STR()" is a method part of the "Non-syllabus" collection. To call it, enable "Support Non-syllabus Features" in settings.', "name", args[0].ln)
+          return makeError('"NUM_TO_STR()" is a method part of the "Non-syllabus" collection. To call it, enable "Support Non-syllabus Features" in settings.', "Name", args[0].ln)
 
         }
       }),
@@ -465,7 +465,7 @@ export function SetupGlobalScope(){
           args = autoConvert(args);
           
           if(!Confirm(args[0], Tokens.String, args[0].ln, env, [initial_frame])){
-            return makeError("Expecting argument of type STRING", "type", args[0].ln);
+            return makeError("Expecting argument of type STRING", "Type", args[0].ln);
           }
         
           return MK_NUMBER(parseFloat((args[0] as StringVal).value), "Auto");
@@ -473,7 +473,7 @@ export function SetupGlobalScope(){
         }
         else{
           
-          return makeError('"STR_TO_NUM()" is a method part of the "Non-syllabus" collection. To call it, enable "Support Non-syllabus Features" in settings.', "name", args[0].ln);
+          return makeError('"STR_TO_NUM()" is a method part of the "Non-syllabus" collection. To call it, enable "Support Non-syllabus Features" in settings.', "Name", args[0].ln);
         }
 
         
@@ -495,7 +495,7 @@ export function SetupGlobalScope(){
 
         if(localStorage.getItem('Af') != "true"){
 
-          return makeError('EOF()" is a method part of the "Non-syllabus" collection. To call it, enable "Support Non-syllabus Features" in settings.', "name", args[0].ln);
+          return makeError('EOF()" is a method part of the "Non-syllabus" collection. To call it, enable "Support Non-syllabus Features" in settings.', "Name", args[0].ln);
         
 
         }
@@ -507,14 +507,14 @@ export function SetupGlobalScope(){
 
           if(args[0].type == "file-name"){
             errorLog.pop();
-            return makeError("Expecting file name in STRING format!", "type");
+            return makeError("Expecting file name in STRING format!", "Type");
 
 
           }
           else{
 
             errorLog.pop();
-            return makeError("Expecting valid file name!", "type");
+            return makeError("Expecting valid file name!", "Type");
           }
 
         }
@@ -522,10 +522,10 @@ export function SetupGlobalScope(){
         const flnm = (args[0] as StringVal).value.trim();
 
         if(flnm === ""){
-          return makeError("Cannot read properties of undefined!", "type", args[0].ln);
+          return makeError("Cannot read properties of undefined!", "Type", args[0].ln);
         }
         else if(! (extract_file_type(flnm) == "txt")){
-          return makeError(`Invalid file type '.${extract_file_type(flnm)}'!`, "type", args[0].ln);
+          return makeError(`Invalid file type '.${extract_file_type(flnm)}'!`, "Type", args[0].ln);
         }
         
         scope.resolve(flnm, args[0].ln, [initial_frame], env);
@@ -655,12 +655,12 @@ export default class Environment {
 
       if(varname == "TRUE" || varname == "FALSE"){
 
-        return makeError(`'${varname}' is a reserved keyword. Please try a different name!`, "runtime", value.ln)
+        return makeError(`'${varname}' is a reserved keyword. Please try a different name!`, "Runtime", value.ln)
 
       }
       else{
 
-        return makeError(`Cannot re-declare variable ${varname} as it already is defined.`, "runtime", value.ln) ;
+        return makeError(`Cannot re-declare variable ${varname} as it already is defined.`, "Runtime", value.ln) ;
 
       }
 
@@ -687,7 +687,7 @@ export default class Environment {
     if(env.constants.has(varname)){
 
 
-      return makeError(`Cannot assign to '${varname}' because it is a constant!`, "type", ln, StackFrames) ;
+      return makeError(`Cannot assign to '${varname}' because it is a constant!`, "Type", ln, StackFrames) ;
     }
 
     env.variables.set(varname, value);
@@ -738,13 +738,13 @@ export default class Environment {
 
       if(suggestion){
 
-        makeError(`Cannot find name '${varname}'. Did you mean '${suggestion}'?`, "name", ln, StackFrames);
+        makeError(`Cannot find name '${varname}'. Did you mean '${suggestion}'?`, "Name", ln, StackFrames);
 
       }
       else{
 
     
-        makeError(`Cannot find name '${varname}'!`, "name", ln, StackFrames) ;
+        makeError(`Cannot find name '${varname}'!`, "Name", ln, StackFrames) ;
       }
 
       

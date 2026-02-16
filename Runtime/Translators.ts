@@ -33,7 +33,7 @@ import {evaluate} from "./Interpreter.js";
 import Environment from "./Environment.js";
 
 import { Token, tokenize, Tokens } from "../Frontend/Lexer.js";
-import { StackFrame, errorLog} from "../Main.js";
+import { StackFrame, errorLog, makeError} from "../Main.js";
 
 import { conv_runtimeval_dt, eval_assignment_expr, isint, kill_program, fn_args_size } from "./Eval/Expressions.js";
 import { eval_var_declaration } from "./Eval/Statements.js";
@@ -2257,6 +2257,12 @@ export class JST {
 
     program = "// ## JavaScript representation result ##\n\n// IMPORTANT! Always manually review translated scripts before excecution\n\n" + program;
 
+    if(errorLog.length > 0){
+
+      program = "// Cannot finish translation due to a potential runtime error.\n// Evaluate your program first and check that there are no errors before translating!";
+
+    }
+
     return program;
 
   }
@@ -2343,11 +2349,68 @@ export class JST {
       
   }
 
+  private async unpack_operands(expr : Expr) : Promise<string[]> {
+
+    if(expr.kind == "BinaryExpr"){
+
+      const be = expr as BinaryExpr;
+      const operands = [];
+
+      if(be.left.kind == "BinaryExpr"){
+
+        const sub = await this.unpack_operands(be.left);
+        sub.forEach(e => operands.push(e));
+
+
+      }
+      else {
+
+        const raw = await this.translate('', be.left);
+        operands.push(raw);
+
+      }
+
+      if(be.right.kind == "BinaryExpr"){
+
+        const sub = await this.unpack_operands(be.right);
+        sub.forEach(e => operands.push(e));
+
+
+      }
+      else {
+
+        const raw = await this.translate('', be.right);
+        if(be.operator == '-') operands.push('-' + raw);
+        else operands.push(raw);
+        
+
+      }
+
+      return operands;
+
+    }
+    else{
+
+      return [await this.translate('', expr)];
+
+    }
+
+  }
+
   private async trans_member_expr(expr : NewMemberExpr, ixOvwrt = false) : Promise<string> {
 
     let out = await this.translate('', expr.object);
 
+    if(!this.var_map.get((expr.object as Identifier).symbol)){
+
+      makeError(`Cannot find name '${this.var_map.get((expr.object as Identifier).symbol)}'!`, "Name");
+      return '';
+
+    }
+
     for(let i = 0; i < expr.indexes.length; i++){
+
+      
 
       const start = (this.var_map.get((expr.object as Identifier).symbol)[1] as NewObjectLiteralExpr).indexPairs
       ? await this.translate('', (this.var_map.get((expr.object as Identifier).symbol)[1] as NewObjectLiteralExpr).indexPairs.get(i + 1)[0])
@@ -2355,7 +2418,10 @@ export class JST {
 
       const raw = await this.translate('',expr.indexes[i]);
 
-      const ix = start == '0' ? raw : this.eval_safe([raw, `-${start}`]);
+      const operands = await this.unpack_operands(expr.indexes[i]);
+
+
+      const ix = start == '0' ? raw : this.eval_safe([...operands, `-${start}`]);
 
       out += `[${ix}]`;
     }
@@ -2392,7 +2458,9 @@ export class JST {
 
             const up = this.eval_safe([max ,`-${min}`]);
 
-            const out = `Math.round(Math.random() * (${up})) + ${min}`;
+            const out = min == '0'
+            ? `Math.round(Math.random() * (${up}))`
+            : `Math.round(Math.random() * (${up})) + ${min}`;
 
             return out;
 
@@ -2448,6 +2516,7 @@ export class JST {
   }
 
   public eval_safe(args : string[]) : string {
+
 
     const exprs = args.filter(arg => Number.isNaN(Number(arg)))
     .map(expr => expr.startsWith('-') ? '- ' + expr.slice(1) : '+ ' + expr);
@@ -2673,45 +2742,58 @@ export class JST {
 
           if(name == "TRUE" || name == "FALSE") return Tokens.Boolean;
 
+          if(!this.var_map.get(name)){
+
+            makeError(`Cannot find name '${this.var_map.get(name)}'!`, "Name");
+
+          }
+
           return this.var_map.get(name)[0];
 
       case "ObjectLiteral":
           return (expr as NewObjectLiteralExpr).dataType as dataType;
 
       case "CallExpr":
-          const call = expr as CallExpr;
+        const call = expr as CallExpr;
 
-          const call_name = (call.callee as Identifier).symbol.toUpperCase();
+        const call_name = (call.callee as Identifier).symbol.toUpperCase();
 
-          switch(call_name){
-            case "LCASE":
-              return Tokens.String;
-            case "UCASE":
-              return Tokens.String;
-            case "LENGTH":
-              return Tokens.Integer;
-            case "RANDOM":
-              return call.args.length == 2 ? Tokens.Integer : Tokens.Real;
-            case "STR_TO_NUM":
-              return Tokens.Real;
-            case "NUM_TO_STR":
-              return Tokens.String;
-            case "SUBSTRING":
-              return Tokens.String;
-            case "ROUND":
-              return Tokens.Real;
-            case "DIV":
-              return Tokens.Integer;
-            case "MOD":
-              return Tokens.Integer;
-            case "EOF":
-              return Tokens.Boolean;
-            default:
-              return this.var_map.get((call.callee as Identifier).symbol)[0];
-          }
+        switch(call_name){
+          case "LCASE":
+            return Tokens.String;
+          case "UCASE":
+            return Tokens.String;
+          case "LENGTH":
+            return Tokens.Integer;
+          case "RANDOM":
+            return call.args.length == 2 ? Tokens.Integer : Tokens.Real;
+          case "STR_TO_NUM":
+            return Tokens.Real;
+          case "NUM_TO_STR":
+            return Tokens.String;
+          case "SUBSTRING":
+            return Tokens.String;
+          case "ROUND":
+            return Tokens.Real;
+          case "DIV":
+            return Tokens.Integer;
+          case "MOD":
+            return Tokens.Integer;
+          case "EOF":
+            return Tokens.Boolean;
+          default:
+
+            if(!this.var_map.get((call.callee as Identifier).symbol)){
+
+              makeError(`Cannot find name '${this.var_map.get((call.callee as Identifier).symbol)}'!`, "Name");
+
+            }
+
+            return this.var_map.get((call.callee as Identifier).symbol)[0];
+        }
       
       default:
-          return Tokens.Any;
+        return Tokens.Any;
     }
   }
 
@@ -2847,7 +2929,7 @@ export class JST {
 
         }
 
-        out += tab + this.add_comment(`} while(${await this.translate(tab, stmt.iterationCondition)});`, stmt.footer_comment);
+        out += tab + this.add_comment(`} while(${await this.negate_condition(stmt.iterationCondition)});`, stmt.footer_comment);
 
         return out;
 
@@ -2855,6 +2937,50 @@ export class JST {
         return '';
     }
 
+
+  }
+
+  private inverse_op(op : string) : string {
+
+    switch(op){
+
+      case '=':
+        return '!='
+
+      case '<>':
+        return '==';
+
+      case '>':
+        return '<=';
+
+      case '<':
+        return '>=';
+
+      case '<=':
+        return '>';
+
+      case '>=':
+        return '<';
+
+      default:
+        return op;
+
+    }
+
+  }
+
+  private async negate_condition(c : Expr) : Promise<string> {
+
+    if(c.kind != "BinaryExpr") return await this.translate('', c);
+    const cond = c as BinaryExpr;
+
+    const lhs = await this.translate('', cond.left);
+    const rhs = await this.translate('', cond.right);
+
+    const inv = this.inverse_op(cond.operator);
+
+    if(cond.operator == inv) return `!(${lhs} ${cond.operator} ${rhs})`;
+    else return `${lhs} ${inv} ${rhs}`;
 
   }
 

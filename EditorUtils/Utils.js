@@ -1,4 +1,5 @@
 import { tokenize_line, Tokens } from "../Frontend/Lexer.js";
+import { UserFnArgDesc } from "../Main.js";
 const natives = ["SUBSTRING", "LENGTH", "LCASE", "UCASE", "ROUND", "RANDOM", "EOF", "NUM_TO_STR", "STR_TO_NUM", "MOD", "DIV"];
 const FnDescRec = {
     "SUBSTRING": "Returns a string of length <length> starting at position <start>.",
@@ -42,6 +43,93 @@ const FnTempRec = {
     "STR_TO_NUM": "STR_TO_NUM(<string> : STRING|CHAR) RETURNS REAL",
     "None": "None",
 };
+export function save_user_fn(line) {
+    const at = () => { return ln_tokens[0] ? ln_tokens[0].type : Tokens.Null; };
+    const ln_tokens = tokenize_line(line, 0);
+    if (!(at() == Tokens.Function || at() == Tokens.Procedure))
+        return;
+    const is_fn = ln_tokens.shift().type == Tokens.Function; //Consume FUNCTION
+    if (at() != Tokens.Identifier)
+        return;
+    const name = ln_tokens.shift().value; //Consume name
+    if ([...UserFnArgDesc.keys()].includes(name))
+        return;
+    if (at() != Tokens.OpenBracket)
+        return;
+    ln_tokens.shift(); //Consume '('
+    const params = new Map();
+    const end = () => { return ln_tokens[0].type == Tokens.CloseBracket || ln_tokens[0].type == Tokens.EOL || ln_tokens[0].type == Tokens.Returns; };
+    const dataTypes = [Tokens.Integer, Tokens.Real, Tokens.String, Tokens.Char, Tokens.Boolean, Tokens.Array];
+    while (!end()) {
+        const names = [];
+        let dataType = null;
+        while (at() != Tokens.Colon) {
+            if (end()) {
+                return;
+            }
+            if (at() == Tokens.Identifier) {
+                names.push(ln_tokens.shift().value);
+            }
+            if (at() == Tokens.Comma) {
+                ln_tokens.shift();
+            }
+            else if (at() != Tokens.Colon && at() != Tokens.Identifier) {
+                return;
+            }
+        }
+        if (at() != Tokens.Colon)
+            return;
+        ln_tokens.shift();
+        if (!dataTypes.includes(at()))
+            return;
+        if (at() == Tokens.Array) {
+            ln_tokens.shift();
+            if (at() != Tokens.Of)
+                return;
+            ln_tokens.shift();
+            if (at() == Tokens.Array || !dataTypes.includes(at()))
+                return;
+            dataType = `ARRAY OF ${ln_tokens.shift().value}`;
+        }
+        else
+            dataType = ln_tokens.shift().value;
+        names.forEach(name => params.set(name, dataType));
+        if (!end() && at() != Tokens.Comma)
+            return;
+        if (at() == Tokens.Comma)
+            ln_tokens.shift();
+    }
+    if (at() != Tokens.CloseBracket)
+        return;
+    ln_tokens.shift();
+    if (is_fn && at() != Tokens.Returns)
+        return;
+    else if (!is_fn && at() == Tokens.Returns)
+        return;
+    ln_tokens.shift();
+    let returnType = null;
+    if (is_fn && (!at() || !dataTypes.includes(at())))
+        return;
+    if (is_fn && at() == Tokens.Array) {
+        ln_tokens.shift();
+        if (at() != Tokens.Of)
+            return;
+        ln_tokens.shift();
+        if (at() == Tokens.Array || !dataTypes.includes(at()))
+            return;
+        returnType = `ARRAY OF ${ln_tokens.shift().value}`;
+    }
+    else
+        returnType = is_fn ? ln_tokens[0].value : undefined;
+    if (is_fn && !(name && returnType))
+        return;
+    const names = [...params.keys()].map(name => `<${name}> : ${params.get(name)}`);
+    const names_conc = names.join(', ');
+    const desc = is_fn
+        ? `${name}(${names_conc}) RETURNS ${returnType}`
+        : `${name}(${names_conc})`;
+    UserFnArgDesc.set(name, { label: desc, params: names, returns: returnType });
+}
 function spit_html(func_name, current_parameter) {
     switch (func_name) {
         case "RANDOM":
@@ -155,6 +243,14 @@ function spit_html(func_name, current_parameter) {
             };
     }
 }
+function userFn_spit_html(name, param) {
+    const func = UserFnArgDesc.get(name);
+    const params = func.params.map(p => p.replace('<', '&lt;').replace('>', '&gt;'));
+    const cur_param = params[param];
+    const html = params.map(param => param == cur_param ? `<span class="hint-match">${param}</span>` : param).join(', ');
+    const out = func.returns ? `${name}(${html}) RETURNS ${func.returns}` : `${name}(${html})`;
+    return out;
+}
 export class DescBox {
     constructor(cm) {
         this.active = false;
@@ -167,6 +263,7 @@ export class DescBox {
         const desc_cont = document.createElement("div");
         desc_cont.classList.add('desc-box-body');
         desc_cont.appendChild(desc);
+        this.descBoxBody = desc_cont;
         this.descBox.appendChild(name_cont);
         const hr = document.createElement("hr");
         hr.classList.add('desc-box-hr');
@@ -176,18 +273,43 @@ export class DescBox {
         this.descBox.classList.add('desc-box');
         document.documentElement.appendChild(this.descBox);
     }
+    restoreNativeBox() {
+        this.descBox.appendChild(this.descBoxBody);
+    }
+    switchUserFnBox() {
+        const body = this.descBox.querySelector('.desc-box-body');
+        if (body)
+            body.remove();
+    }
     scan(fn_name) {
         for (const name of natives)
             if (fn_name.endsWith(name))
                 return name;
         return null;
     }
+    user_tick(name, co_ords, parameter = 0) {
+        this.switchUserFnBox();
+        const target = document.getElementsByClassName('desc-box-header')[0];
+        const func = UserFnArgDesc.get(name);
+        if (!func)
+            return;
+        if (parameter > func.params.length - 1) {
+            this.close();
+            return;
+        }
+        target.innerHTML = userFn_spit_html(name, parameter);
+        const line_height = co_ords.bottom - co_ords.top;
+        this.descBox.style.left = co_ords.left + 'px';
+        this.descBox.style.top = (co_ords.top + line_height) + 'px';
+        this.open();
+    }
     tick(fn_name, co_ords, parameter) {
+        this.restoreNativeBox();
         const name = this.scan(fn_name);
-        if (name == null)
+        if (name == null || !(name in FnDescRec)) {
+            this.user_tick(fn_name, co_ords, parameter);
             return;
-        if (!(name in FnDescRec))
-            return;
+        }
         const target = document.getElementsByClassName('desc-box-header')[0];
         if (parameter || parameter == 0) {
             if (parameter > FnArgDesc[name].length - 1) {

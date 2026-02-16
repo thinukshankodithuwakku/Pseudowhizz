@@ -19,7 +19,7 @@ const control = /^(ELSEIF|IF|ELS\E|ENDIF|THEN|CASE|OF|ENDCASE|OTHERWISE|RETURNS|
 const logical = /^(MOD|DIV|NOT|AND|OR|)$/;
 
 
-function mmp_tokenise_line(line : string, ch : number = 0){ //Special tokenizer just for the minimap
+export function mmp_tokenise_line(line : string, ch : number = 0){ //Special tokenizer just for the minimap
 
     const chars = line.split('');
     const Tokens : mmpToken[] = [];
@@ -352,13 +352,13 @@ function parse_primary(tk : mmpToken) : string {
     else if(tk.type == "identifier"){
 
 
-        if(methods.includes(tk.value)){
+        if(methods.has(tk.value)){
             return '<span class="cm-userFn">'+tk.value+'</span>';
         }
-        else if(constants.includes(tk.value)){
+        else if(constants.has(tk.value)){
             return '<span class="cm-constant">'+tk.value+'</span>';
         }
-        else if(procedures.includes(tk.value)){
+        else if(procedures.has(tk.value)){
             return '<span class="cm-userFn">'+tk.value+'</span>';
         }
         else{

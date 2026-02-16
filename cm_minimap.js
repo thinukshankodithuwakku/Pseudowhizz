@@ -5,7 +5,7 @@ const boolean = /^(TRUE|FALSE)$/;
 const native = /^(LCASE|UCASE|NUM_TO_STR|STR_TO_NUM|SUBSTRING|EOF|ROUND|RANDOM|LENGTH)$/;
 const control = /^(ELSEIF|IF|ELS\E|ENDIF|THEN|CASE|OF|ENDCASE|OTHERWISE|RETURNS|RETURN|READ|WRITE|STEP|FOR|TO|CALL|NEXT|WHILE|REPEAT|ENDWHILE|DO|UNTIL)$/;
 const logical = /^(MOD|DIV|NOT|AND|OR|)$/;
-function mmp_tokenise_line(line, ch = 0) {
+export function mmp_tokenise_line(line, ch = 0) {
     const chars = line.split('');
     const Tokens = [];
     let start = ch;
@@ -226,13 +226,13 @@ function parse_primary(tk) {
         return '<span class="cm-number" style="color: var(--number)">' + tk.value + '</span>';
     }
     else if (tk.type == "identifier") {
-        if (methods.includes(tk.value)) {
+        if (methods.has(tk.value)) {
             return '<span class="cm-userFn">' + tk.value + '</span>';
         }
-        else if (constants.includes(tk.value)) {
+        else if (constants.has(tk.value)) {
             return '<span class="cm-constant">' + tk.value + '</span>';
         }
-        else if (procedures.includes(tk.value)) {
+        else if (procedures.has(tk.value)) {
             return '<span class="cm-userFn">' + tk.value + '</span>';
         }
         else {

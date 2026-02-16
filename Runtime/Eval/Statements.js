@@ -16,7 +16,7 @@ export async function eval_program(program, env) {
         if (statement.kind == "CallExpr") {
             const callee = await evaluate(statement.callee, env, [{ expr: undefined, ln: undefined, context: "<module>" }]);
             if (!callee.isProcedure) {
-                return makeError("Unassigned expression encountered!", "type", statement.ln);
+                return makeError("Unassigned expression encountered!", "Type", statement.ln);
             }
         }
         lastEvaluated = await evaluate(statement, env, [initial_frame]);
@@ -50,7 +50,7 @@ export async function eval_var_declaration(declaration, env, StackFrames) {
                 types.push((await evaluate(val, env, StackFrames)).type);
             }
             if (types.includes("Object")) {
-                return makeError('Entire ARRAY assignment has been turned off. To allow entire ARRAY assignment, enable "Support Non-syllabus Features" in settings.', "type", declaration.value[0].ln);
+                return makeError('Entire ARRAY assignment has been turned off. To allow entire ARRAY assignment, enable "Support Non-syllabus Features" in settings.', "Type", declaration.value[0].ln);
             }
         }
     }

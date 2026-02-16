@@ -30,7 +30,7 @@ export async function eval_program(program: Program, env: Environment): Promise<
 
       if(!callee.isProcedure){
 
-        return makeError("Unassigned expression encountered!", "type", statement.ln);
+        return makeError("Unassigned expression encountered!", "Type", statement.ln);
 
       }
 
@@ -98,7 +98,7 @@ export async function eval_var_declaration(
 
           if(types.includes("Object")){
 
-            return makeError('Entire ARRAY assignment has been turned off. To allow entire ARRAY assignment, enable "Support Non-syllabus Features" in settings.', "type", declaration.value[0].ln);
+            return makeError('Entire ARRAY assignment has been turned off. To allow entire ARRAY assignment, enable "Support Non-syllabus Features" in settings.', "Type", declaration.value[0].ln);
 
           }
         }

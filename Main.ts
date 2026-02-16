@@ -1,4 +1,4 @@
-import { CallExpr, Expr, FunctionDeclaration, IterationStmt, NodeType, NullLiteral, NumericLiteral, Program, SelectionStmtDeclaration, Stmt, VarDeclaration } from "./Frontend/AST.js";
+import { CallExpr, Expr, FileExpr, FunctionDeclaration, IterationStmt, NodeType, NullLiteral, NumericLiteral, Program, SelectionStmtDeclaration, Stmt, VarDeclaration } from "./Frontend/AST.js";
 import Parser, { errToken } from "./Frontend/Parser.js";
 import Environment, {SetupGlobalScope} from "./Runtime/Environment.js";
 import { evaluate } from "./Runtime/Interpreter.js";
@@ -7,9 +7,17 @@ import { Token, tokenize, Tokens } from "./Frontend/Lexer.js";
 import {PyT, JST} from "./Runtime/Translators.js";
 
 
+interface ConsoleLine {
 
+  type: 'output' | 'prompt' | 'input',
+  value: string,
+
+} 
+
+export const UserFnArgDesc = new Map<string, {label : string, params : string[], returns : string}>();
 
 export let outputLog : string[] = [];
+export let consoleHistory : ConsoleLine[] = [];
 export let errorLog : string[] = [];
 export let errorLines : number[] = [];
 export let pauseLog : string[] = [];
@@ -19,9 +27,11 @@ export let programFile : string;
 export const global_file_state = new Map<string, [string, string]>();
 export const func_map = new Map<string, "FUNCTION" | "PROCEDURE">();
 export let err : error;
+export const callStackLimit = 8000;
 //The above map: <filename, [r/w mode, using file]
 export let cur_fl = "Main.pseudo";
-export let natives = ["LCASE", "UCASE", "LEN", "RND", "INT", "STR", "ASC", "CHR", "VAL", "SIN", "COS", "TAN", "LOG", "EXP", "SQRT", "POW", "ABS", "MID",  "LEFT", "RIGHT", "JOIN", "SPLIT"]
+export let natives = ["LCASE", "UCASE", "LENGTH", "ROUND", "EOF", "DIV", "MOD", "SUBSTRING"];
+
 
 export interface StackFrame {
 
@@ -85,7 +95,7 @@ export function resolveFile(filename : string, request : "MODE" | "CONTENT" | "L
 
 
   if(!keyArr.includes(filename)){
-    makeError(`File ${filename} does not exist or has been closed!`, "runtime",undefined,StackFrames) ;
+    makeError(`File '${filename}' does not exist or has been closed!`, "Runtime",undefined,StackFrames) ;
     return null;
   }
   else{
@@ -110,7 +120,7 @@ export function UseFile(filename : string, operation : "READ" | "WRITE", env : E
   const keyArr = Array.from(pseudoFiles.keys());
 
   if(!keyArr.includes(filename)){
-    makeError(`File ${filename} does not exist or has been closed!`, "runtime", undefined, StackFrames) ;
+    makeError(`File ${filename} does not exist or has been closed!`, "Runtime", undefined, StackFrames) ;
   }
   else{
     if(operation == "READ"){
@@ -118,12 +128,12 @@ export function UseFile(filename : string, operation : "READ" | "WRITE", env : E
 
       if(pseudoFiles.get(filename) != "READ" && localStorage.getItem("Flmd") == "false"){
 
-        makeError(`File '${filename}' has not been opened for reading!`, "runtime",undefined, StackFrames) ;
+        makeError(`File '${filename}' has not been opened for reading!`, "Runtime",undefined, StackFrames) ;
       }
       else{
 
         if(FileValues.get(filename).length == 0){
-          makeError(`Reached end of file '${filename}'!`, "runtime",undefined, StackFrames);
+          makeError(`Reached end of file '${filename}'!`, "Runtime",undefined, StackFrames);
           return " ";
         }
         else{
@@ -141,7 +151,7 @@ export function UseFile(filename : string, operation : "READ" | "WRITE", env : E
 
 
       if(pseudoFiles.get(filename) != "WRITE" && localStorage.getItem("Flmd") == "false"){
-        makeError(`File '${filename}' has not been opened for writing!`, "runtime",undefined, StackFrames);
+        makeError(`File '${filename}' has not been opened for writing!`, "Runtime",undefined, StackFrames);
       }
       else{
          
@@ -156,8 +166,7 @@ export function UseFile(filename : string, operation : "READ" | "WRITE", env : E
         if((wrap.startsWith("'") && wrap.endsWith("'")) || (wrap.startsWith('"') && wrap.endsWith('"'))){
           wrap = wrap.slice(1,-1);
         }
-          
-
+        
 
         FileValues.set(filename, [wrap]);
         files.set(filename, wrap);
@@ -178,7 +187,7 @@ export function configureFileMemory(filename : string, mode: "READ" | "WRITE", o
   if(operation == "OPEN"){
     if(!keyArr.includes(filename)){
 
-      makeError(`File '${filename}' does not exist!`, "runtime", ln, StackFrames) ;
+      makeError(`File '${filename}' does not exist!`, "Runtime", ln, StackFrames) ;
     }
     else{
       
@@ -186,7 +195,7 @@ export function configureFileMemory(filename : string, mode: "READ" | "WRITE", o
 
       if(foreign_access){
 
-        makeError(`File '${filename}' is already open in another program. Please close it first before using it in this program!`, "runtime", ln, StackFrames);
+        makeError(`File '${filename}' is already open in another program. Please close it first before using it in this program!`, "Runtime", ln, StackFrames);
 
       }
       else if(pseudoFiles.has(filename)){
@@ -194,7 +203,7 @@ export function configureFileMemory(filename : string, mode: "READ" | "WRITE", o
         
 
         if(pseudoFiles.get(filename) == mode){
-          makeError(`File '${filename}' is already open in ${mode} mode!`, "runtime", ln, StackFrames);
+          makeError(`File '${filename}' is already open in ${mode} mode!`, "Runtime", ln, StackFrames);
         }
         else{
           pseudoFiles.set(filename, mode);
@@ -218,7 +227,7 @@ export function configureFileMemory(filename : string, mode: "READ" | "WRITE", o
   }
   else if(operation == "CLOSE"){
     if(!keyArr.includes(filename)){
-     makeError(`File '${filename}' does not exist!`, "runtime", ln, StackFrames);
+     makeError(`File '${filename}' does not exist!`, "Runtime", ln, StackFrames);
     }
     else{
       if(pseudoFiles.has(filename)){
@@ -227,7 +236,7 @@ export function configureFileMemory(filename : string, mode: "READ" | "WRITE", o
           global_file_state.set(filename, ['c', programFile]);
       }
       else{
-        makeError(`File '${filename}' already closed or has not been opened yet!`, "runtime", ln, StackFrames);
+        makeError(`File '${filename}' already closed or has not been opened yet!`, "Runtime", ln, StackFrames);
       }
       
     }
@@ -238,44 +247,72 @@ export function configureFileMemory(filename : string, mode: "READ" | "WRITE", o
 
 
 
-export type error = "syntax" | "runtime" | "type" | "lexer" | "math" | "index" | "name" | "ZeroDivision";
+export type error = "Syntax" | "Runtime" | "Type" | "Lexer" | "Math" | "Index" | "Name" | "Range" | "ZeroDivision";
 export let running = false;
 
-function capFirstLetter(str : string) : string{
-  return str.charAt(0).toUpperCase() + str.slice(1);
-}
-
-export var methods = [];
-export let constants = [];
-export let procedures = [];
+export const methods = new Set<string>();
+export const constants = new Set<string>();
+export const procedures = new Set<string>();
 
 export let folded_line : number = null;
 
 export class namespace {
 
-  public refresh(nmspc : "functions" | "constants" | "procedures", c : string){
+  public remove(nmspc : "functions" | "constants" | "procedures" | "variables", c : string){
+
+    
 
     switch(nmspc){
 
       case "constants":
-        constants = constants.filter(i => i != c);
+        constants.delete(c);
         break;
 
       case "functions": 
-        methods = methods.filter(i => i != c);
+
+        methods.delete(c);
+        UserFnArgDesc.delete(c);
+        
         break;
 
       case "procedures":
-        procedures = procedures.filter(i => i != c);
+        procedures.delete(c);
+        UserFnArgDesc.delete(c);
         break;
 
     }
-    
 
   }
 
 
+  public add(nmspc : "functions" | "constants" | "procedures", c : string){
+
+    
+
+    switch(nmspc){
+
+      case "constants":
+        constants.add(c);
+        break;
+
+      case "functions": 
+
+
+        methods.add(c);
+        break;
+
+      case "procedures":
+
+        procedures.add(c);
+        break;
+    }
+
+  }
+
 }
+
+export const ns = new namespace();
+
 
 export function makeError(message : string,  errType? : error, ln? : number, StackFrames? : StackFrame[]){
 
@@ -302,7 +339,7 @@ export function makeError(message : string,  errType? : error, ln? : number, Sta
 
       if(frame.ln && !seen_lns.includes(frame.ln)){
 
-        if(errType == "syntax"){
+        if(errType == "Syntax"){
 
           errorMsg += (`File <"${cur_fl}">, ${bit}`);
           seen_lns.push(frame.ln);
@@ -329,14 +366,14 @@ export function makeError(message : string,  errType? : error, ln? : number, Sta
     if(ln){
 
 
-      if(errType == "syntax") errorMsg += `File <"${cur_fl}">, line ${ln}\n`;
+      if(errType == "Syntax") errorMsg += `File <"${cur_fl}">, line ${ln}\n`;
       else errorMsg += ` File <"${cur_fl}">, line ${ln}, in <module>\n`;
       
 
     }
     else{
 
-      if(errType == "syntax") errorMsg += `File <"${cur_fl}">\n`;
+      if(errType == "Syntax") errorMsg += `File <"${cur_fl}">\n`;
       else errorMsg += ` File <"${cur_fl}">, in <module>\n`;
 
     }
@@ -349,7 +386,7 @@ export function makeError(message : string,  errType? : error, ln? : number, Sta
 
 
   if(errType){
-    errorMsg += "Uncaught " + capFirstLetter(errType) + "Error: " + message;
+    errorMsg += "Uncaught " + errType + "Error: " + message;
 
 
   }
@@ -365,6 +402,184 @@ export function makeError(message : string,  errType? : error, ln? : number, Sta
   }
   
   return MK_NULL();
+}
+
+function countStmts(closure : Program | SelectionStmtDeclaration | FunctionDeclaration | IterationStmt, search : NodeType) : Stmt[] {
+
+  
+  const stmts = [];
+
+  switch(closure.kind){
+
+    case "Program":
+
+      const program = closure as Program;
+      if(!program.body.map(stmt => stmt.kind).includes(search)) return [];
+
+      for(const stmt of program.body){
+
+        if(stmt.kind == search){
+
+          stmts.push(stmt);
+
+        }
+        else if(stmt.kind == "SelectionStmtDeclaration"){
+
+          const found = countStmts(stmt as SelectionStmtDeclaration, search);
+          found.forEach(stmt => stmts.push(stmt));
+
+        }
+        else if(stmt.kind == "IterationStmt"){
+
+          const found = countStmts(stmt as IterationStmt, search);
+          found.forEach(stmt => stmts.push(stmt));
+
+        }
+        else if(stmt.kind == "FunctionDeclaration"){
+
+          const found = countStmts(stmt as FunctionDeclaration, search);
+          found.forEach(stmt => stmts.push(stmt));
+
+        }
+
+      }
+
+      return stmts;
+
+    case "FunctionDeclaration":
+
+      const func = closure as FunctionDeclaration;
+      if(!func.body.map(stmt => stmt.kind).includes(search)) return [];
+
+      for(const stmt of func.body){
+
+        if(stmt.kind == search){
+
+          stmts.push(stmt);
+
+        }
+        else if(stmt.kind == "SelectionStmtDeclaration"){
+
+          const found = countStmts(stmt as SelectionStmtDeclaration, search);
+          found.forEach(stmt => stmts.push(stmt));
+
+        }
+        else if(stmt.kind == "IterationStmt"){
+
+          const found = countStmts(stmt as IterationStmt, search);
+          found.forEach(stmt => stmts.push(stmt));
+
+        }
+        else if(stmt.kind == "FunctionDeclaration"){
+
+          const found = countStmts(stmt as FunctionDeclaration, search);
+          found.forEach(stmt => stmts.push(stmt));
+
+        }
+
+      }
+
+      return stmts;
+
+    case "IterationStmt":
+
+      const iter = closure as IterationStmt;
+      if(!iter.body.map(stmt => stmt.kind).includes(search)) return [];
+
+      for(const stmt of iter.body){
+
+        if(stmt.kind == search){
+
+          stmts.push(stmt);
+
+        }
+        else if(stmt.kind == "SelectionStmtDeclaration"){
+
+          const found = countStmts(stmt as SelectionStmtDeclaration, search);
+          found.forEach(stmt => stmts.push(stmt));
+
+        }
+        else if(stmt.kind == "IterationStmt"){
+
+          const found = countStmts(stmt as IterationStmt, search);
+          found.forEach(stmt => stmts.push(stmt));
+
+        }
+        else if(stmt.kind == "FunctionDeclaration"){
+
+          const found = countStmts(stmt as FunctionDeclaration, search);
+          found.forEach(stmt => stmts.push(stmt));
+
+        }
+
+      }
+
+      return stmts;
+
+    case "SelectionStmtDeclaration":
+
+      const selec = closure as SelectionStmtDeclaration;
+      
+
+      const conds = [...selec.body.keys()];
+      const bodies = conds.map(key => selec.body.get(key)[1]);
+
+      for(const body of bodies){
+
+        if(!body.map(stmt => stmt.kind).includes(search)) continue;
+
+        for(const stmt of body){
+
+          if(stmt.kind == search){
+
+            stmts.push(stmt);
+
+          }
+          else if(stmt.kind == "SelectionStmtDeclaration"){
+
+            const found = countStmts(stmt as SelectionStmtDeclaration, search);
+            found.forEach(stmt => stmts.push(stmt));
+
+          }
+          else if(stmt.kind == "IterationStmt"){
+
+            const found = countStmts(stmt as IterationStmt, search);
+            found.forEach(stmt => stmts.push(stmt));
+
+          }
+          else if(stmt.kind == "FunctionDeclaration"){
+
+            const found = countStmts(stmt as FunctionDeclaration, search);
+            found.forEach(stmt => stmts.push(stmt));
+
+          }
+
+        }
+
+      }
+
+      return stmts;
+
+    default:
+      return [];
+  }
+  
+}
+
+export function pre_file_scan(src : string) : string[] {
+
+  errorLog = [];
+
+  const p = new Parser();
+  const program = p.produceAST(src);
+
+
+  if(errorLog.length > 0) return [];
+
+  const fileNames = [...new Set((countStmts(program, "FileExpr") as FileExpr[]).map(expr => expr.fileName))];
+
+  return fileNames;
+
 }
 
 export function halt_program(safe : boolean) {
@@ -393,6 +608,7 @@ export async function repl(src : string, pF : string, filename : string, request
   errorLines = [];
   pauseLog = [];
   commentLog = [];
+  consoleHistory = [];
   const parser = new Parser();
   const env = SetupGlobalScope();
   
@@ -452,9 +668,11 @@ export async function repl(src : string, pF : string, filename : string, request
 
     const banned_tokens = [Tokens.EOL, Tokens.Comment, Tokens.Null, Tokens.Any, Tokens.Unrecognised];
 
+    consoleHistory = [];
+
     for(const tk of tokenize(src)){
       if(!banned_tokens.includes(tk.type)){
-        outputLog.push(format_token(tk));
+        consoleHistory.push({type: "output", value: format_token(tk)});
       }
       
 
@@ -471,16 +689,20 @@ export async function repl(src : string, pF : string, filename : string, request
 
     program = parser.produceAST(src);
 
+    consoleHistory = [];
+
     for(const stmt of program.body){
 
       if(stmt.kind != "NullLiteral" && stmt.kind != "CommentExpr"){
-        outputLog.push(format_astNode(stmt), ' ');
+        consoleHistory.push({type: "output", value: format_astNode(stmt)});
       }
       
 
     }
 
-    return outputLog;
+    //consoleHistory = outputLog.map(log => ({type: 'output', value: log} as ConsoleLine));
+
+    return [];
 
   }
   else if(request == "python"){
@@ -650,12 +872,12 @@ function loose_expr(context : string =  "<module>", p : Expr, inF? : boolean) : 
         
         if((!inF && stmt.kind == "ReturnStmt")){
 
-          makeError("Return expression found outside of function!", "syntax");
+          makeError("Return expression found outside of function!", "Syntax");
 
         }
         else{
 
-          makeError("Unassigned expression encountered!", "syntax", stmt.ln)
+          makeError("Unassigned expression encountered!", "Syntax", stmt.ln)
 
         }
 
@@ -715,12 +937,12 @@ function loose_expr(context : string =  "<module>", p : Expr, inF? : boolean) : 
 
           if((!inF && s.kind == "ReturnStmt")){
 
-            makeError("Return expression found outside of function!", "syntax", s.ln, [initial_frame]);
+            makeError("Return expression found outside of function!", "Syntax", s.ln, [initial_frame]);
 
           }
           else{
 
-            makeError("Unassigned expression encountered!", "syntax", s.ln, [initial_frame])
+            makeError("Unassigned expression encountered!", "Syntax", s.ln, [initial_frame])
 
           }
 
@@ -772,12 +994,12 @@ function loose_expr(context : string =  "<module>", p : Expr, inF? : boolean) : 
 
         if((!inF && stmt.kind == "ReturnStmt")){
 
-          makeError("Return expression found outside of function!", "syntax");
+          makeError("Return expression found outside of function!", "Syntax");
 
         }
         else{
 
-          makeError("Unassigned expression encountered!", "syntax", stmt.ln)
+          makeError("Unassigned expression encountered!", "Syntax", stmt.ln)
 
         }
 
@@ -828,7 +1050,7 @@ function loose_expr(context : string =  "<module>", p : Expr, inF? : boolean) : 
 
       if(isExpr(stmt)){
         
-        makeError("Unassigned expression encountered!", "syntax", stmt.ln, [initial_frame]);
+        makeError("Unassigned expression encountered!", "Syntax", stmt.ln, [initial_frame]);
         e.push(stmt);
         return true;
 

@@ -108,10 +108,7 @@
 
                 <li><a href='/donate' target='_blank'>Donate</a></li>
                 <li><a href='/pps' target='_blank'>Past Paper Solutions</a></li>
-                <li id="settings-mbl-li"><a id="settings-mbl" class="current-tab" href='#'>Settings</a></li>
-                <li id="share-mbl-li"><a id="share-mbl" class="current-tab" href="#">Share</a></li>
-                <li id="fullscreen-mbl-li"><a id="fullscreen-mbl" class="current-tab" href="#">Enter fullscreen</a></li>
-                
+ 
             </ul>
             <div class="ham">
                 <span></span>
@@ -140,14 +137,13 @@
         </div>
 
         <div id="underlay">
-            <editornav>
+            <div id="menu-header">
                 <ul id="menu">
-                    <li><input class="editor-btn" type="button" id="saveBtn" title="Download (Ctrl+S)" value="Download"></li>
+                    <li><input class="editor-btn" type="button" id="downloadBtn" title="Download (F9)" value="Download"></li>
                     <li><input class="editor-btn" type="button" id="loadBtn" title="Upload (Ctrl+U)" value="Upload"></li>
                     <li><input class="editor-btn" type="button" id="runBtn" title="Run (Ctrl+Enter)" value="Run"></li>
+                    <li><input class="editor-btn" type="button" id="saveBtn" title="Save (Ctrl+S)" value="Save"></li>
                     <li><input class="editor-btn" type="button" id="clearBtn" title="Clear" value="Clear"></li>
-                    
-
                         
                 </ul>
                 <a id="hiddenDownload" style="display:none;"></a>
@@ -214,7 +210,9 @@
 
 
 
-            </editornav>
+            </div>
+
+
             <div id="editor-container">
 
 
@@ -334,6 +332,7 @@
                         <div title="Copy to clipboard" id="copy-console" class="console-btn"><svg xmlns="http://www.w3.org/2000/svg" width="23" height="23" viewBox="0 0 24 20"><path fill="currentColor" d="M19.53 8L14 2.47a.75.75 0 0 0-.53-.22H11A2.75 2.75 0 0 0 8.25 5v1.25H7A2.75 2.75 0 0 0 4.25 9v10A2.75 2.75 0 0 0 7 21.75h7A2.75 2.75 0 0 0 16.75 19v-1.25H17A2.75 2.75 0 0 0 19.75 15V8.5a.75.75 0 0 0-.22-.5Zm-5.28-3.19l2.94 2.94h-2.94Zm1 14.19A1.25 1.25 0 0 1 14 20.25H7A1.25 1.25 0 0 1 5.75 19V9A1.25 1.25 0 0 1 7 7.75h1.25V15A2.75 2.75 0 0 0 11 17.75h4.25ZM17 16.25h-6A1.25 1.25 0 0 1 9.75 15V5A1.25 1.25 0 0 1 11 3.75h1.75V8.5a.76.76 0 0 0 .75.75h4.75V15A1.25 1.25 0 0 1 17 16.25Z"/></svg></div>
                         <div title="Clear" id="clear-console" class="console-btn"><svg xmlns="http://www.w3.org/2000/svg" stroke-width='1' width="20" height="20" viewBox="0 0 26 26"><path fill="currentColor" d="m14.03 1.889l9.657 9.657l-8.345 8.345l-.27.27H20v2H6.747l-3.666-3.666a4 4 0 0 1 0-5.657l10.95-10.95Zm.322 16.163l6.507-6.506l-6.829-6.829l-6.828 6.829l6.828 6.828l.32-.323l.002.001ZM5.788 12.96l-1.293 1.293a2 2 0 0 0 0 2.828l3.08 3.08h4.68l.366-.368l-6.833-6.833Z"/></svg></div>
                         <div title="Download" id="download-console" class="console-btn"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 18 18"><path fill="currentColor" fill-rule="evenodd" d="M11.78 7.159a.75.75 0 0 0-1.06 0l-1.97 1.97V1.75a.75.75 0 0 0-1.5 0v7.379l-1.97-1.97a.75.75 0 0 0-1.06 1.06l3.25 3.25L8 12l.53-.53l3.25-3.25a.75.75 0 0 0 0-1.061ZM2.5 9.75a.75.75 0 0 0-1.5 0V13a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V9.75a.75.75 0 0 0-1.5 0V13a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V9.75Z" clip-rule="evenodd"/></svg></div>
+                        <div title="Start Terminal" id="init-terminal" class="console-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="20" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m5 7l5 5l-5 5m7 2h7"/></svg></div>
                     </div>
 
                     <div id="Output">
@@ -545,7 +544,7 @@
 
                     <div id="settings-footer">
                         <button title="Appearance" class="settings-footer-btn" id="apr-tgl"><svg width="24px" height="24px" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><g id="Layer_2" data-name="Layer 2"><g id="invisible_box" data-name="invisible box"><rect width="48" height="48" fill="none"/></g><g id="icons_Q2" data-name="icons Q2"><path fill="currentColor" d="M26.6,6H27c8.1,0,15,5.5,15,12S40.4,29,28,29c-3.8,0-5.8,2.2-6.4,4.3a5.5,5.5,0,0,0,2.3,6.1c1,.6,1,1.3.9,1.7a1.2,1.2,0,0,1-1.3.9C11.4,42,6,33,6,24S15.2,6,26.5,6h.1m-.1-4C13,2,2,11.8,2,24s8,22,21.5,22C29,46,31,39,26,36c-.9-.6-1-3,2-3,9,0,18-3,18-15C46,9,37,2,27,2Z"/><path fill="currentColor" d="M21,10a3,3,0,1,0,3,3,2.9,2.9,0,0,0-3-3Z"/><path fill="currentColor" d="M14,15a3,3,0,1,0,3,3,2.9,2.9,0,0,0-3-3Z"/><path fill="currentColor" d="M29,9a3,3,0,1,0,3,3,2.9,2.9,0,0,0-3-3Z"/><path fill="currentColor" d="M36,14a3,3,0,1,0,3,3,2.9,2.9,0,0,0-3-3Z"/></g></g></svg></button>
-                        <button title="Reset all settings" class="settings-footer-btn" id="reset-settings"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M13.75 14.25h2.5q.325 0 .538.213T17 15t-.213.538t-.537.212h-2.5q-.325 0-.537-.213T13 15t.213-.537t.537-.213m.75 6v-.5h-.75q-.325 0-.537-.213T13 19t.213-.537t.537-.213h.75v-.5q0-.325.213-.537T15.25 17t.538.213t.212.537v2.5q0 .325-.213.538T15.25 21t-.537-.213t-.213-.537m3.25-2h2.5q.325 0 .538.213T21 19t-.213.538t-.537.212h-2.5q-.325 0-.537-.213T17 19t.213-.537t.537-.213m.25-2v-2.5q0-.325.213-.537T18.75 13t.538.213t.212.537v.5h.75q.325 0 .538.213T21 15t-.213.538t-.537.212h-.75v.5q0 .325-.213.538T18.75 17t-.537-.213T18 16.25M12 5Q9.075 5 7.038 7.038T5 12q0 1.8.813 3.3T8 17.75V16q0-.425.288-.712T9 15t.713.288T10 16v4q0 .425-.288.713T9 21H5q-.425 0-.712-.288T4 20t.288-.712T5 19h1.35Q4.8 17.75 3.9 15.938T3 12q0-1.875.713-3.512t1.924-2.85t2.85-1.925T12 3q1.625 0 3.475.95t4.875 4.675q.275.325.088.713t-.638.587q-.4.175-.8.013t-.525-.563q-.5-1.7-2.287-3.037T12 5"/></svg></button>
+                        
                     </div>
                 </li>
 
@@ -736,6 +735,7 @@
                         <button title="Save preset" class="settings-footer-btn" id="save-preset"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 23 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7.558 3.75H7.25a3.5 3.5 0 0 0-3.5 3.5v9.827a3.173 3.173 0 0 0 3.173 3.173v0m.635-16.5v2.442a2 2 0 0 0 2 2h2.346a2 2 0 0 0 2-2V3.75m-6.346 0h6.346m0 0h.026a3 3 0 0 1 2.122.879l3.173 3.173a3.5 3.5 0 0 1 1.025 2.475v6.8a3.173 3.173 0 0 1-3.173 3.173v0m-10.154 0V15a3 3 0 0 1 3-3h4.154a3 3 0 0 1 3 3v5.25m-10.154 0h10.154"/></svg></button>
                         <button title="Upload preset" class="settings-footer-btn" id="upload-preset"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 16.5 18"><path fill="currentColor" fill-rule="evenodd" d="M11.78 5.841a.75.75 0 0 1-1.06 0l-1.97-1.97v7.379a.75.75 0 0 1-1.5 0V3.871l-1.97 1.97a.75.75 0 0 1-1.06-1.06l3.25-3.25L8 1l.53.53l3.25 3.25a.75.75 0 0 1 0 1.061ZM2.5 9.75a.75.75 0 0 0-1.5 0V13a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V9.75a.75.75 0 0 0-1.5 0V13a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V9.75Z" clip-rule="evenodd"/></svg></button>
                         <button title="System" class="settings-footer-btn" id="exit-apr-panel"><svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24" height="25" viewBox="0,0,800,800"><g fill="currentColor" transform="translate(-228,-168)"><g data-paper-data="{&quot;isPaintingLayer&quot;:true}" fill-rule="nonzero" stroke="none" fill="currentColor" stroke-width="1" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="10" stroke-dasharray="" stroke-dashoffset="0" style="mix-blend-mode: normal"><path d="M1028,168v800h-800v-800zM608.217,943.26137c-0.2507,0.04861 -0.46941,0.26201 -0.5357,0.59967l-0.56972,14.24262l0.11196,0.55212v0l0.42012,0.53469l3.4525,2.46597l0.3922,0.13068v0l0.49571,-0.13068l3.45243,-2.46597l0.367,-0.40715l0.16512,-0.67966l-0.56971,-14.24262l-0.13699,-0.36412c-0.16357,-0.19613 -0.45603,-0.28471 -0.78376,-0.17981l-2.36868,1.18436l-0.50546,0.12343v0l-0.63329,-0.12343l-2.36875,-1.18436l-0.385,-0.05574zM599.38698,939.50954c-0.30065,0.05718 -0.56325,0.31012 -0.6429,0.70823l-1.13819,20.48769l0.13316,0.46875c0.18651,0.2587 0.54667,0.38912 0.94961,0.26708l6.69847,-3.09153l0.2817,-0.23584v0l0.16135,-0.42596l0.59667,-14.31758l-0.0896,-0.37354v0l-0.33207,-0.34152l-6.15681,-3.07842l-0.4614,-0.06737zM617.0749,942.65532l-0.3164,0.29526v0l-0.1052,0.41979l0.59656,14.31758l0.12849,0.39319v0l0.31464,0.26861l6.69849,3.09153l0.52026,0.04429c0.32794,-0.09025 0.58386,-0.39679 0.56256,-0.78012l-1.1382,-20.48769l-0.19064,-0.46459c-0.21799,-0.24449 -0.58604,-0.3401 -0.91369,-0.17627z" data-paper-data="{&quot;index&quot;:null}" fill="none"/><path d="M794.66667,268l5.87575,0.16976c52.49346,3.04156 94.12425,46.57435 94.12425,99.83024v400l-0.16976,5.87591c-3.04156,52.49484 -46.57435,94.12409 -99.83024,94.12409h-150l-3.88746,-0.22425c-16.5783,-1.92544 -29.44587,-16.01408 -29.44587,-33.10908c0,-18.41 14.92333,-33.33333 33.33333,-33.33333h150l3.88734,-0.22425c16.57785,-1.92544 29.44599,-16.01408 29.44599,-33.10908v-400l-0.22426,-3.88734c-1.92552,-16.57785 -16.01469,-29.44599 -33.10907,-29.44599h-166.66667l-3.88746,-0.22426c-16.5783,-1.92552 -29.44587,-16.01469 -29.44587,-33.10907c0,-18.40933 14.92333,-33.33333 33.33333,-33.33333zM484.90667,450.149c13.01667,13.01733 13.01667,34.123 0,47.14033l-37.38,37.37733h180.47333c18.41,0 33.33333,14.92333 33.33333,33.33333c0,18.41 -14.92333,33.33333 -33.33333,33.33333h-180.47333l37.38,37.37667c13.01667,13.01667 13.01667,34.12333 0,47.14c-13.02,13.02 -34.12333,13.02 -47.14,0l-94.28333,-94.28c-13.01667,-13.01667 -13.01667,-34.12333 0,-47.14l94.28333,-94.281c13.01667,-13.01767 34.12,-13.01767 47.14,0z" data-paper-data="{&quot;index&quot;:null}" fill="currentColor"/></g></g></svg></button>
+                        <button title="Reset all settings" class="settings-footer-btn" id="reset-settings"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M13.75 14.25h2.5q.325 0 .538.213T17 15t-.213.538t-.537.212h-2.5q-.325 0-.537-.213T13 15t.213-.537t.537-.213m.75 6v-.5h-.75q-.325 0-.537-.213T13 19t.213-.537t.537-.213h.75v-.5q0-.325.213-.537T15.25 17t.538.213t.212.537v2.5q0 .325-.213.538T15.25 21t-.537-.213t-.213-.537m3.25-2h2.5q.325 0 .538.213T21 19t-.213.538t-.537.212h-2.5q-.325 0-.537-.213T17 19t.213-.537t.537-.213m.25-2v-2.5q0-.325.213-.537T18.75 13t.538.213t.212.537v.5h.75q.325 0 .538.213T21 15t-.213.538t-.537.212h-.75v.5q0 .325-.213.538T18.75 17t-.537-.213T18 16.25M12 5Q9.075 5 7.038 7.038T5 12q0 1.8.813 3.3T8 17.75V16q0-.425.288-.712T9 15t.713.288T10 16v4q0 .425-.288.713T9 21H5q-.425 0-.712-.288T4 20t.288-.712T5 19h1.35Q4.8 17.75 3.9 15.938T3 12q0-1.875.713-3.512t1.924-2.85t2.85-1.925T12 3q1.625 0 3.475.95t4.875 4.675q.275.325.088.713t-.638.587q-.4.175-.8.013t-.525-.563q-.5-1.7-2.287-3.037T12 5"/></svg></button>
                     </div>
                 </li>
 
@@ -865,10 +865,28 @@
     <script type="module" >
 
         import { default_code } from './Prewritten/Default.js';
-        import {DescBox, select_all, highlight_all_tokens} from './EditorUtils/Utils.js';
+        import {DescBox, select_all, highlight_all_tokens, save_user_fn} from './EditorUtils/Utils.js';
         import { tokenize, tokenize_line, Tokens } from "./Frontend/Lexer.js";
+        import Terminal from './Runtime/Terminal.js';
 
         let const_default = '';
+
+        function openFileIOS(acpt) {
+            return new Promise(resolve => {
+                const input = document.createElement("input");
+                input.type = "file";
+                input.accept = acpt;
+                input.style.display = "none";
+
+                input.addEventListener("change", () => {
+                    resolve(input.files[0] ?? null);
+                    input.remove();
+                });
+
+                document.body.appendChild(input);
+                input.click();
+            });
+        }
 
         fetch('/Prewritten/Default.txt')
             .then(response => {
@@ -986,12 +1004,12 @@
         })
         
         let prev_token = null;
-        let vars = [];
+        let vars = new Set();
         let varTypeMap = new Map();
         let constTypeMap = new Map();
         let native_keywords = ["NUM_TO_STR","STR_TO_NUM" ,"ARRAY","DECLARE","CONSTANT","OUTPUT","IF", "ELSEIF","ENDWHILE","THEN","ENDIF","ELSE", "INPUT", "FUNCTION","ENDFUNCTION","PROCEDURE","ENDPROCEDURE","CALL","CASE","OF","OTHERWISE","ENDCASE","RETURNS","RETURN","OPENFILE","CLOSEFILE","READFILE","WRITEFILE","READ","WRITE","FOR","NEXT","WHILE","DO","REPEAT","UNTIL","AND","OR","NOT","LCASE","UCASE","ROUND","RANDOM","SUBSTRING","EOF","STRING","BOOLEAN","CHAR","INTEGER","REAL", "DIV", "MOD", "LENGTH", "STEP", "TO", "TRUE", "FALSE"];
-        let filenames = [];
-        let keywordList = [...native_keywords, ...vars, ...methods, ...constants, ...filenames, ...procedures];
+
+        let keywordList = [...native_keywords, ...vars, ...methods, ...constants, ...procedures];
         
         const ns = new namespace();
 
@@ -1023,79 +1041,13 @@
 
         let show_fn_desc = false;
 
+        let all_names = new Set();
+        const captured_name_tokens = new Map();
+
+        
+
         CodeMirror.defineMode("CIEpseudocode", function () {
 
-            
-
-
-            function search(src, request){
-
-
-                const src_tokens = tokenize(src);
-                const req_tokens = tokenize_line(request);
-                req_tokens.pop();
-
-                let res = false;
-
-                for(let i = 0; i <= src_tokens.length - req_tokens.length; i++){
-
-                    let match = true;
-
-                    for(let j = 0; j < req_tokens.length; j++){
-
-                        if(src_tokens[i + j].type != req_tokens[j].type || src_tokens[i + j].value != req_tokens[j].value){
-
-                            match = false;
-                            break;
-
-                        }
-
-                    }
-
-                    if(match){
-
-                        res = true;
-                        break;
-
-                    }
-
-                }
-
-                return res;
-            
-            }
-            
-
-            function findArrayPrim(codeVal, read){
-
-                
-
-                if(search(codeVal, `DECLARE ${read} : ARRAY`)) {
-
-                    let i = 0;
-                    
-                    const tkns = tokenize(codeVal);
-
-                    while(i < tkns.length - 3){
-                        if(tkns[i].type == Tokens.Declare && tkns[i + 1].type == Tokens.Identifier && tkns[i + 1].value == read && tkns[i + 2].type == Tokens.Colon && tkns[i + 3].type == Tokens.Array){
-                            break;
-                        }
-
-                        i++;
-                    }
-                    
-                    i += 3;
-                    
-                    const data_types = [Tokens.Integer, Tokens.Real, Tokens.Boolean, Tokens.String, Tokens.Char];
-
-                    while(!data_types.includes(tkns[i].type) && tkns[i].type != Tokens.EOL && i < tkns.length) i++;
-
-                    return data_types.includes(tkns[i].type) ? tkns[i].value : "none";
-
-                }
-                else return "none";
-
-            }
 
             const keywords = /^(READFILE|WRITEFILE|OPENFILE|CLOSEFILE|DECLARE|CONSTANT|OUTPUT|INPUT|FUNCTION|ENDFUNCTION|PROCEDURE|ENDPROCEDURE)$/i;
             const datatypes = /^(ARRAY|INTEGER|REAL|CHAR|STRING|BOOLEAN)$/i;
@@ -1113,59 +1065,11 @@
                 token: function (stream, state) {
 
                     if (selectedTab.endsWith('.pseudo')) {
-                        keywordList = [...native_keywords, ...vars, ...methods, ...constants, ...procedures, ...filenames];
+                        keywordList = [...new Set([...native_keywords, ...vars, ...methods, ...constants, ...procedures])];
                         
                         const codeVal = editor.getValue();
 
-                        for(const fn of methods){
-                            if(!search(codeVal, `FUNCTION ${fn} (`)) ns.refresh("methods", fn);
-                        } 
-
-                        for(const p of procedures){
-                            if(!search(codeVal, `PROCEDURE ${p} (`)) ns.refresh("procedures", p);
-                        }
-
-                        for(const c of constants){
-
-                            if(!search(codeVal, `CONSTANT ${c} ←`)){
-
-                                constTypeMap.delete(c);
-                                //constants = constants.filter(i => i != c);
-                                ns.refresh("constants", c);
-                            }
-
-                        }
-                        
-
-                        for(const v of vars){
-
-                            if(!search(codeVal, `DECLARE ${v} : INTEGER`) 
-                            && !search(codeVal, `DECLARE ${v} : REAL`)
-                            && !search(codeVal, `DECLARE ${v} : BOOLEAN`)
-                            && !search(codeVal, `DECLARE ${v} : STRING`)
-                            && !search(codeVal, `DECLARE ${v} : CHAR`)
-                            && findArrayPrim(codeVal, v) == "none"){
-
-                                vars = vars.filter(i => i != v);
-                                varTypeMap.delete(v);
-
-                            }
-                            
-
-                        }
-
-                        for(const f of filenames){
-        
-                            if(!search(codeVal, `OPENFILE ${f}.txt FOR READ`) && !search(codeVal, `OPENFILE ${f}.txt FOR WRITE`)){
-
-
-
-                                filenames = filenames.filter(i => i != f);
-
-                            }
-                            
-
-                        }
+                        let mtd_dcl = null;
 
                         if (stream.eatSpace()) return null;
 
@@ -1193,107 +1097,67 @@
 
                         word = stream.match(/^[a-zA-Z_][a-zA-Z0-9_]*/);
                         const read = JSON.stringify(word).slice(2,-2);
-                      
-                        
-                       
-                        
-                        if(JSON.stringify(word) == JSON.stringify(word).toUpperCase()){
+                    
 
+                        
+                        if(word && JSON.stringify(word) == JSON.stringify(word).toUpperCase()){
+                            
 
-                            if (word && keywords.test(word)){
+                            if (keywords.test(word)){
                                 prev_token = read; 
                                 return "keyword";
                             }
-                            else if(word && datatypes.test(word)){ 
+                            else if(datatypes.test(word)){ 
                                 prev_token = read; 
                                 return "datatype";
                             }
-                            else if (word && other.test(word)){ 
-                                prev_token = read; 
-                                return "other-token";
-                            }
-                            else if (word && native.test(word)){ 
-
-                                show_fn_desc = true;
+                            else if(native.test(word)){ 
                                 prev_token = read; 
                                 return "native";
                             }
-                            else if (word && boolean.test(word)){ 
+                            else if (other.test(word)){ 
+                                prev_token = read; 
+                                return "other-token";
+                            }
+                            else if (boolean.test(word)){ 
 
 
                                 prev_token = read; 
                                 return "boolean";
                             }
-                            else if(word && logical.test(word)){ 
+                            else if(logical.test(word)){ 
                                 prev_token = read; 
                                 return "logical";
                             }
+                            
                         }
 
 
-                        
-                        
+                        if(word && word[0] && isAlpha(word[0])) {
 
-                        if (word) {
-                            
-                            const raw = JSON.stringify(word);
+                            if(vars.has(word[0])) return "variable";
+                            else if(constants.has(word[0])) return "constant";
+                            else if(procedures.has(word[0])) return "userFn";
+                            else if(methods.has(word[0])) return "userFn";
 
 
-                            let type = "variable";
-
-                            const is_fn = search(codeVal, `FUNCTION ${read} (`);
-
-                            const is_prcdr = search(codeVal, `PROCEDURE ${read} (`);
-
-                            
-
-                            const is_const = search(codeVal, `CONSTANT ${read} ←`);
-
-                            const is_var = search(codeVal, `DECLARE ${read} : INTEGER`) 
-                            || search(codeVal, `DECLARE ${read} : REAL`) 
-                            || search(codeVal, `DECLARE ${read} : BOOLEAN`) 
-                            || search(codeVal, `DECLARE ${read} : STRING`) 
-                            || search(codeVal, `DECLARE ${read} : CHAR`) 
-                            || findArrayPrim(codeVal, read) != "none";
-
-                            const is_file = codeVal.includes(`OPENFILE ${read}.txt FOR READ`) || codeVal.includes(`OPENFILE ${read}.txt FOR WRITE`)
-
-                            if(is_fn && !methods.includes(read)) methods.push(read);
-
-                            else if(is_prcdr && !procedures.includes(read)) procedures.push(read);
-
-                            else if(is_const && !constants.includes(read)) constants.push(read);
-                            
-                            else if(is_var && !vars.includes(read)){
-
-        
-
-                                vars.push(read);
-
-                                if(search(codeVal, `DECLARE ${read} : INTEGER`)) varTypeMap.set(read, 'INTEGER');
-                                else if(search(codeVal, `DECLARE ${read} : REAL`)) varTypeMap.set(read, 'REAL');
-                                else if(search(codeVal, `DECLARE ${read} : BOOLEAN`)) varTypeMap.set(read, 'BOOLEAN');
-                                else if(search(codeVal, `DECLARE ${read} : STRING`)) varTypeMap.set(read, 'STRING');
-                                else if(search(codeVal, `DECLARE ${read} : CHAR`)) varTypeMap.set(read, 'CHAR');
-                                else if(findArrayPrim(codeVal, read) != "none") varTypeMap.set(read, 'ARRAY OF ' + findArrayPrim(codeVal, read));
-
+                            const Token = {
+                                value: word[0],
+                                ln: stream.lineOracle.line,
+                                start: stream.start,
+                                end: stream.start + word[0].length
                             }
-                            else if(is_file && !filenames.includes(`${read}.txt`)) filenames.push(`${read}.txt`);
 
-                            if( methods.includes(read) || procedures.includes(read)) type = "userFn";
+                            all_names.add(word[0]);
 
-                            
-                            else if(constants.includes(read))  type = "constant";
-                            
+                            const tk_key = `${Token.value}-${Token.ln}-${Token.start}-${Token.end}`;
 
-                            prev_token = read;
-                            
-                            return type;
+                            captured_name_tokens.set(tk_key, Token);
 
-                            
+                            return "variable";
+
                         }
 
-  
 
                         if (stream.match(/^"[^"]*"/)){ 
                             prev_token = read; 
@@ -1632,22 +1496,18 @@
                         else if(dataTypes.includes(item)){
                             element.innerHTML = `<svg id="name-svg" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><path fill="currentColor" fill-rule="evenodd" d="M2 5h2V4H1.5l-.5.5v8l.5.5H4v-1H2V5zm12.5-1H12v1h2v7h-2v1h2.5l.5-.5v-8l-.5-.5zm-2.74 2.57L12 7v2.51l-.3.45l-4.5 2h-.46l-2.5-1.5l-.24-.43v-2.5l.3-.46l4.5-2h.46l2.5 1.5zM5 9.71l1.5.9V9.28L5 8.38v1.33zm.58-2.15l1.45.87l3.39-1.5l-1.45-.87l-3.39 1.5zm1.95 3.17l3.5-1.56v-1.4l-3.5 1.55v1.41z" clip-rule="evenodd"/></svg>${highlighted}<span class="hint-type">${item}</span>`;
                         }
-                        else if(variables.includes(item)){
+                        else if(variables.has(item)){
 
                             element.innerHTML = `<svg id="name-svg" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><path fill="currentColor" fill-rule="evenodd" d="M2 5h2V4H1.5l-.5.5v8l.5.5H4v-1H2V5zm12.5-1H12v1h2v7h-2v1h2.5l.5-.5v-8l-.5-.5zm-2.74 2.57L12 7v2.51l-.3.45l-4.5 2h-.46l-2.5-1.5l-.24-.43v-2.5l.3-.46l4.5-2h.46l2.5 1.5zM5 9.71l1.5.9V9.28L5 8.38v1.33zm.58-2.15l1.45.87l3.39-1.5l-1.45-.87l-3.39 1.5zm1.95 3.17l3.5-1.56v-1.4l-3.5 1.55v1.41z" clip-rule="evenodd"/></svg>${highlighted}<span class="hint-type">DECLARE ${item}: ${varTypeMap.get(item)}</span>`;
                         }
-                        else if(consts.includes(item)){
+                        else if(consts.has(item)){
 
                             element.innerHTML = `<svg id="name-svg" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><path fill="currentColor" fill-rule="evenodd" d="M2 5h2V4H1.5l-.5.5v8l.5.5H4v-1H2V5zm12.5-1H12v1h2v7h-2v1h2.5l.5-.5v-8l-.5-.5zm-2.74 2.57L12 7v2.51l-.3.45l-4.5 2h-.46l-2.5-1.5l-.24-.43v-2.5l.3-.46l4.5-2h.46l2.5 1.5zM5 9.71l1.5.9V9.28L5 8.38v1.33zm.58-2.15l1.45.87l3.39-1.5l-1.45-.87l-3.39 1.5zm1.95 3.17l3.5-1.56v-1.4l-3.5 1.55v1.41z" clip-rule="evenodd"/></svg>${highlighted}<span class="hint-type">CONSTANT ${item}</span>`;
-                        }
-                        else if(filenames.includes(`${item}.txt`)){
-
-                            element.innerHTML = `<svg id="name-svg" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><path fill="currentColor" fill-rule="evenodd" d="M2 5h2V4H1.5l-.5.5v8l.5.5H4v-1H2V5zm12.5-1H12v1h2v7h-2v1h2.5l.5-.5v-8l-.5-.5zm-2.74 2.57L12 7v2.51l-.3.45l-4.5 2h-.46l-2.5-1.5l-.24-.43v-2.5l.3-.46l4.5-2h.46l2.5 1.5zM5 9.71l1.5.9V9.28L5 8.38v1.33zm.58-2.15l1.45.87l3.39-1.5l-1.45-.87l-3.39 1.5zm1.95 3.17l3.5-1.56v-1.4l-3.5 1.55v1.41z" clip-rule="evenodd"/></svg>${highlighted}<span class="hint-type">file name</span>`;
                         }
                         else if(functions.includes(item)){
                             element.innerHTML = `<svg id="function-svg" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><path fill="currentColor" d="m13.51 4l-5-3h-1l-5 3l-.49.86v6l.49.85l5 3h1l5-3l.49-.85v-6L13.51 4zm-6 9.56l-4.5-2.7V5.7l4.5 2.45v5.41zM3.27 4.7l4.74-2.84l4.74 2.84l-4.74 2.59L3.27 4.7zm9.74 6.16l-4.5 2.7V8.15l4.5-2.45v5.16z"/></svg>${highlighted}<span class="hint-type">FUNCTION ${item}</span>`;
                         }
-                        else if(prcdrs.includes(item)){
+                        else if(prcdrs.has(item)){
         
 
                             element.innerHTML = `<svg id="function-svg" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><path fill="currentColor" d="m13.51 4l-5-3h-1l-5 3l-.49.86v6l.49.85l5 3h1l5-3l.49-.85v-6L13.51 4zm-6 9.56l-4.5-2.7V5.7l4.5 2.45v5.41zM3.27 4.7l4.74-2.84l4.74 2.84l-4.74 2.59L3.27 4.7zm9.74 6.16l-4.5 2.7V8.15l4.5-2.45v5.16z"/></svg>${highlighted}<span class="hint-type">PROCEDURE ${item}</span>`;
@@ -1712,7 +1572,7 @@
             lineWrapping: true,
             autoCloseBrackets: true,
             matchBrackets: true,
-            mode: "CIEpseudocode",
+            mode: "none",
             theme: window.lightMode == "active" ? "idea" : "darcula",
             foldGutter: true,
             gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"],
@@ -1730,9 +1590,153 @@
 
         window.editor = editor;
 
+
+        editor.setOption("extraKeys", {
+
+            "Tab": function(cm) {
+                const spacesPerTab = cm.getOption("indentUnit"); // usually 4
+                const selections = cm.listSelections();
+
+                cm.operation(() => {
+                    selections.forEach(sel => {
+                        if (!sel.empty()) {
+
+                            cm.indentSelection("add");
+                        } else {
+
+                            cm.replaceRange("\t", sel.head);
+                        
+                        }
+                    });
+                });
+            },
+
+            "Backspace": cm => {
+                const cursor = cm.getCursor();
+                const line = cm.getLine(cursor.line);
+                const indentUnit = 4;
+
+                const beforeCursor = line.slice(0, cursor.ch);
+
+                if (line.length > 1 && /^\s*$/.test(beforeCursor)) {
+
+                    const currentIndentLength = beforeCursor.length;
+                    const deleteCount = currentIndentLength >= indentUnit ? indentUnit : currentIndentLength;
+
+                    cm.replaceRange(
+                        "",
+                        { line: cursor.line, ch: cursor.ch - deleteCount },
+                        cursor
+                    );
+                } else {
+
+                    cm.execCommand("delCharBefore");
+                }
+            }
+
+        });
+
+
+    
+
+        const searchWorker = new Worker("../EditorUtils/SearchWorker.js", {type: "module"});
+
+        function resolveTokenType(name){
+
+            if(vars.has(name)) return "cm-variable";
+            else if(constants.has(name)) return "cm-constant";
+            else if(methods.has(name)) return "cm-userFn";
+            else if(procedures.has(name)) return "cm-userFn";
+            else return "none";
+
+        }
+
+        function tick(res){
+
+
+            for(const item of res){
+
+                switch(item.type){
+
+                    case "variable":
+
+                        vars.add(item.name);
+                        varTypeMap.set(item.name, item.datatype);
+                        break;
+
+                    case "constant":
+                        ns.add("constants", item.name);
+                        break;
+
+                    case "userFn":
+                        
+                        ns.add("functions", item.name);
+
+                        if(item.ln == 0 || item.ln){
+
+                            const def_ln = editor.getLineHandle(item.ln).text;
+
+                            save_user_fn(def_ln);
+
+                        }
+
+                        break;
+
+                    case "procedure":
+                        ns.add("procedures", item.name);
+                        break;
+
+                    default:
+                        varTypeMap.delete(item.name);
+                        vars.delete(item.name);
+                        ns.remove("constants", item.name);
+                        ns.remove("functions", item.name);
+                        ns.remove("procedures", item.name);
+
+
+                }
+
+            }
+
+            if(!editor.getOption("mode")) editor.setOption("mode", "CIEpseudocode");
+            return;
+
+        }
+
+        searchWorker.onmessage = function(e) {
+
+            tick(e.data);
+
+            
+        };
+
+        function pre_tk_scan(src){
+
+            all_names = new Set(tokenize(src).filter(tk => tk.type == Tokens.Identifier).map(tk => tk.value));
+
+            return all_names;
+
+        }
+
+        function do_screening(src = editor.getValue()){
+
+
+            searchWorker.postMessage({src: src, names: all_names});
+        
+        }
+
+
+        pre_tk_scan(default_code);
+        await do_screening(default_code);
+        
+        
+
         const cm_docs = new Map();
 
-        const default_doc = CodeMirror.Doc(default_code, "CIEpseudocode");
+        let default_doc = null;
+        
+        default_doc = CodeMirror.Doc(default_code, null);
+        
         const default_txtFile_doc = CodeMirror.Doc("Hello world!", "text/plain");
 
         cm_docs.set("Main.pseudo", default_doc);
@@ -1783,6 +1787,8 @@
             return result;
         }
 
+        
+
         const recordWord = debounce(function (cm) {
             
             if(localStorage.getItem("Ac") != "true"){
@@ -1798,6 +1804,12 @@
                     }
                 }
             }, 400);
+
+
+            
+
+                
+
 
             editor.on("inputRead", function (cm, change) {
 
@@ -1847,6 +1859,7 @@
         let b_depth = 0;    
 
 
+
         function insertAt(str, index, insert) {
             return str.slice(0, index) + insert + str.slice(index);
         }
@@ -1863,7 +1876,7 @@
             const extra_natives = ["MOD", "DIV"];
 
 
-            const navigation_keys = ['(', ',', 'ArrowLeft', 'ArrowRight', 'Control'];
+            const navigation_keys = ['(', ',', 'ArrowLeft', 'ArrowRight', 'Control', 'Backspace'];
 
 
             if(editor.hasFocus() && navigation_keys.includes(e.key)){
@@ -1884,6 +1897,7 @@
                 const co_ords = editor.cursorCoords();
 
                 if(e.key == '('){
+
                     active = true;
                     const at = trace.split(' ').at(-1).trim().slice(0, -1);
 
@@ -1893,6 +1907,7 @@
                         FnDescBox.tick(at, co_ords, 0);
                         
                     }
+                    else FnDescBox.user_tick(at, co_ords, 0);
                 }
                 else if(e.key == ','){
                     active = true;
@@ -1913,9 +1928,7 @@
                 }
             
             }
-            else{
-
-                
+            else {
 
                 FnDescBox.close();
                 active = false;
@@ -1924,6 +1937,7 @@
             
 
         })
+
 
         document.addEventListener("paste", (k) => {
 
@@ -2057,9 +2071,9 @@
         window.testFileMemory = testFileMemory;
 
 
-        function createNewFile(fileName, contents){
+        function createNewFile(fileName, contents, prevDef=false){
 
-            
+            //prevDef = preventDefault (tab focus)
 
             if(fileName == ""){
                 return null;
@@ -2105,19 +2119,19 @@
                 newTab.insertBefore(button, newTab.lastElementChild);
 
                 unorderedList.insertBefore(newTab, unorderedList.lastElementChild);
-                IsolateTabSelection(newTab);
+                if(!prevDef) IsolateTabSelection(newTab);
 
 
 
                 files.set(fileName, contents);
 
 
-                IsolateTabSelection(document.getElementsByClassName(fileName)[0]);
+                if(!prevDef) IsolateTabSelection(document.getElementsByClassName(fileName)[0]);
 
                 const doc = CodeMirror.Doc(contents, "CIEpseudocode");
                 cm_docs.set(fileName, doc);
-                editor.swapDoc(doc);
-                editor.setValue(contents);
+                if(!prevDef) editor.swapDoc(doc);
+                if(!prevDef) editor.setValue(contents);
             }
 
 
@@ -2128,11 +2142,7 @@
 
         function IsolateTabSelection(mytab){
 
-
-
             const mytabname = mytab ? mytab.querySelector('a').textContent : "Main.pseudo"
-
-
 
 
             if(selectedTab != mytabname && mytab){
@@ -2171,6 +2181,10 @@
                 }
 
                 editor.swapDoc(newDoc);
+
+                
+
+                editor.setValue(files.get(mytabname));
                 const titleText = document.getElementById('editorTitle');
                 if (titleText) {
                     titleText.textContent = selectedTab;
@@ -2287,7 +2301,7 @@
 
 
 
-        import { repl, outputLog, errorLog, errorLines, contexts, pauseLog, err, constants, methods, procedures, namespace} from "/Main.js";
+        import { consoleHistory,pre_file_scan, repl, outputLog, errorLog, errorLines, contexts, pauseLog, err, constants, methods, procedures, namespace} from "/Main.js";
         import {build_map, highlight_error_lines, clear_error_lines} from "/cm_minimap.js";
 
         
@@ -2335,7 +2349,7 @@
             const runBtn = document.getElementById('runBtn');
             const clearBtn = document.getElementById('clearBtn');
             const outLog = document.getElementById('console-content');
-            const saveBtn = document.getElementById('saveBtn');
+            const downloadBtn = document.getElementById('downloadBtn');
             const loadBtn = document.getElementById('loadBtn');
 
             clearBtn.addEventListener('click', () => {
@@ -2362,7 +2376,11 @@
                         if(selectedTab.endsWith('.pseudo')){
 
                             editor.setValue(const_default);
-                            localStorage.setItem('Saved', default_code);
+                            localStorage.setItem('Saved', const_default);
+
+                            localStorage.setItem('Default', const_default);
+
+
 
                         }
                     }
@@ -2405,94 +2423,72 @@
         
 
 
-            if(!localStorage.getItem('Lg') || localStorage.getItem('Lg') == "true"){
-                
+            const auto_lg = !localStorage.getItem('Lg') || localStorage.getItem('Lg') == "true"
 
 
-                if(!localStorage.getItem('Lg')){
+            if(!localStorage.getItem('Lg'))localStorage.setItem('Lg', "true");
 
+            const text = editor.getValue();
+            const cursor = instance.getCursor();
+            const index = getIndexFromPos(instance, cursor);
+
+            function screen_redundant(input) {
+                const toUse = splitWords(input);
+
+
+                for(const word of nameSpace){
+                    if(!toUse.includes(word)){
                     
-                    localStorage.setItem('Lg', "true");
-
-                }
-
-                const text = editor.getValue();
-
-
-
-                const cursor = instance.getCursor();
-
-
-                const index = getIndexFromPos(instance, cursor);
-
-
-
-                function screen_redundant(input) {
-                    const toUse = splitWords(input);
-
-
-                    for(const word of nameSpace){
-                        if(!toUse.includes(word)){
-                        
-                            nameSpace.delete(word);
-                        }
+                        nameSpace.delete(word);
                     }
-
                 }
-
-
-
-                if(text[index] == '-' && text.length >= 2){
-
-
-                    
-
-                    for(let i = 0; i < text.length - 1; i++){
-
-
-
-
-                        const potential = text[i]+text[i+1];
-                        if(potential == '<-'){
-
-                            
-                            const pos = editor.posFromIndex(i);
-
-                            editor.replaceRange('←', pos, {line: pos.line, ch: pos.ch + 2});
-
-
-                            editor.setCursor({line: pos.line, ch: pos.ch + 1});
-                            break;
-                        }
-
-                    }   
-                }
-                else if(text[index] == '=' && text.length >= 2){
-                    for(let i = 0; i < text.length - 1; i++){
-                        const potential = text[i]+text[i+1];
-                        if(potential == '>='){
-
-
-                            const pos = editor.posFromIndex(i);
-
-                            editor.replaceRange('≥', pos, {line: pos.line, ch: pos.ch + 2});
-
-
-                            editor.setCursor({line: pos.line, ch: pos.ch + 1});
-                            break;
-                        }
-                        else if(potential == '<='){
-
-                            const pos = editor.posFromIndex(i);
-
-                            editor.replaceRange('≤', pos, {line: pos.line, ch: pos.ch + 2});
-                        }
-                    }   
-                }
-
-                screen_redundant(editor.getValue());
 
             }
+
+
+
+            if(text[index] == '-' && text.length >= 2){
+
+
+                
+
+                for(let i = 0; i < text.length - 1; i++){
+
+
+
+
+                    const potential = text[i]+text[i+1];
+                    if(potential == '<-'){
+
+                        
+                        const pos = editor.posFromIndex(i);
+
+                        editor.replaceRange('←', pos, {line: pos.line, ch: pos.ch + 2});
+
+
+                        editor.setCursor({line: pos.line, ch: pos.ch + 1});
+                        break;
+                    }
+
+                }   
+            }
+            else if(auto_lg && text[index] == '=' && text.length >= 2){
+
+                if(text[index-1]+text[index] == '>='){
+
+                    const pos = editor.posFromIndex(index-1);
+
+                    editor.replaceRange('≥', pos, {line: pos.line, ch: pos.ch + 2});
+                } else if(text[index-1]+text[index] == '<='){
+
+                    const pos = editor.posFromIndex(index-1);
+
+                    editor.replaceRange('≤', pos, {line: pos.line, ch: pos.ch + 2});
+                }
+
+            }
+
+            screen_redundant(editor.getValue());
 
 
         })
@@ -2585,8 +2581,19 @@
 
                     clear_error_lines();
 
+                    const fileNames = pre_file_scan(code);
+                    const programTab = selectedTab;
+
+                    for(const name of fileNames){
+
+                        
+                        if(!ol_files.includes(name)) createNewFile(name, '', true);
+
+                    }
+
+
                     const result = await repl(code, selectedTab, selectedTab,repl_request);
-       
+
                     
                     halt_program(true);
 
@@ -2597,7 +2604,13 @@
 
                     const languages = ["python", "javascript", "java", "vbnet"];
 
-                    if(languages.includes(repl_request) && result){
+                    if(errorLog.length == 0 && pauseLog.length == 0 && repl_request.toUpperCase() == 'AST'){
+
+                        outLog.textContent = consoleHistory.map(frame => frame.value).join('\n');
+                        consoleExt.textContent = "\n** Process exited - Return Code: 0 **";
+
+                    }
+                    else if(languages.includes(repl_request) && result){
                         let adapted = "";
 
                         for(const log of result){
@@ -2622,46 +2635,55 @@
 
                         let adapted = err == "syntax" ? '' : `Traceback (most recent call last):\n`;
 
+                        for(const log of consoleHistory){
+
+                            const ln = document.createElement('span');
+                            ln.classList.add('cnsl-ln', log.type);
+                            ln.textContent = log.value;
+                            outLog.appendChild(ln);
+                        }
+
                         for(const log of errorLog){
 
+                            const ln = document.createElement('span');
+                            ln.classList.add('cnsl-ln', 'error');
+                            ln.textContent = log;
+                            outLog.appendChild(ln);
 
 
-                            adapted += log;
-                            adapted += '\n';
                         }
 
 
-                        adapted += '\n';
-
-                        outLog.textContent = adapted;
 
 
                         if(repl_request == "evaluate" || repl_request == "program"){
                             bar.classList.add('bar-error');
                             consoleParent.classList.add('Output-error');
                             outLog.classList.remove("console-success");
-                            outLog.classList.add("console-error");
+
                         }
 
                         
 
-                        consoleExt.textContent = "** Process Exited - Return Code: 1 **";
+                        consoleExt.textContent = "\n** Process Exited - Return Code: 1 **";
 
 
 
                     }
                     else if(errorLog.length == 0 && outputLog && !consoleExt.textContent.includes("** Process exited - Return Code: 0 **")){
 
+                        outLog.innerHTML = '';
 
+                        for(const log of consoleHistory){
 
-                        for(const log of outputLog){
-
-                            outLog.textContent += log;
-                            outLog.textContent += '\n';
+                            const ln = document.createElement('span');
+                            ln.classList.add('cnsl-ln', log.type);
+                            ln.textContent = log.value;
+                            outLog.appendChild(ln);
                         }
 
 
-                        outLog.textContent += "\n";
+ 
 
 
                         if(pauseLog.length > 0){
@@ -2675,7 +2697,7 @@
                         }
                         else{
 
-                            consoleExt.textContent = "** Process exited - Return Code: 0 **";
+                            consoleExt.textContent = "\n** Process exited - Return Code: 0 **";
 
                         }
 
@@ -2762,10 +2784,10 @@
 
 
 
+            });
         });
-    });
 
-        saveBtn.addEventListener('click', () => {
+        downloadBtn.addEventListener('click', () => {
 
             if(editor.getValue() == ""){
                 alert("Cannot download empty file!"); 
@@ -2812,49 +2834,54 @@
 
         loadBtn.addEventListener('click', () => {
 
-            function openFile() {
-                window.showOpenFilePicker({
+            if (!testFileMemory()) {
+                alert(`Maximum ${maxFiles} files can be opened at once!`);
+                return;
+            }
+
+
+            
+
+
+            async function openFile() {
+                let file = null;
+
+                if (window.showOpenFilePicker) {
+
+                const [handle] = await window.showOpenFilePicker({
                     types: [{
-                        description: 'Text files',
-                        accept: {
-                            'text/plain': ['.txt','.pseudo']
-                        }
+                    description: "Text files",
+                    accept: {
+                        "text/plain": [".txt", ".pseudo"]
+                    }
                     }],
                     excludeAcceptAllOption: true,
-                    multiple: false,
-                })
-                .then(([fileHandle]) => {
-                    // Save the handle if you want to write later
-                    return fileHandle.getFile().then(file => ({
-                        content: file.text(),
-                        name: file.name
-                    }));
-                })
-                .then(async ({ content, name }) => {
-                    const text = await content; // Resolve the file text
-                    name = adapt_file_name(name);
-
-                    createNewFile(name, text);
-
-
-                    const titleText = document.getElementById('editorTitle');
-                    if (titleText) {
-                        titleText.textContent = name;
-                    }
-
-
-                })
-                .catch(error => {
-                    console.error("File picking failed:", error);
+                    multiple: false
                 });
+
+                file = await handle.getFile();
+                } else {
+
+                file = await openFileIOS(".txt,.pseudo");
+                }
+
+                if (!file) return;
+
+                const text = await file.text();
+                const name = adapt_file_name(file.name);
+
+                createNewFile(name, text);
+
+                const titleText = document.getElementById("editorTitle");
+                if (titleText) {
+                titleText.textContent = name;
+                }
             }
 
-            if(!testFileMemory()){
-                alert(`Maxium ${maxFiles} files can be opened at once!`);
-            }
-            else{
-                openFile();
-            }
+            openFile().catch(err => {
+                alert("File picking failed");
+                console.error(err);
+            });
             
 
         })
@@ -2945,13 +2972,9 @@
 
             if(console_cont.textContent != "" && error_cond){
 
-                let toCopy = "";
 
-
-                for(const log of outputLog){
-                    toCopy += log;
-                    toCopy += '\n';
-                }
+                const cont = document.getElementById('console-content');
+                const toCopy = [...cont.children].map(child => child.textContent).join('\n');
 
 
                 navigator.clipboard.writeText(toCopy);
@@ -2973,11 +2996,6 @@
 
             if(file.endsWith('.pseudo')){
                 localStorage.setItem("Saved", contents);
-            }
-            
-
-            if(!preventMessage){
-                alert(`File '${file}' saved successfully!`);
             }
             
 
@@ -3198,13 +3216,38 @@
 
         })
 
+        document.getElementById('saveBtn').addEventListener("click", () => {
+
+            if(editor.getValue() == ""){
+                alert("Cannot save empty file!");
+            }
+            else{
+                save_to_system(selectedTab, false);
+            }
+
+        })
+
 
         document.addEventListener("DOMContentLoaded", () => {
             document.addEventListener("keydown", function(e) {
-                if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
+
+                if(e.key === "F9"){
+
                     e.preventDefault();
                     if(editor.getValue() == ""){
-                        throw "Cannot save empty file!";
+                        alert("Cannot download empty file!");
+                    }
+                    else{
+                        document.getElementById('downloadBtn').click();
+                    }
+
+                }
+                if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
+                    e.preventDefault();
+
+
+                    if(editor.getValue() == ""){
+                        alert("Cannot save empty file!");
                     }
                     else{
                         document.getElementById('saveBtn').click();
@@ -3218,6 +3261,10 @@
                     else{
                         document.getElementById('loadBtn').click();
                     }
+                }
+                else if((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'u'){
+                    e.preventDefault();
+                    document.getElementById('loadBtn').click();
                 }
                 else if((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'enter'){
                     e.preventDefault();
@@ -3312,6 +3359,8 @@
         }
 
         function extract_file_type(raw) {
+
+            if(!raw) return 'none';
 
             let guess = "";
 
@@ -3797,116 +3846,8 @@
 
         })
 
-        let mbl_link = document.getElementById('settings-mbl-li');
-        let share_link = document.getElementById('share-mbl-li');
-        let fs_link = document.getElementById('fullscreen-mbl-li');
-        let mbl_menu = document.getElementById('mobile-nav-list');
-
-        fs_link.addEventListener("click", () => {
-
-            if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen();
-                
-                fs_link.querySelector('#fullscreen-mbl').textContent = "Exit Fullscreen";
-
-            } else {
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                    fs_link.querySelector('#fullscreen-mbl').textContent = "Enter Fullscreen";
-                }
-            }
-
-        });
 
 
-        mbl_link.addEventListener("click", () =>{
-
-            document.getElementById('settings-modal').showModal();
-
-        })
-
-        let mbl_last = share_link.nextSibling;
-
-        function configureCog() {
-            if (window.innerWidth < 445) {
-
-                if (widescreen.parentNode) {
-                    ws_parent.removeChild(widescreen);
-
-                    open = undefined;
-
-
-                }
-            } else {
-
-                if (!widescreen.parentNode) {
-
-
-
-                    ws_parent.insertBefore(widescreen, ws_nextSibling);
-                    open = document.getElementById('widescreen-only');
-
-
-                }
-            }
-        }
-
-        function configureMobileSettingsLink() {
-            if (window.innerWidth > 445) {
-
-
-                if (mbl_link && mbl_link.parentNode) {
-                    mbl_menu.removeChild(mbl_link);
-                    mbl_menu.removeChild(share_link);
-                    mbl_menu.removeChild(fs_link);
-
-                }
-            } else {
-
-                if (!mbl_link.parentNode) {
-
-               
-
-                    mbl_menu.insertBefore(mbl_link, mbl_last);
-                    mbl_menu.insertBefore(share_link, mbl_last);
-                    mbl_menu.insertBefore(fs_link, mbl_last);
-                    
-                }
-            }
-
-
-        }
-
-        function configure_settingsLocation(){
-
-            configureCog();
-            configureMobileSettingsLink();
-
-
-
-        }
-
-        configure_settingsLocation();
-
-        if(document.getElementById('share-mbl')){
-            document.getElementById('share-mbl').addEventListener("click", () => {
-
-            
-                document.getElementById('pre-gen').style.display = "flex";
-                document.getElementById('gen').style.display = "none";
-
-                
-
-                const p_name = document.getElementById('project-name');
-
-                p_name.value = selectedTab == "Main.pseudo" ? "MyProject.pseudo" : selectedTab;;
-                p_name.select();
-                p_name.setSelectionRange(0, 99999); // For mobile devices
-
-                document.getElementById('share-modal').showModal();
-
-            });
-        }
 
         window.addEventListener("resize", () => {
 
@@ -3914,7 +3855,7 @@
             const next = document.getElementById('theme-toggle-container');
             const parent = document.getElementById('menu-right');
 
-            configure_settingsLocation();
+
 
             if(document.getElementById('share-btn')){
                 document.getElementById('share-btn').addEventListener("click", () => {
@@ -3936,25 +3877,6 @@
                 });
             }
 
-            if(document.getElementById('share-mbl')){
-                document.getElementById('share-mbl').addEventListener("click", () => {
-
-                
-                    document.getElementById('pre-gen').style.display = "flex";
-                    document.getElementById('gen').style.display = "none";
-
-                    
-
-                    const p_name = document.getElementById('project-name');
-
-                    p_name.value = selectedTab == "Main.pseudo" ? "MyProject.pseudo" : selectedTab;
-                    p_name.select();
-                    p_name.setSelectionRange(0, 99999); // For mobile devices
-
-                    document.getElementById('share-modal').showModal();
-
-                });
-            }
             
 
         })
@@ -4052,6 +3974,13 @@
             localStorage.setItem("Ln", String(Ln_toggle.checked));
 
             editor.setOption("lineNumbers", Ln_toggle.checked);
+
+        })
+
+        Lw_toggle.addEventListener("change", function() {
+
+            localStorage.setItem("Lw", String(Lw_toggle.checked));
+            editor.setOption("lineWrapping", Lw_toggle.checked);
 
         })
 
@@ -4363,6 +4292,18 @@
                 Mmp_toggle.checked = true;
 
             }
+            else if(localStorage.getItem("Mmp") == "true"){
+
+                document.documentElement.style.setProperty('--editor-portion', '90%');
+                document.getElementById('mini-map-collumn').style.display = "flex";
+                build_map(editor, selectedTab.endsWith('.txt'));
+
+            }
+            else if(localStorage.getItem("Mmp") == "false"){
+
+                document.documentElement.style.setProperty('--editor-portion', '100%');
+                document.getElementById('mini-map-collumn').style.display = "none";
+            }
 
 
 
@@ -4672,7 +4613,7 @@
 
         document.getElementById('reset-settings').addEventListener("click", function() {
 
-            if(confirm("Are you sure want to reset all settings? (This will also reset all appearance settings)")){
+            if(confirm("Are you sure want to reset all settings?")){
                 if(!Ln_toggle.checked){
 
                     Ln_toggle.click();
@@ -4865,14 +4806,14 @@
                     font_size.dispatchEvent(new Event('change', {bubbles: true}));
                 }
 
-
                 document.documentElement.style.setProperty("--editor-font-fam", p.Ff);
+
 
                 if(p.Ff.startsWith('cascadia')) font_selection.value = "cascadia-optn";
                 else if(p.Ff.startsWith('consolas')) font_selection.value = "consolas-optn";
                 else if(p.Ff.startsWith('sans-serif')) font_selection.value = "sans-serif-optn";
                 else if(p.Ff.startsWith('monospace')) font_selection.value = "monospace-optn";
-                else if(p.Ff.startsWith("'jetbrains")) font_selection.value = "jetbrains-mono-optn";
+                else if(p.Ff.startsWith("'jetbrains") || p.Ff.startsWith("jetbrains")) font_selection.value = "jetbrains-mono-optn";
                 else if(p.Ff.startsWith("brass")) font_selection.value = "brass-mono-optn"
                 else if(p.Ff.startsWith("kode")) font_selection.value = "kode-mono-optn"
                 else font_selection.value = "courier-optn";
@@ -4995,44 +4936,65 @@
 
         document.getElementById('upload-preset').addEventListener('click', () => {
 
-            function openFile() {
-                window.showOpenFilePicker({
-                    types: [{
-                        description: 'JSON files',
-                        accept: {
-                            'text/plain': ['.txt','.json']
+            async function openFile() {
+
+                if(window.showOpenFilePicker){
+                    window.showOpenFilePicker({
+                        types: [{
+                            description: 'JSON files',
+                            accept: {
+                                'text/plain': ['.txt','.json']
+                            }
+                        }],
+                        excludeAcceptAllOption: true,
+                        multiple: false,
+                    })
+                    .then(([fileHandle]) => {
+                        // Save the handle if you want to write later
+                        return fileHandle.getFile().then(file => ({
+                            content: file.text(),
+                            name: file.name
+                        }));
+                    })
+                    .then(async ({ content, name }) => {
+
+                        try {
+                            const preset = JSON.parse(await content);
+                            loadPreset(preset);
+                        } catch (error) {
+                            alert("Invalid file uploaded!");
                         }
-                    }],
-                    excludeAcceptAllOption: true,
-                    multiple: false,
-                })
-                .then(([fileHandle]) => {
-                    // Save the handle if you want to write later
-                    return fileHandle.getFile().then(file => ({
-                        content: file.text(),
-                        name: file.name
-                    }));
-                })
-                .then(async ({ content, name }) => {
+                    })
+                    .catch(error => {
+                        console.error("File picking failed:", error);
+                    });
 
-                    try {
-                        const preset = JSON.parse(await content);
-                        loadPreset(preset);
-                    } catch (error) {
-                        alert("Invalid file uploaded!");
+
+                }  
+                else {
+
+                    const file = await openFileIOS('.json');
+                    if(!file) {
+
+                        alert("File picking failed!")
+                        return;
+
                     }
+                    else{
 
-                     // Resolve the file text
-                    
-                    
+                        const preset = await file.text().then(text => {
 
-                    
+                            try {
+                                const pre = JSON.parse(text);
+                                loadPreset(pre);
+                            } catch (error) {
+                                alert("Invalid file uploaded!");
+                                return null;
+                            }
 
-
-                })
-                .catch(error => {
-                    console.error("File picking failed:", error);
-                });
+                        });
+                    }
+                }              
             }
             
             openFile();
@@ -5905,6 +5867,25 @@
         editor.on('unfold', cm => updateFoldChevronTitles(cm));
         editor.on('viewportChange', cm => updateFoldChevronTitles(cm));
         editor.on('refresh', cm => updateFoldChevronTitles(cm));
+
+        
+
+
+        editor.on("changes", function(cm, changes) {
+
+            do_screening();
+ 
+            
+        });
+
+
+        document.getElementById('init-terminal').addEventListener("click", () => {
+
+            clear_console.click();
+            const term = new Terminal(document.getElementById('console-content'));
+
+
+        })
 
 
 

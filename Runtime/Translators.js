@@ -1,7 +1,7 @@
 import { MK_NULL, MK_NUMBER } from "./Value.js";
 import { evaluate } from "./Interpreter.js";
 import { Tokens } from "../Frontend/Lexer.js";
-import { errorLog } from "../Main.js";
+import { errorLog, makeError } from "../Main.js";
 import { conv_runtimeval_dt, eval_assignment_expr, isint, fn_args_size } from "./Eval/Expressions.js";
 import { eval_var_declaration } from "./Eval/Statements.js";
 const initial_frame = {
@@ -1187,6 +1187,9 @@ export class JST {
         if ([...this.imports].length > 0)
             program = [...this.imports].map(i => `const ${this.module_ref[i]} = require("${i}")`).join('\n') + '\n\n' + program;
         program = "// ## JavaScript representation result ##\n\n// IMPORTANT! Always manually review translated scripts before excecution\n\n" + program;
+        if (errorLog.length > 0) {
+            program = "// Cannot finish translation due to a potential runtime error.\n// Evaluate your program first and check that there are no errors before translating!";
+        }
         return program;
     }
     async translate(tab, stmt, ixOvwrt = false) {
@@ -1244,14 +1247,48 @@ export class JST {
                 return '';
         }
     }
+    async unpack_operands(expr) {
+        if (expr.kind == "BinaryExpr") {
+            const be = expr;
+            const operands = [];
+            if (be.left.kind == "BinaryExpr") {
+                const sub = await this.unpack_operands(be.left);
+                sub.forEach(e => operands.push(e));
+            }
+            else {
+                const raw = await this.translate('', be.left);
+                operands.push(raw);
+            }
+            if (be.right.kind == "BinaryExpr") {
+                const sub = await this.unpack_operands(be.right);
+                sub.forEach(e => operands.push(e));
+            }
+            else {
+                const raw = await this.translate('', be.right);
+                if (be.operator == '-')
+                    operands.push('-' + raw);
+                else
+                    operands.push(raw);
+            }
+            return operands;
+        }
+        else {
+            return [await this.translate('', expr)];
+        }
+    }
     async trans_member_expr(expr, ixOvwrt = false) {
         let out = await this.translate('', expr.object);
+        if (!this.var_map.get(expr.object.symbol)) {
+            makeError(`Cannot find name '${this.var_map.get(expr.object.symbol)}'!`, "Name");
+            return '';
+        }
         for (let i = 0; i < expr.indexes.length; i++) {
             const start = this.var_map.get(expr.object.symbol)[1].indexPairs
                 ? await this.translate('', this.var_map.get(expr.object.symbol)[1].indexPairs.get(i + 1)[0])
                 : '1';
             const raw = await this.translate('', expr.indexes[i]);
-            const ix = start == '0' ? raw : this.eval_safe([raw, `-${start}`]);
+            const operands = await this.unpack_operands(expr.indexes[i]);
+            const ix = start == '0' ? raw : this.eval_safe([...operands, `-${start}`]);
             out += `[${ix}]`;
         }
         return out;
@@ -1270,7 +1307,9 @@ export class JST {
                     const min = await this.translate('', call.args[0]);
                     const max = await this.translate('', call.args[1]);
                     const up = this.eval_safe([max, `-${min}`]);
-                    const out = `Math.round(Math.random() * (${up})) + ${min}`;
+                    const out = min == '0'
+                        ? `Math.round(Math.random() * (${up}))`
+                        : `Math.round(Math.random() * (${up})) + ${min}`;
                     return out;
                 }
                 return `Math.random()`;
@@ -1434,6 +1473,9 @@ export class JST {
                 const name = expr.symbol;
                 if (name == "TRUE" || name == "FALSE")
                     return Tokens.Boolean;
+                if (!this.var_map.get(name)) {
+                    makeError(`Cannot find name '${this.var_map.get(name)}'!`, "Name");
+                }
                 return this.var_map.get(name)[0];
             case "ObjectLiteral":
                 return expr.dataType;
@@ -1464,6 +1506,9 @@ export class JST {
                     case "EOF":
                         return Tokens.Boolean;
                     default:
+                        if (!this.var_map.get(call.callee.symbol)) {
+                            makeError(`Cannot find name '${this.var_map.get(call.callee.symbol)}'!`, "Name");
+                        }
                         return this.var_map.get(call.callee.symbol)[0];
                 }
             default:
@@ -1553,11 +1598,41 @@ export class JST {
                     if (s.kind != "EndClosureExpr")
                         out += await this.translate(tab + '    ', s);
                 }
-                out += tab + this.add_comment(`} while(${await this.translate(tab, stmt.iterationCondition)});`, stmt.footer_comment);
+                out += tab + this.add_comment(`} while(${await this.negate_condition(stmt.iterationCondition)});`, stmt.footer_comment);
                 return out;
             default:
                 return '';
         }
+    }
+    inverse_op(op) {
+        switch (op) {
+            case '=':
+                return '!=';
+            case '<>':
+                return '==';
+            case '>':
+                return '<=';
+            case '<':
+                return '>=';
+            case '<=':
+                return '>';
+            case '>=':
+                return '<';
+            default:
+                return op;
+        }
+    }
+    async negate_condition(c) {
+        if (c.kind != "BinaryExpr")
+            return await this.translate('', c);
+        const cond = c;
+        const lhs = await this.translate('', cond.left);
+        const rhs = await this.translate('', cond.right);
+        const inv = this.inverse_op(cond.operator);
+        if (cond.operator == inv)
+            return `!(${lhs} ${cond.operator} ${rhs})`;
+        else
+            return `${lhs} ${inv} ${rhs}`;
     }
     async trans_selection_stmt(tab, stmt) {
         if (stmt.case) {

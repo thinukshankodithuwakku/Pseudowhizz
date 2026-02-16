@@ -68,10 +68,10 @@
 
     --node-border: #282828;
     --cm-folded: #212e3a;
-    --cm-selected: #264f78;
+    --cm-selected: #264f7877;
     --cm-foldline-bordercol: #273440;
     --cm-border-thickness: 1.6px;
-    --cm-token-def: #093e5b;
+    --cm-token-def: #093e5b6b;
 
 }
 
@@ -96,7 +96,7 @@
 
 .cm-cursor-token {
 
-    background-color: color-mix(in srgb, var(--codeMirror-bg), rgba(194, 194, 194, 0.452)) !important;
+    background-color: color-mix(in srgb, var(--codeMirror-bg), rgba(194, 194, 194, 0.226)) !important;
     border: none;
 }
 
@@ -1048,7 +1048,7 @@ body {
 ::-webkit-scrollbar {
 
     width: 10px;
-    background-color: var(--editor-bg);
+    background-color: transparent;
 
 }
 
@@ -1170,8 +1170,37 @@ logo-wrapper {
 
 }
 
+@media (max-width: 400px){
+
+    #settings-modal {
+
+        width: 100vw !important;
+
+    }
+
+}
 
 
+@media (max-width: 600px){
+
+    #menu-header {
+
+        overflow-x: auto;
+        overflow-y: hidden;
+        min-height: 55px;
+        min-width: 100%;
+        gap: 1rem;
+
+
+    }
+
+    #menu-header::-webkit-scrollbar {
+
+        scrollbar-width: thin;
+
+    }
+
+}
 
 @media (max-width: 1400px){
 
@@ -2204,6 +2233,7 @@ input[type=number]:focus {
 
     width: 100%;
 
+
     position: relative;
 
     height: 150px;
@@ -2222,8 +2252,9 @@ input[type=number]:focus {
     border-bottom: solid 1px var(--console-outline);
     border-right: none;
 
-    
-    gap: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 2.5px;
 
     width: 25px;
     height: 100%;
@@ -2373,6 +2404,7 @@ input[type=number]:focus {
 
     overflow-wrap: break-word;
     overflow-y: auto;
+    max-width: 100%;
 
 }
 
@@ -3491,7 +3523,7 @@ main {
 }
 
 
-editornav {
+#menu-header {
 
     width: 100%;
     max-width: 100vw;
@@ -3511,7 +3543,7 @@ editornav {
 
 }
 
-body#Contact editornav {
+body#Contact #menu-header {
 
     display: flex;
     flex-direction: row;
@@ -4001,6 +4033,71 @@ input:-webkit-autofill {
 .cnsl-txt-err {
 
     color: var(--console-error);
+
+}
+
+.help-row {
+
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: flex-start;
+    gap: 0.5em;
+
+}
+
+.help-col {
+
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: left;
+    gap: 0.2em;
+
+}
+
+.cnsl-ln.error {
+
+    color: var(--console-error);
+
+}
+
+#console-content {
+
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    max-width: 100%;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+
+}
+
+.cnsl-ln.wrpr {
+
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 0.26em;
+
+}
+
+
+.cnsl-ln {
+
+    position: relative;
+    background-color: transparent;
+    font-family: consolas;
+    font-size: small;
+    max-width: 100%;
+    overflow-wrap: break-word;
+
+}
+
+.cnsl-ln.input {
+
+    height: 15.2px !important;
 
 }
 

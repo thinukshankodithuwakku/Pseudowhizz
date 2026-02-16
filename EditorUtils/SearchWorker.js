@@ -1,5 +1,4 @@
-import { makeError, commentLog } from "../Main.js";
-let inF = false;
+//import { tokenize, tokenize_line } from "../Frontend/Lexer.js";
 export var Tokens;
 (function (Tokens) {
     //Initialisers 
@@ -153,136 +152,27 @@ const KEYWORDS = {
     '%': Tokens.Unrecognised,
     ';': Tokens.Unrecognised,
 };
-function splitWithSpaces(str) {
-    return str.match(/\S+|\s+/g) || [];
+function isskippable(str) {
+    return str == " " || str == '\n' || str == '\t';
 }
-function fileUseFilter(line) {
-    if (line.includes("WRITEFILE") || line.includes("READFILE")) {
-        const sentence = splitWithSpaces(line.trim());
-        let newStr = [];
-        let doubleQuotes = false;
-        let singleQuotes = false;
-        if (sentence[0]) {
-            while (sentence[0] && !sentence[0].endsWith('.txt,') && !sentence[0].endsWith('.txt')) {
-                if (sentence[0] == '"') {
-                    doubleQuotes = !doubleQuotes;
-                }
-                else if (sentence[0] == "'") {
-                    singleQuotes = !singleQuotes;
-                }
-                newStr.push(sentence.shift());
-            }
-            if (!doubleQuotes && !singleQuotes) {
-                newStr.push('(');
-            }
-            while (sentence.length > 0) {
-                if (sentence[0] == '"') {
-                    doubleQuotes = !doubleQuotes;
-                }
-                else if (sentence[0] == "'") {
-                    singleQuotes = !singleQuotes;
-                }
-                newStr.push(sentence.shift());
-            }
-            if (!doubleQuotes && !singleQuotes) {
-                newStr.push(')');
-            }
-        }
-        else {
-            return line;
-        }
-        return newStr.join('');
-    }
-    else {
-        return line;
-    }
-}
-function commentFilter(line, translating) {
-    if (translating) {
-        return line;
-    }
-    else {
-        const filtered = line;
-        return filtered;
-        let slashCounter = 0;
-        let instances = [];
-        let singleQuotes = false;
-        let doubleQuotes = false;
-        for (let i = 0; i < filtered.length - 1; i++) {
-            if (filtered[i] == '"') {
-                doubleQuotes = !doubleQuotes;
-            }
-            else if (filtered[i] == "'") {
-                singleQuotes = !singleQuotes;
-            }
-            if (filtered[i] == '/' && !doubleQuotes && !singleQuotes) {
-                slashCounter++;
-                instances.push(i);
-            }
-            if (slashCounter >= 2) {
-                const comment = filtered.substring(Math.min(...instances) + 2, filtered.length);
-                commentLog.push(comment);
-                return filtered.substring(0, Math.min(...instances));
-            }
-        }
-        return filtered;
-    }
-}
-function splitCodeAndComment(line) {
-    const index = line.indexOf("//"); // find where '//' starts
-    if (index === -1) {
-        return [line, ""]; // no comment found
-    }
-    const before = line.slice(0, index).trimEnd(); // remove trailing spaces before comment
-    const after = line.slice(index); // include '//' and everything after
-    return [before, after];
+function isNumeric(str) {
+    return !isNaN(Number(str)) && str.trim() !== '';
 }
 export function line_reader(src) {
     const split = src.split((/\r?\n/));
     return split;
 }
-function isAlpha(str) {
-    return /^[A-Za-z]+$/.test(str) || /[À-ÿ]/.test(str);
-}
 function isIdentifiable(str) {
     return str == '.' || str == "_" || isAlpha(str) || !isNaN(Number(str)) && str.trim() !== "";
 }
-function isskippable(str) {
-    return str == " " || str == '\n' || str == '\t';
+function isAlpha(str) {
+    return /^[A-Za-z]+$/.test(str) || /[À-ÿ]/.test(str);
 }
-function adapter(sentence) {
-    return commentFilter(sentence, false);
-}
-function isNumeric(str) {
-    return !isNaN(Number(str)) && str.trim() !== '';
-}
-const unaryTokens = [Tokens.NOT, Tokens.AND, Tokens.OR, Tokens.OpenBracket, Tokens.OpenSquareBracket, Tokens.Step, Tokens.Output, Tokens.Return, Tokens.Until, Tokens.While, Tokens.If, Tokens.Of, Tokens.Comma, Tokens.Assign, Tokens.Greater, Tokens.GreaterEquals, Tokens.Less, Tokens.LessEquals, Tokens.Equals, Tokens.NotEquals, Tokens.BinaryOperator, Tokens.UnaryOperator];
-function unary_adapter(src) {
-    let use = [];
-    for (const token of src) {
-        use.push(token);
-    }
-    return use;
-}
-export function identifier_valid(test, ln) {
-    if (test.includes('_')) {
-        makeError("Identifier names should not use an underscore", "Syntax", ln);
-        return false;
-    }
-    else if (/[À-ÿ]/.test(test)) {
-        makeError("Identifier names should not use accented characters", "Syntax", ln);
-        return false;
-    }
-    else if (test.toLowerCase() == test.toUpperCase()) {
-        makeError("Identifier names should not use unrecognised characters", "Syntax", ln);
-        return false;
-    }
-    else {
-        return true;
-    }
+function isComparitive(str) {
+    return str == '=' || str == '<' || str == '>' || str == '<=' || str == '>=';
 }
 export function tokenize_line(line, ln) {
-    const adapted = adapter(line);
+    const adapted = line;
     const split_line = adapted.split('');
     let tokenList = [];
     let col = 1;
@@ -324,10 +214,6 @@ export function tokenize_line(line, ln) {
                 let num = '';
                 while (split_line.length > 0 && !isNaN(Number(split_line[0]))) {
                     num += split_line.shift();
-                    if (split_line[0] == '.') {
-                        makeError(`Unexpected decimal point in numeric literal!`, "Syntax", ln);
-                        break;
-                    }
                 }
                 num = '0.' + num;
                 tokenList.push({
@@ -338,31 +224,16 @@ export function tokenize_line(line, ln) {
                     col: col,
                 });
             }
-            else {
-                makeError(`Expecting numeric literal following decimal point!`, "Syntax", ln);
-            }
         }
         else if (letter == '+' || letter == '-') {
             if (tokenList.length > 0) {
-                const rec = tokenList[tokenList.length - 1].type;
-                if (unaryTokens.includes(rec)) {
-                    tokenList.push({
-                        value: split_line.shift(),
-                        type: Tokens.UnaryOperator,
-                        typeName: Tokens[Tokens.UnaryOperator],
-                        ln: ln,
-                        col: col,
-                    });
-                }
-                else {
-                    tokenList.push({
-                        value: split_line.shift(),
-                        type: Tokens.BinaryOperator,
-                        typeName: Tokens[Tokens.BinaryOperator],
-                        ln: ln,
-                        col: col,
-                    });
-                }
+                tokenList.push({
+                    value: split_line.shift(),
+                    type: Tokens.BinaryOperator,
+                    typeName: Tokens[Tokens.BinaryOperator],
+                    ln: ln,
+                    col: col,
+                });
             }
             else {
                 tokenList.push({
@@ -383,9 +254,6 @@ export function tokenize_line(line, ln) {
                 ln: ln,
                 col: col,
             });
-            if (split_line[0] == '*' && op == '*') {
-                makeError("Unexpected token '*'. Did you mean to use the '^' operator? ", "Syntax", ln);
-            }
         }
         else if (letter == '>' || letter == '<') {
             let potentialComparitive = "";
@@ -433,7 +301,6 @@ export function tokenize_line(line, ln) {
                         filetype += potentialWord[potentialWord.length - 1];
                     }
                     if (filetype != "txt" && filetype != "pseudo") {
-                        makeError(`Unrecognised filetype '.${filetype}'!`, "Type", ln);
                     }
                 }
                 else {
@@ -441,12 +308,6 @@ export function tokenize_line(line, ln) {
                 }
             }
             if (potentialWord in KEYWORDS) {
-                if (KEYWORDS[potentialWord] == Tokens.Function) {
-                    inF = true;
-                }
-                else if (KEYWORDS[potentialWord] == Tokens.Endfunction) {
-                    inF = false;
-                }
                 tokenList.push({
                     value: potentialWord,
                     type: KEYWORDS[potentialWord],
@@ -516,7 +377,6 @@ export function tokenize_line(line, ln) {
                 potentialNumber += split_line.shift();
             }
             if (dpCount > 1) {
-                makeError(`Unexpected decimal point in numeric literal!`, "Syntax", ln);
             }
             else {
                 tokenList.push({
@@ -543,7 +403,6 @@ export function tokenize_line(line, ln) {
                     potentialStringLiteral += split_line.shift();
             }
             if (split_line.length == 0) {
-                makeError(`Unterminated string literal!`, "Syntax", ln);
             }
             else {
                 split_line.shift();
@@ -563,14 +422,10 @@ export function tokenize_line(line, ln) {
                 potentialStringLiteral += split_line.shift();
             }
             if (split_line.length == 0) {
-                makeError(`Unterminated string literal!`, "Syntax", ln);
             }
             else {
                 split_line.shift();
                 potentialStringLiteral += "'";
-                if (potentialStringLiteral.length != 3) {
-                    makeError(`Multicharacter string literals must be delimited by double quotes (" ")`, "Syntax", ln);
-                }
                 tokenList.push({
                     value: potentialStringLiteral.slice(1, -1),
                     type: Tokens.StringLiteral,
@@ -587,10 +442,8 @@ export function tokenize_line(line, ln) {
                 ln: ln,
                 col: col,
             });
-            tokenList = unary_adapter(tokenList);
             break;
         }
-        tokenList = unary_adapter(tokenList);
     }
     for (let i = 1; i < tokenList.length - 1; i++) {
         tokenList[i].col = i;
@@ -627,6 +480,197 @@ export function tokenize(src) {
     });
     return tokenList;
 }
-function isComparitive(str) {
-    return str == '=' || str == '<' || str == '>' || str == '<=' || str == '>=';
+function search(src, request) {
+    const src_tokens = tokenize(src);
+    const req_tokens = tokenize_line(request, 0);
+    req_tokens.pop();
+    let res = false;
+    let ln = null;
+    let ch = null;
+    for (let i = 0; i <= src_tokens.length - req_tokens.length; i++) {
+        let match = true;
+        for (let j = 0; j < req_tokens.length; j++) {
+            if (src_tokens[i + j].type != req_tokens[j].type || src_tokens[i + j].value != req_tokens[j].value || src_tokens[i + j].value.length != req_tokens[j].value.length) {
+                match = false;
+                ch = j;
+                break;
+            }
+        }
+        if (match) {
+            res = true;
+            ln = src_tokens[i + ch].ln - 1;
+            break;
+        }
+    }
+    return { match: res, ln: ln };
 }
+function findArrayPrim(codeVal, read) {
+    if (search(codeVal, `DECLARE ${read} : ARRAY`).match) {
+        let i = 0;
+        const tkns = tokenize(codeVal);
+        while (i < tkns.length - 3) {
+            if (tkns[i].type == Tokens.Declare && tkns[i + 1].type == Tokens.Identifier && tkns[i + 1].value == read && tkns[i + 2].type == Tokens.Colon && tkns[i + 3].type == Tokens.Array) {
+                break;
+            }
+            i++;
+        }
+        i += 3;
+        const data_types = [Tokens.Integer, Tokens.Real, Tokens.Boolean, Tokens.String, Tokens.Char];
+        while (!data_types.includes(tkns[i].type) && tkns[i].type != Tokens.EOL && i < tkns.length)
+            i++;
+        return data_types.includes(tkns[i].type) ? tkns[i].value : "none";
+    }
+    else
+        return "none";
+}
+function tick(src, names) {
+    const profile = [...names].map(name => {
+        if (search(src, `DECLARE ${name} : INTEGER`).match)
+            return { name: name, type: "variable", datatype: "INTEGER" };
+        else if (search(src, `DECLARE ${name} : REAL`).match)
+            return { name: name, type: "variable", datatype: "REAL" };
+        else if (search(src, `DECLARE ${name} : BOOLEAN`).match)
+            return { name: name, type: "variable", datatype: "BOOLEAN" };
+        else if (search(src, `DECLARE ${name} : STRING`).match)
+            return { name: name, type: "variable", datatype: "STRING" };
+        else if (search(src, `DECLARE ${name} : CHAR`).match)
+            return { name: name, type: "variable", datatype: "CHAR" };
+        else if (search(src, `DECLARE ${name} : ARRAY`).match)
+            return { name: name, type: "variable", datatype: "ARRAY OF " + findArrayPrim(src, name) };
+        else if (search(src, `FUNCTION ${name} (`).match)
+            return { name: name, type: "userFn", datatype: "FUNCTION", ln: search(src, `FUNCTION ${name} (`).ln };
+        else if (search(src, `FOR ${name} ←`).match)
+            return { name: name, type: "variable", datatype: "REAL" };
+        else if (search(src, `PROCEDURE ${name} (`).match)
+            return { name: name, type: "userFn", datatype: "PROCEDURE", ln: search(src, `PROCEDURE ${name} (`).ln };
+        else if (search(src, `CONSTANT ${name} ←`).match)
+            return { name: name, type: "constant" };
+        else
+            return { name: name, type: "none" };
+    });
+    return profile;
+}
+self.onmessage = function (e) {
+    const res = tick(e.data.src, e.data.names);
+    self.postMessage(res);
+};
+//Name handling
+/*keywordList = [...native_keywords, ...vars, ...methods, ...constants, ...procedures];
+                        
+const codeVal = editor.getValue();
+
+let mtd_dcl = null;
+
+for(const fn of methods){
+
+    
+
+    if(!search(codeVal, `FUNCTION ${fn} (`).match)  ns.refresh("functions", fn);
+    else { mtd_dcl = search(codeVal, `FUNCTION ${fn} (`).ln;}
+
+    if(mtd_dcl != null) save_user_fn(editor.getLine(mtd_dcl));
+
+}
+
+
+
+for(const p of procedures){
+    if(!search(codeVal, `PROCEDURE ${p} (`).match) ns.refresh("procedures", p);
+    else mtd_dcl = search(codeVal, `PROCEDURE ${p} (`).ln;
+
+    if(mtd_dcl != null) save_user_fn(editor.getLine(mtd_dcl));
+}
+
+for(const c of constants){
+
+    if(!search(codeVal, `CONSTANT ${c} ←`).match){
+
+        constTypeMap.delete(c);
+        //constants = constants.filter(i => i != c);
+        ns.refresh("constants", c);
+    }
+
+}
+
+
+for(const v of vars){
+
+    if(!search(codeVal, `DECLARE ${v} : INTEGER`).match
+    && !search(codeVal, `DECLARE ${v} : REAL`).match
+    && !search(codeVal, `DECLARE ${v} : BOOLEAN`).match
+    && !search(codeVal, `DECLARE ${v} : STRING`).match
+    && !search(codeVal, `DECLARE ${v} : CHAR`).match
+    && findArrayPrim(codeVal, v) == "none"){
+
+        vars = vars.filter(i => i != v);
+        varTypeMap.delete(v);
+
+    }
+    
+
+}
+
+if (word) {
+    
+    const raw = JSON.stringify(word);
+
+
+    let type = "variable";
+
+    
+
+    const is_fn = search(codeVal, `FUNCTION ${read} (`).match;
+    
+
+    const is_prcdr = search(codeVal, `PROCEDURE ${read} (`).match;
+    
+
+    const is_const = search(codeVal, `CONSTANT ${read} ←`).match;
+
+    const is_var = search(codeVal, `DECLARE ${read} : INTEGER`).match
+    || search(codeVal, `DECLARE ${read} : REAL`).match
+    || search(codeVal, `DECLARE ${read} : BOOLEAN`).match
+    || search(codeVal, `DECLARE ${read} : STRING`).match
+    || search(codeVal, `DECLARE ${read} : CHAR`).match
+    || findArrayPrim(codeVal, read) != "none";
+
+    const is_file = codeVal.includes(`OPENFILE ${read}.txt FOR READ`) || codeVal.includes(`OPENFILE ${read}.txt FOR WRITE`)
+
+    if(is_fn && !methods.includes(read)){
+        methods.push(read);
+
+    }
+
+    else if(is_prcdr && !procedures.includes(read)) procedures.push(read);
+
+    else if(is_const && !constants.includes(read)) constants.push(read);
+    
+    else if(is_var && !vars.includes(read)){
+
+
+
+        vars.push(read);
+
+        if(search(codeVal, `DECLARE ${read} : INTEGER`).match) varTypeMap.set(read, 'INTEGER');
+        else if(search(codeVal, `DECLARE ${read} : REAL`).match) varTypeMap.set(read, 'REAL');
+        else if(search(codeVal, `DECLARE ${read} : BOOLEAN`).match) varTypeMap.set(read, 'BOOLEAN');
+        else if(search(codeVal, `DECLARE ${read} : STRING`).match) varTypeMap.set(read, 'STRING');
+        else if(search(codeVal, `DECLARE ${read} : CHAR`).match) varTypeMap.set(read, 'CHAR');
+        else if(findArrayPrim(codeVal, read) != "none") varTypeMap.set(read, 'ARRAY OF ' + findArrayPrim(codeVal, read));
+
+    }
+
+    if( methods.includes(read) || procedures.includes(read)) type = "userFn";
+
+    
+    else if(constants.includes(read))  type = "constant";
+    
+
+    prev_token = read;
+    
+    return type;
+
+    
+}
+
+*/ 

@@ -32,7 +32,7 @@ import {
 
 import { Token, Tokens, tokenize } from "./Lexer.js";
 
-import { errorLog, makeError, error } from "../Main.js";
+import { errorLog, makeError, error, initial_frame } from "../Main.js";
 import { isint } from "../Runtime/Eval/Expressions.js";
 
 export let errToken : string = "";
@@ -222,7 +222,15 @@ export default class Parser {
     if(this.at().type == Tokens.OpenBracket){
       this.eat();
     }
-    const fileName = this.expect(context,Tokens.Filename, "Invalid file name!").value;
+
+    if(this.at().type == Tokens.Filename){
+
+      return this.MK_Err(context, 'File names must be wrapped in quotes (" ")!');
+
+    }
+
+
+    const fileName = this.expect(context,Tokens.StringLiteral, "Invalid file name!").value;
 
     this.expect(context,Tokens.Comma, "Comma expected!");
 
@@ -295,7 +303,13 @@ export default class Parser {
 
     }
 
-    const fileName = this.expect(context,Tokens.Filename, `Invalid file name '${this.at().value}'!`).value;
+    if(this.at().type == Tokens.Filename){
+
+      return this.MK_Err(context, 'File names must be wrapped in double quotes (" ")!');
+
+    }
+
+    const fileName = this.expect(context,Tokens.StringLiteral, `Invalid file name '${this.at().value}'!`).value;
 
     if(operation == "OPENFILE"){
       this.expect(context,Tokens.For, "Expecting 'FOR' keyword here!");
@@ -826,7 +840,7 @@ export default class Parser {
       } as Identifier;
 
       if(iterator.symbol != endIterator.symbol){
-        return this.MK_Err(context,`Identifier '${iterator.symbol}' does not match identifier '${endIterator.symbol}'`, this.at(), "runtime");
+        return this.MK_Err(context,`Identifier '${iterator.symbol}' does not match identifier '${endIterator.symbol}'`, this.at(), "Runtime");
       }
 
       const iterationStmt = {
@@ -1925,7 +1939,7 @@ export default class Parser {
               this.expect(context,Tokens.Of, "Expecting 'OF' keyword!");
 
               if(!(this.isValidDataType(this.at()))){
-                this.MK_Err(context,`Invalid data type '${this.at().value}'!`, undefined, "type");
+                this.MK_Err(context,`Invalid data type '${this.at().value}'!`, undefined, "Type");
               }
 
               const rawObj = {
@@ -1943,7 +1957,7 @@ export default class Parser {
 
           }
           else{
-            return this.MK_Err(context,`Invalid data type '${this.at().value}'!`, undefined, "type");
+            return this.MK_Err(context,`Invalid data type '${this.at().value}'!`, undefined, "Type");
           }
 
           
@@ -1979,7 +1993,7 @@ export default class Parser {
         this.eat();
         this.expect(context,Tokens.Of, "Expecting 'OF' token!");
         if(!this.isValidDataType(this.at())){
-          return this.MK_Err(context,`Invalid data type '${this.at().value}'!`, undefined, "type");
+          return this.MK_Err(context,`Invalid data type '${this.at().value}'!`, undefined, "Type");
         }
 
 
@@ -2257,7 +2271,7 @@ export default class Parser {
         }
         else{
 
-          return this.MK_Err(context,`Invalid data type ${this.at().value}`, undefined, "type");
+          return this.MK_Err(context,`Invalid data type ${this.at().value}`, undefined, "Type");
 
         }
 
@@ -2596,7 +2610,7 @@ export default class Parser {
 
           }
           else{
-            return this.MK_Err(context,`Invalid data type '${this.eat().value}'!`, undefined, "type") ;
+            return this.MK_Err(context,`Invalid data type '${this.eat().value}'!`, undefined, "Type") ;
 
           }
         }
@@ -2880,7 +2894,7 @@ export default class Parser {
 
         if(first.kind == "StringLiteral"){
 
-          makeError("Array bounds must be of type INTEGER!", "type");
+          makeError("Array bounds must be of type INTEGER!", "Type");
           return this.MK_NULL_PARSER();
 
         }
@@ -2896,7 +2910,7 @@ export default class Parser {
 
         if(end_bound.kind == "StringLiteral"){
 
-          makeError("Array bounds must be of type INTEGER!", "type", end_bound.ln, );
+          makeError("Array bounds must be of type INTEGER!", "Type", end_bound.ln, );
           return this.MK_NULL_PARSER();
 
         }
@@ -2939,7 +2953,7 @@ export default class Parser {
         }
         else{
 
-          return this.MK_Err(context,`Invalid data type '${this.at().value}'!`, undefined, "type");
+          return this.MK_Err(context,`Invalid data type '${this.at().value}'!`, undefined, "Type");
 
 
         }
@@ -3065,7 +3079,7 @@ export default class Parser {
 
     if(this.at().type == Tokens.StringLiteral){
 
-      makeError("Array bounds must be of type INTEGER!", "type");
+      makeError("Array bounds must be of type INTEGER!", "Type");
       return [this.MK_NULL_PARSER()];
     }
 
@@ -3082,7 +3096,7 @@ export default class Parser {
 
     if(this.at().type == Tokens.StringLiteral){
 
-      makeError("Array bounds must be of type INTEGER!", "type", this.at().ln);
+      makeError("Array bounds must be of type INTEGER!", "Type", this.at().ln);
       return [this.MK_NULL_PARSER()];
 
     }
@@ -3593,7 +3607,7 @@ export default class Parser {
     const ln = (token) ? token.ln : this.show_ln();
 
 
-    const err = (owrt ? owrt : "syntax") as error;
+    const err = (owrt ? owrt : "Syntax") as error;
 
     makeError(message, err, ln, );
     return {
@@ -3790,7 +3804,6 @@ export default class Parser {
         
     }
   }
-
 
 
   pretty_tokens() : string {

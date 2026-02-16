@@ -96,14 +96,14 @@ export default class PCON {
         return `${this.stringify(expr.object)}[${this.concatenate(expr.indexes)}]`;
     }
     str_fileUse_expr(expr) {
-        return `${expr.operation}FILE ${expr.fileName}, ${this.concatenate(expr.assigne)}`;
+        return `${expr.operation}FILE "${expr.fileName}", ${this.concatenate(expr.assigne)}`;
     }
     str_file_expr(expr) {
         if (expr.operation == "OPEN") {
-            return `OPENFILE ${expr.fileName} FOR ${expr.mode}`;
+            return `OPENFILE "${expr.fileName}" FOR ${expr.mode}`;
         }
         else {
-            return `CLOSEFILE ${expr.fileName}`;
+            return `CLOSEFILE "${expr.fileName}"`;
         }
     }
     str_call_expr(expr) {

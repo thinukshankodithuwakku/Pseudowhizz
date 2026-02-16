@@ -32,10 +32,10 @@ export async function evaluate(astNode, env, StackFrames) {
                     }
                 }
                 if (isNaN(value)) {
-                    return makeError("Evaluation of expression results in non-real value!", "math");
+                    return makeError("Evaluation of expression results in non-real value!", "Math");
                 }
                 else if (!isFinite(value)) {
-                    return makeError("Evaluation of expression results in non-finite value!", "math");
+                    return makeError("Evaluation of expression results in non-finite value!", "Math");
                 }
                 else {
                     return {

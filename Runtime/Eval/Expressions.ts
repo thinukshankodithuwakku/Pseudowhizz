@@ -4,7 +4,7 @@ import { evaluate } from "../Interpreter.js";
 import { Pause, primitiveValue, FileNameVal,NativeFnValue, MemberExprVal, NumberVal, RuntimeVal, MK_NULL, ValueType, BooleanVal, FunctionValue, StringVal, CharVal, NullVal, SelectionStmt, MK_STRING, MK_BOOL, MK_NUMBER, endClosureVal, NewObjectVal, MK_CHAR } from "../Value.js";
 import { Token, tokenize, Tokens } from "../../Frontend/Lexer.js";
 import { eval_var_declaration, MK_EMPTY, natives } from "./Statements.js";
-import { UseFile,outputLog, errorLog, makeError, pauseLog, func_map, StackFrame, contexts } from "../../Main.js";
+import { consoleHistory,UseFile,outputLog, errorLog, makeError, pauseLog, func_map, StackFrame, callStackLimit } from "../../Main.js";
 import PCON from "../../Frontend/PCON.js";
 
 
@@ -53,7 +53,7 @@ function eval_numeric_binary_expr(
     resultType = "number";
 
   } else if (operator == '%') {
-    return makeError("Unrecognised operator '%'. Did you mean to use the 'MOD()' function?", "syntax", lhs.ln, StackFrames);
+    return makeError("Unrecognised operator '%'. Did you mean to use the 'MOD()' function?", "Syntax", lhs.ln, StackFrames);
 
   } else if (operator == "/") {
 
@@ -75,7 +75,7 @@ function eval_numeric_binary_expr(
 
     if(isNaN(result)){
 
-      return makeError("Result of runtime expression is non-real!", "math", lhs.ln, StackFrames);
+      return makeError("Result of runtime expression is non-real!", "Math", lhs.ln, StackFrames);
 
     }
     else{
@@ -113,7 +113,7 @@ function eval_numeric_binary_expr(
     resultType = "boolean"
 
   } else {
-    return makeError("Unrecognised operator!", "runtime", lhs.ln, StackFrames);
+    return makeError("Unrecognised operator!", "Runtime", lhs.ln, StackFrames);
   }
 
   let numberkind : NumberVal["numberKind"];
@@ -133,7 +133,7 @@ function eval_numeric_binary_expr(
       return {value: result as boolean, type: "boolean", ln: lhs.ln} as BooleanVal;
 
     default:
-      return makeError("Invalid result expression!", "runtime", lhs.ln, StackFrames);
+      return makeError("Invalid result expression!", "Runtime", lhs.ln, StackFrames);
   }
   
 }
@@ -217,6 +217,7 @@ export async function eval_output_expr(
 ) {
   let messageComponent: RuntimeVal = await concantate_exprs(output.value, env, StackFrames);
 
+  
 
   if(kill_program()){
     return MK_NULL();
@@ -248,6 +249,7 @@ export async function eval_output_expr(
 
   let message: string = convThisToStr(messageComponent).value;
 
+  consoleHistory.push({type: "output", value: parseEscapes(message)});
   outputLog.push(parseEscapes(message));
 
   access_console();
@@ -348,7 +350,7 @@ function eval_logic_binary_expr(
 
   }
   else{
-    return makeError("Cannot perform operation on operands of type BOOLEAN!", "type", lhs.ln, StackFrames);
+    return makeError("Cannot perform operation on operands of type BOOLEAN!", "Type", lhs.ln, StackFrames);
   }
 
   return {value:result, type:"boolean"} as BooleanVal;
@@ -411,7 +413,7 @@ function eval_string_binary_expr(
 
 
 
-    return makeError(`Cannot use operator '${operator}' on operands of type ${out_type(lhs)} and ${out_type(rhs)}`, "type", lhs.ln, );
+    return makeError(`Cannot use operator '${operator}' on operands of type ${out_type(lhs)} and ${out_type(rhs)}`, "Type", lhs.ln, );
   }
 
 
@@ -422,7 +424,7 @@ function eval_string_binary_expr(
     return {value:result as string, type: "string", kind:"StringLiteral"} as StringVal;
   }
   else{
-    return makeError("Invalid result expression!", "type", lhs.ln, StackFrames);
+    return makeError("Invalid result expression!", "Type", lhs.ln, StackFrames);
   }
 
 }
@@ -440,7 +442,7 @@ export async function eval_fileUse_expr(fileUse : FileUse, env : Environment, St
 
     if(fileUse.assigne.length != 1 || fileUse.assigne[0].kind != "Identifier"){
 
-      return makeError("Multi-expression-kind file use statements have been turned off. File use statements may only take identifiers as input!", "type", fileUse.ln, StackFrames);
+      return makeError("Multi-expression-kind file use statements have been turned off. File use statements may only take identifiers as input!", "Type", fileUse.ln, StackFrames);
 
     }
 
@@ -531,7 +533,7 @@ export async function eval_fileUse_expr(fileUse : FileUse, env : Environment, St
     }
   }
   else{
-    return makeError(`File ${fileUse.fileName} has not been opened in the current scope or does not exist!`, "name", fileUse.ln, StackFrames);
+    return makeError(`File ${fileUse.fileName} has not been opened in the current scope or does not exist!`, "Name", fileUse.ln, StackFrames);
   }
 
 
@@ -569,7 +571,7 @@ function assignStringToObj(getting : StringVal, expecting : NewObjectVal, env : 
 
   if(expecting.vals[0].type == "Object"){
 
-    makeError("Cannot assign directly to multi-dimensional arrays!", "type", getting.ln, StackFrames);
+    makeError("Cannot assign directly to multi-dimensional arrays!", "Type", getting.ln, StackFrames);
 
   }
 
@@ -605,7 +607,7 @@ function assignStringToObj(getting : StringVal, expecting : NewObjectVal, env : 
     switch(DT){
       case Tokens.Integer:
         if(!isint(item)){
-          makeError(`Item '${item}' of inputted array is not of type INTEGER!`, "type", getting.ln, StackFrames);
+          makeError(`Item '${item}' of inputted array is not of type INTEGER!`, "Type", getting.ln, StackFrames);
         }
         else{
           valList.push({kind: "NumericLiteral", numberKind: Tokens.Integer, value: Number(item)} as NumericLiteral);
@@ -616,7 +618,7 @@ function assignStringToObj(getting : StringVal, expecting : NewObjectVal, env : 
       case Tokens.Real:
 
         if(!isNumeric(item)){
-          makeError(`Item '${item}' of inputted array is not of type REAL!`, "type", getting.ln, StackFrames);
+          makeError(`Item '${item}' of inputted array is not of type REAL!`, "Type", getting.ln, StackFrames);
         }
         else{
           valList.push({kind: "NumericLiteral", numberKind: Tokens.Real, value: Number(item)} as NumericLiteral);
@@ -629,7 +631,7 @@ function assignStringToObj(getting : StringVal, expecting : NewObjectVal, env : 
 
         if(item.toUpperCase() != "TRUE" && item.toUpperCase() != "FALSE"){
 
-          makeError(`Item '${item}' of inputted array is not of type BOOLEAN!`, "type", getting.ln, StackFrames);
+          makeError(`Item '${item}' of inputted array is not of type BOOLEAN!`, "Type", getting.ln, StackFrames);
 
         }
         else{
@@ -642,7 +644,7 @@ function assignStringToObj(getting : StringVal, expecting : NewObjectVal, env : 
 
         if(item.length != 1){
 
-          makeError(`Item ${item} is not of type CHAR!`, "type", getting.ln, StackFrames);
+          makeError(`Item ${item} is not of type CHAR!`, "Type", getting.ln, StackFrames);
 
         }
         else{
@@ -863,7 +865,7 @@ export async function eval_new_objectVal(expr : NewObjectLiteralExpr, env : Envi
 
       if(start_val > end_val){
 
-        return makeError("End bound must be greater than start bound!", "index", expr.ln, StackFrames);
+        return makeError("End bound must be greater than start bound!", "Index", expr.ln, StackFrames);
 
       }
 
@@ -958,7 +960,7 @@ export async function eval_new_memberExpr(expr : NewMemberExpr, env : Environmen
 
   if(object.type == "string" && localStorage.getItem('Af') != "true"){
 
-    return makeError('Substring access by index has been turned off. To access substring access by index, enable "Support Non-syllabus Features" in settings. You can also still use the "SUBSTRING" method.', "type", expr.ln, StackFrames);
+    return makeError('Substring access by index has been turned off. To access substring access by index, enable "Support Non-syllabus Features" in settings. You can also still use the "SUBSTRING" method.', "Type", expr.ln, StackFrames);
 
   }
 
@@ -974,7 +976,7 @@ export async function eval_new_memberExpr(expr : NewMemberExpr, env : Environmen
 
         errorLog.pop();
 
-        return makeError("Index could be not be resolved into an integer value!", "type", expr.ln, StackFrames);
+        return makeError("Index could be not be resolved into an integer value!", "Type", expr.ln, StackFrames);
 
       }
 
@@ -983,7 +985,7 @@ export async function eval_new_memberExpr(expr : NewMemberExpr, env : Environmen
       if(x > (object as NewObjectVal).end){
 
 
-        return makeError("Index out of range!", "index", expr.ln, StackFrames);
+        return makeError("Index out of range!", "Index", expr.ln, StackFrames);
       }
 
 
@@ -1011,7 +1013,7 @@ export async function eval_new_memberExpr(expr : NewMemberExpr, env : Environmen
 
       if(!Confirm(ix, Tokens.Integer, expr.ln, env, [initial_stack])){
 
-        return makeError("Index could be not be resolved into an integer value!", "type", expr.ln, StackFrames);
+        return makeError("Index could be not be resolved into an integer value!", "Type", expr.ln, StackFrames);
 
       }
 
@@ -1031,7 +1033,7 @@ export async function eval_new_memberExpr(expr : NewMemberExpr, env : Environmen
     }
     else{
 
-      return makeError("Invalid object access!", "runtime", expr.ln, StackFrames);
+      return makeError("Invalid object access!", "Runtime", expr.ln, StackFrames);
 
     }
 
@@ -1219,13 +1221,72 @@ export function conv_memex_to_val(memex : MemberExprVal)
 
     default:
 
-      return makeError("Invalid expression!", "type", memex.ln);
+      return makeError("Invalid expression!", "Type", memex.ln);
   }
 
   
 }
 
+async function getUserIn(msg : string) : Promise<string | null> {
 
+  if(kill_program()) return;
+
+  const body = document.getElementById('console-content');
+
+  const promptLn = document.createElement('span');
+  promptLn.classList.add('cnsl-ln', 'prompt');
+  promptLn.textContent = msg;
+
+  const inputLn = document.createElement('input');
+  inputLn.classList.add('cnsl-ln', 'input');
+  inputLn.type = 'text';
+
+  const marker = document.createElement('span');
+  marker.classList.add('cnsl-ln', 'input-marker');
+  marker.textContent = '>';
+
+  const wrpr = document.createElement('div');
+  wrpr.classList.add('cnsl-ln', 'wrpr');
+  wrpr.appendChild(marker);
+  wrpr.appendChild(inputLn);
+
+
+  body.appendChild(promptLn);
+  body.appendChild(wrpr);
+
+  inputLn.focus();
+
+  const inp = await new Promise(resolve => {
+
+
+
+      function handler(e) {
+        if (e.key === "Enter") {
+          inputLn.removeEventListener("keydown", handler);
+          resolve(inputLn.value ?? null);
+
+          if(!inputLn.value) emergency_pause("\n** Input cancelled **");
+
+        }
+        else if(e.key.toLowerCase() == 'escape'){
+
+          resolve(inputLn.value);
+          emergency_pause("\n** Input cancelled **");
+
+          return;
+
+        }
+      }
+      inputLn.addEventListener("keydown", handler);
+    }) as string | null;
+
+  inputLn.disabled = true;
+  if(inputLn.value == null) inputLn.value = ''; 
+
+
+  return inp;
+
+}
 
 async function getUserInput(promptMessage: string): Promise<string | null> {
 
@@ -1315,7 +1376,7 @@ export async function emergency_pause(msg : string) : Promise<RuntimeVal> {
 
 export async function eval_input_expr(inpExpr : InputExpr, env : Environment, StackFrames : StackFrame[]) : Promise <RuntimeVal> {
 
-
+  
   
 
 
@@ -1334,17 +1395,17 @@ export async function eval_input_expr(inpExpr : InputExpr, env : Environment, St
     prmptText = prmptText.slice(1,-1);
   }
 
+  consoleHistory.push({type: "prompt", value: prmptText});
+
   if(kill_program()){
     return MK_NULL();
   }
 
-  
-  const q = {kind: "OutputExpr", value: [{kind: "StringLiteral", text: prmptText} as StringLiteral], ln: inpExpr.ln} as OutputExpr;
-  eval_output_expr(q, env, StackFrames);
 
-  let val = await getUserInput(prmptText);
+  let val = await getUserIn(prmptText);
 
-  
+
+  consoleHistory.push({type: "input", value: `> ${val}`});
 
   const evaluatedAssigne = await evaluate(inpExpr.assigne[0], env, StackFrames);
 
@@ -1356,23 +1417,8 @@ export async function eval_input_expr(inpExpr : InputExpr, env : Environment, St
     return await emergency_pause("\n** Input cancelled **");
 
   }
-  else if(val == ""){
+  else if(val == "") val = input_caster(evaluatedAssigne);
 
-    
-
-    val = input_caster(evaluatedAssigne);
-
-
-
-  }
-
-
-
-
-  const a = {kind: "OutputExpr", value: [{kind: "StringLiteral", text: '> ' + val, ln: inpExpr.ln} as StringLiteral], ln: inpExpr.ln} as OutputExpr;
-
-
-  eval_output_expr(a, env, StackFrames);
 
   
   let badum : RuntimeVal;
@@ -1630,14 +1676,14 @@ export async function eval_iteration_Stmt(iterStmt : IterationStmt, env : Enviro
       if(startVal.type != "number"){
 
         //StackFrames.push({ln: iterStmt.ln, context: env.context, expr: pcon.stringify(iterStmt.startVal)});
-        return makeError("Start bound could not be resolved into a real value!", "type", iterStmt.ln, StackFrames);
+        return makeError("Start bound could not be resolved into a real value!", "Type", iterStmt.ln, StackFrames);
 
       }
 
       if(endVal.type != "number"){
 
         //StackFrames.push({ln: iterStmt.ln, context: env.context, expr: pcon.stringify(iterStmt.endVal)});
-        return makeError("End bound could not be resolved into a real value!", "type", iterStmt.ln, StackFrames);
+        return makeError("End bound could not be resolved into a real value!", "Type", iterStmt.ln, StackFrames);
 
       }
 
@@ -1664,7 +1710,7 @@ export async function eval_iteration_Stmt(iterStmt : IterationStmt, env : Enviro
 
         if(step.type != "number"){
           //StackFrames.push({ln: iterStmt.ln, context: env.context, expr: pcon.stringify(iterStmt.step)});
-          return makeError("Step expression could not be resolved into a real value!", "type", iterStmt.ln, StackFrames);
+          return makeError("Step expression could not be resolved into a real value!", "Type", iterStmt.ln, StackFrames);
 
         }
         else{
@@ -2025,7 +2071,7 @@ export async function eval_iteration_Stmt(iterStmt : IterationStmt, env : Enviro
         }
 
         if(condition.type == "null"){
-          return makeError("Problem evaluating condition", "runtime", iterStmt.ln, StackFrames);
+          return makeError("Problem evaluating condition", "Runtime", iterStmt.ln, StackFrames);
         }
         else if(kill_program()){
           return MK_NULL();
@@ -2229,13 +2275,13 @@ export async function eval_binary_expr(binop : BinaryExpr, env: Environment, Sta
 
   if(is_string_any(lhs) && !is_string_any(rhs)){
 
-    return makeError(`Cannot use operator '${binop.operator}' on operands of type ${out_type(lhs)} and ${out_type(rhs)}`, "type", lhs.ln, StackFrames);
+    return makeError(`Cannot use operator '${binop.operator}' on operands of type ${out_type(lhs)} and ${out_type(rhs)}`, "Type", lhs.ln, StackFrames);
 
 
   }
   else if(!is_string_any(lhs) && is_string_any(rhs)){
 
-    return makeError(`Cannot use operator '${binop.operator}' on operands of type ${out_type(lhs)} and ${out_type(rhs)}`, "type", lhs.ln, StackFrames);
+    return makeError(`Cannot use operator '${binop.operator}' on operands of type ${out_type(lhs)} and ${out_type(rhs)}`, "Type", lhs.ln, StackFrames);
 
   }
 
@@ -2273,7 +2319,7 @@ export async function eval_binary_expr(binop : BinaryExpr, env: Environment, Sta
     else{
 
     
-      return makeError(`Cannot use operator '${binop.operator}' on operands of type ${out_type(lhs)} and ${out_type(rhs)}!`, "type", lhs.ln, StackFrames);
+      return makeError(`Cannot use operator '${binop.operator}' on operands of type ${out_type(lhs)} and ${out_type(rhs)}!`, "Type", lhs.ln, StackFrames);
 
     }
 
@@ -2298,14 +2344,14 @@ export async function eval_binary_expr(binop : BinaryExpr, env: Environment, Sta
     }
     else{
 
-      return makeError(`Cannot use operator '${binop.operator}' on operands of type ${out_type(lhs)} and ${out_type(rhs)}!`, "type", lhs.ln, StackFrames);
+      return makeError(`Cannot use operator '${binop.operator}' on operands of type ${out_type(lhs)} and ${out_type(rhs)}!`, "Type", lhs.ln, StackFrames);
 
     }
 
 
   }
   else{
-    return makeError(`Cannot use operator '${binop.operator}' on operands of type ${out_type(lhs)} and ${out_type(rhs)}!`, "type", lhs.ln, StackFrames);
+    return makeError(`Cannot use operator '${binop.operator}' on operands of type ${out_type(lhs)} and ${out_type(rhs)}!`, "Type", lhs.ln, StackFrames);
   }
 
 }
@@ -2492,7 +2538,7 @@ export async function eval_bin_expr(binop: BinaryExpr, env: Environment, StackFr
 
 
     if(binop.operator == '+' || binop.operator == '&' ){
-      return makeError(`Use ',' to concantenate multiple expressions into one string`, "syntax", binop.ln, StackFrames);
+      return makeError(`Use ',' to concantenate multiple expressions into one string`, "Syntax", binop.ln, StackFrames);
     }
     else{
       const types = [lhs.type, rhs.type];
@@ -2512,7 +2558,7 @@ export async function eval_bin_expr(binop: BinaryExpr, env: Environment, StackFr
 
         //throw "Mal binary expression: " + JSON.stringify(binop.left);
 
-        return makeError(`Cannot use operator '${binop.operator}' on operands of type ${out_type(lhs)} and ${out_type(rhs)}`, "type", lhs.ln, StackFrames)
+        return makeError(`Cannot use operator '${binop.operator}' on operands of type ${out_type(lhs)} and ${out_type(rhs)}`, "Type", lhs.ln, StackFrames)
       }
     }
 
@@ -2522,7 +2568,7 @@ export async function eval_bin_expr(binop: BinaryExpr, env: Environment, StackFr
   }
   else{
 
-    return makeError(`Cannot use operator '${binop.operator}' on operands of type ${out_type(lhs)} and ${out_type(rhs)}!`, "type", lhs.ln, StackFrames);
+    return makeError(`Cannot use operator '${binop.operator}' on operands of type ${out_type(lhs)} and ${out_type(rhs)}!`, "Type", lhs.ln, StackFrames);
   }
 
 }
@@ -2626,7 +2672,7 @@ function eval_obj_assignment(obj: RuntimeVal, val: RuntimeVal, indexChain: numbe
 
     if(x > parent.end){
 
-      return makeError("Index out of range!", "index", obj.ln, StackFrames);
+      return makeError("Index out of range!", "Index", obj.ln, StackFrames);
     }
 
     x = adjust_index(parent.start, parent.vals.length, x, obj.ln, StackFrames);
@@ -2643,7 +2689,7 @@ function eval_obj_assignment(obj: RuntimeVal, val: RuntimeVal, indexChain: numbe
       if(!val || !parent.vals[x]){
         //throw "Index out of range!";
 
-        return makeError("Index out of range!", "index", obj.ln, StackFrames);
+        return makeError("Index out of range!", "Index", obj.ln, StackFrames);
       }
 
 
@@ -2700,7 +2746,7 @@ export async function eval_assignment_expr(node : AssignmentExpr, env : Environm
 
   if(localStorage.getItem('Af') != "true" && e.type == "Object"){
 
-    return makeError('Entire ARRAY assignment has been turned off. To allow entire ARRAY assignment, enable "Support Non-syllabus Features" in settings.', "type", node.ln, StackFrames);
+    return makeError('Entire ARRAY assignment has been turned off. To allow entire ARRAY assignment, enable "Support Non-syllabus Features" in settings.', "Type", node.ln, StackFrames);
 
   }
 
@@ -2726,7 +2772,7 @@ export async function eval_assignment_expr(node : AssignmentExpr, env : Environm
     if(localStorage.getItem('Af') !== "true" && par == "string"){
 
       
-      return makeError('Reassignment of characters has been turned off. To allow reassignment of characters, enable "Support Non-syllabus Features" in settings.', "type", node.ln, StackFrames);
+      return makeError('Reassignment of characters has been turned off. To allow reassignment of characters, enable "Support Non-syllabus Features" in settings.', "Type", node.ln, StackFrames);
 
     }
 
@@ -2757,7 +2803,7 @@ export async function eval_assignment_expr(node : AssignmentExpr, env : Environm
         if(!Confirm(test, Tokens.Integer, expr.ln, env, StackFrames)){
 
 
-          return makeError("Index could be not be resolved into an integer value!", "type", node.ln, StackFrames);
+          return makeError("Index could be not be resolved into an integer value!", "Type", node.ln, StackFrames);
 
         }
 
@@ -2768,7 +2814,7 @@ export async function eval_assignment_expr(node : AssignmentExpr, env : Environm
 
       if(((node.assigne as NewMemberExpr).object).kind != "Identifier"){
 
-        return makeError("Left hand side of assignment expression must be variable!", "type", node.ln, StackFrames);
+        return makeError("Left hand side of assignment expression must be variable!", "Type", node.ln, StackFrames);
 
       }
 
@@ -2788,7 +2834,7 @@ export async function eval_assignment_expr(node : AssignmentExpr, env : Environm
 
       if(((node.assigne as NewMemberExpr).object).kind != "Identifier"){
 
-        return makeError("Cannot reassign to left hand side of assignment expr!", "runtime", node.ln, StackFrames);
+        return makeError("Cannot reassign to left hand side of assignment expr!", "Runtime", node.ln, StackFrames);
 
       }
 
@@ -2811,7 +2857,7 @@ export async function eval_assignment_expr(node : AssignmentExpr, env : Environm
 
     }
     else{
-      return makeError("Immutable object!", "type", node.ln, StackFrames);
+      return makeError("Immutable object!", "Type", node.ln, StackFrames);
     }
 
 
@@ -2833,7 +2879,7 @@ export async function eval_assignment_expr(node : AssignmentExpr, env : Environm
       newValMsg = newValMsg.toUpperCase();
       varValMsg = varValMsg.toUpperCase();
 
-      return makeError(`Cannot assign value of type ${newValMsg} to variable of type ${varValMsg}!`, "type", node.ln, StackFrames);
+      return makeError(`Cannot assign value of type ${newValMsg} to variable of type ${varValMsg}!`, "Type", node.ln, StackFrames);
     }
     else{
       
@@ -2844,7 +2890,7 @@ export async function eval_assignment_expr(node : AssignmentExpr, env : Environm
       if(assigne_dims != newVal_dims){
 
 
-        return makeError(`Expecting array with ${assigne_dims} dimensions but got array with ${newVal_dims} dimensions!`, "runtime", node.ln, StackFrames);
+        return makeError(`Expecting array with ${assigne_dims} dimensions but got array with ${newVal_dims} dimensions!`, "Runtime", node.ln, StackFrames);
 
       }
 
@@ -2857,7 +2903,7 @@ export async function eval_assignment_expr(node : AssignmentExpr, env : Environm
 
 
         if((varObj.vals.length != newObj.vals.length) && permission == undefined){
-          return makeError(`Assigne has ${varObj.vals.length} elements but assigning array has ${newObj.vals.length} elements!`, "runtime", node.ln, StackFrames);
+          return makeError(`Assigne has ${varObj.vals.length} elements but assigning array has ${newObj.vals.length} elements!`, "Runtime", node.ln, StackFrames);
         }
       }
       
@@ -2876,7 +2922,7 @@ export async function eval_assignment_expr(node : AssignmentExpr, env : Environm
   }
   else{
 
-    return makeError("Operand not assignable!", "syntax", node.ln, StackFrames);
+    return makeError("Operand not assignable!", "Syntax", node.ln, StackFrames);
   }
 
   
@@ -2895,7 +2941,7 @@ function eval_string_assignment(assigne : StringVal, val : RuntimeVal, i : numbe
   if(val.type == "string"){
 
     if((val as StringVal).value.length != 1){
-      return makeError("Assigning value is not of type CHAR!", "type", assigne.ln, StackFrames);
+      return makeError("Assigning value is not of type CHAR!", "Type", assigne.ln, StackFrames);
     }
 
     char = (val as StringVal).value;
@@ -2907,7 +2953,7 @@ function eval_string_assignment(assigne : StringVal, val : RuntimeVal, i : numbe
 
   }
   else{
-      return makeError("Assigning value is not of type CHAR!", "type", assigne.ln, StackFrames);
+      return makeError("Assigning value is not of type CHAR!", "Type", assigne.ln, StackFrames);
   }
 
 
@@ -2956,7 +3002,7 @@ function auto_caster(getting : RuntimeVal, expecting : RuntimeVal) : RuntimeVal 
       } as StringVal;
     }
     else{
-      return makeError(`Cannot assign value of type ${getting.type} to data type STRING!`, "type", getting.ln);
+      return makeError(`Cannot assign value of type ${getting.type} to data type STRING!`, "Type", getting.ln);
     }
   }
   else if(expecting.type == "Object"){
@@ -2988,7 +3034,7 @@ function ConfirmRaw(getting : RuntimeVal, expecting : RuntimeVal, ln : number, e
 
 
   if(getting.type == "Object" && expecting.type != "Object"){
-    makeError(`Assigne is not an array!`, "type", ln);
+    makeError(`Assigne is not an array!`, "Type", ln);
     return false;
   }
 
@@ -2998,7 +3044,7 @@ function ConfirmRaw(getting : RuntimeVal, expecting : RuntimeVal, ln : number, e
     if((getting as NewObjectVal).vals.length != (expecting as NewObjectVal).vals.length){
 
 
-      makeError(`Expecting array with ${(expecting as NewObjectVal).vals.length} elements but got array with ${(getting as NewObjectVal).vals.length} elements!`, "runtime", ln, StackFrames);
+      makeError(`Expecting array with ${(expecting as NewObjectVal).vals.length} elements but got array with ${(getting as NewObjectVal).vals.length} elements!`, "Runtime", ln, StackFrames);
       return false;
 
     }
@@ -3009,7 +3055,7 @@ function ConfirmRaw(getting : RuntimeVal, expecting : RuntimeVal, ln : number, e
     case "Object":
 
       if(getting.type != "Object"){
-        makeError("Assigning value is not an array!", "type", ln, StackFrames);
+        makeError("Assigning value is not an array!", "Type", ln, StackFrames);
         return false;
       }
       else{
@@ -3044,7 +3090,7 @@ function ConfirmRaw(getting : RuntimeVal, expecting : RuntimeVal, ln : number, e
   if(object.type == "Object"){
     if(!Confirm(newVal, (object as NewObjectVal).dataType, object.ln, env)){
       return makeError(`Value of data type ${out_type(newVal)} cannot be assigned to array
-        of type ${Tokens[(object as NewObjectVal).dataType].toUpperCase()}!`, "type");
+        of type ${Tokens[(object as NewObjectVal).dataType].toUpperCase()}!`, "Type");
     }
     else{
       if(secondaryIndex == undefined){
@@ -3071,7 +3117,7 @@ function ConfirmRaw(getting : RuntimeVal, expecting : RuntimeVal, ln : number, e
           childObject = (childObject as NewObjectVal);
 
           if(!Confirm(newVal, (childObject as NewObjectVal).dataType, object.ln)){
-            return makeError(`Cannot assign value of data type ${out_type(newVal)} to data type ${Tokens[(childObject as NewObjectVal).dataType].toUpperCase()}!`, "type", object.ln);
+            return makeError(`Cannot assign value of data type ${out_type(newVal)} to data type ${Tokens[(childObject as NewObjectVal).dataType].toUpperCase()}!`, "Type", object.ln);
           }
 
           (childObject as NewObjectVal).vals[(secondaryIndex as NumberVal).value] = newVal;
@@ -3081,7 +3127,7 @@ function ConfirmRaw(getting : RuntimeVal, expecting : RuntimeVal, ln : number, e
         }
         else if(childObject.type == "string"){
           if(!Confirm(newVal, Tokens.Char, object.ln)){
-            return makeError(`Cannot assign value of data type ${out_type(newVal)} to data type CHAR!`, "type", object.ln);
+            return makeError(`Cannot assign value of data type ${out_type(newVal)} to data type CHAR!`, "Type", object.ln);
           }
 
           let str = (childObject as StringVal).value;
@@ -3095,7 +3141,7 @@ function ConfirmRaw(getting : RuntimeVal, expecting : RuntimeVal, ln : number, e
           return parentObject;
         }
         else{
-          return makeError("Expression is neither an array nor a string literal!", "type");
+          return makeError("Expression is neither an array nor a string literal!", "Type");
         }
         
 
@@ -3113,13 +3159,13 @@ function ConfirmRaw(getting : RuntimeVal, expecting : RuntimeVal, ln : number, e
     }
 
     if(!Confirm(aidVal, Tokens.Char, object.ln)){
-      return makeError(`Cannot assign value of data type ${out_type(aidVal)} to data type CHAR!`, "type");
+      return makeError(`Cannot assign value of data type ${out_type(aidVal)} to data type CHAR!`, "Type");
 
     }
     else{
 
       if(secondaryIndex !== undefined){
-        return makeError("Cannot access the substring of data type CHAR!", "type");
+        return makeError("Cannot access the substring of data type CHAR!", "Type");
       }
       else{
 
@@ -3288,7 +3334,7 @@ export function adjust_index(start:number, len:number, i:number, ln: number, Sta
   if(i < start || newIndex > end){
     
 
-    makeError("Index out range!", "index", ln, StackFrames);
+    makeError("Index out range!", "Index", ln, StackFrames);
     
   }
 
@@ -3391,7 +3437,7 @@ export function Confirm(runtimeval : RuntimeVal, returnType : Tokens, ln:number,
       }
       else{
 
-        makeError(`Value is not of type ${Tokens[returnType].toUpperCase()}!`, "type",runtimeval.ln, StackFrames);
+        makeError(`Value is not of type ${Tokens[returnType].toUpperCase()}!`, "Type",runtimeval.ln, StackFrames);
         return false;
       }
       
@@ -3437,7 +3483,7 @@ function eval_native_fn(name : string, args : RuntimeVal[], ln : number, env : E
 
 
 
-    return makeError(`Expecting ${fn_args_size[name]} arguments but got ${args.length}!`, "type", ln,  StackFrames);
+    return makeError(`Expecting ${fn_args_size[name]} arguments but got ${args.length}!`, "Type", ln,  StackFrames);
 
   }
 
@@ -3447,7 +3493,7 @@ function eval_native_fn(name : string, args : RuntimeVal[], ln : number, env : E
       if(args[0].type != "string" && args[0].type != "char"){
 
 
-        return makeError("First argument of a 'SUBSTRING' function must be of type STRING", "type", ln, StackFrames);
+        return makeError("First argument of a 'SUBSTRING' function must be of type STRING", "Type", ln, StackFrames);
 
       }
 
@@ -3465,11 +3511,11 @@ function eval_native_fn(name : string, args : RuntimeVal[], ln : number, env : E
       const end : number = ((args[2] as NumberVal).value);
 
       if(start + 1 < 1){
-        return makeError("Start position must be above zero!", "runtime", ln);
+        return makeError("Start position must be above zero!", "Runtime", ln);
       }
 
       if(end < 1){
-        return makeError("Number of characters to be extracted must be above zero!", "runtime", ln);
+        return makeError("Number of characters to be extracted must be above zero!", "Runtime", ln);
       }
 
 
@@ -3478,7 +3524,7 @@ function eval_native_fn(name : string, args : RuntimeVal[], ln : number, env : E
 
       if((args[1] as NumberVal).value + (args[2] as NumberVal).value - 1  > val.length){
 
-        return makeError("Substring index out of range!", "index", ln, StackFrames);
+        return makeError("Substring index out of range!", "Index", ln, StackFrames);
 
       }
 
@@ -3488,7 +3534,7 @@ function eval_native_fn(name : string, args : RuntimeVal[], ln : number, env : E
 
       if(args[0].type != "string" && args[0].type != "char"){
 
-        return makeError("'LCASE' argument must be of type STRING or CHAR!", "type", ln, StackFrames);
+        return makeError("'LCASE' argument must be of type STRING or CHAR!", "Type", ln, StackFrames);
 
       }
 
@@ -3498,7 +3544,7 @@ function eval_native_fn(name : string, args : RuntimeVal[], ln : number, env : E
 
       if(args[0].type != "string" && args[0].type != "char"){
 
-        return makeError("'UCASE' argument must be of type STRING or CHAR!", "type", ln, StackFrames);
+        return makeError("'UCASE' argument must be of type STRING or CHAR!", "Type", ln, StackFrames);
 
       }
 
@@ -3508,13 +3554,13 @@ function eval_native_fn(name : string, args : RuntimeVal[], ln : number, env : E
 
       if(args[0].type != "number"){
 
-        return makeError("First argument of 'MOD' function must be a REAL or INTEGER value", "type", ln, StackFrames);
+        return makeError("First argument of 'MOD' function must be a REAL or INTEGER value", "Type", ln, StackFrames);
 
       }
 
       if(args[1].type != "number"){
 
-        return makeError("Second argument of 'MOD' function must be a REAL or INTEGER value", "type", ln, StackFrames);
+        return makeError("Second argument of 'MOD' function must be a REAL or INTEGER value", "Type", ln, StackFrames);
 
       }
 
@@ -3530,13 +3576,13 @@ function eval_native_fn(name : string, args : RuntimeVal[], ln : number, env : E
 
       if(args[0].type != "number"){
 
-        return makeError("First argument of 'DIV' function must be a REAL or INTEGER value", "type", ln, StackFrames);
+        return makeError("First argument of 'DIV' function must be a REAL or INTEGER value", "Type", ln, StackFrames);
 
       }
 
       if(args[1].type != "number"){
 
-        return makeError("Second argument of 'DIV' function must be a REAL or INTEGER value", "type", ln, StackFrames);
+        return makeError("Second argument of 'DIV' function must be a REAL or INTEGER value", "Type", ln, StackFrames);
 
       }
 
@@ -3552,7 +3598,7 @@ function eval_native_fn(name : string, args : RuntimeVal[], ln : number, env : E
 
       if(localStorage.getItem('Af') != "true"){
 
-        return makeError('EOF()" is a method part of the "Non-syllabus" collection. To call it, enable "Support Non-syllabus Features" in settings.', "name", ln, StackFrames);
+        return makeError('EOF()" is a method part of the "Non-syllabus" collection. To call it, enable "Support Non-syllabus Features" in settings.', "Name", ln, StackFrames);
     
       }
 
@@ -3560,14 +3606,14 @@ function eval_native_fn(name : string, args : RuntimeVal[], ln : number, env : E
 
           if(args[0].type == "file-name"){
             errorLog.pop();
-            return makeError("Expecting file name in STRING format!", "type", ln, StackFrames);
+            return makeError("Expecting file name in STRING format!", "Type", ln, StackFrames);
 
 
           }
           else{
 
             errorLog.pop();
-            return makeError("Expecting valid file name!", "type", ln, StackFrames);
+            return makeError("Expecting valid file name!", "Type", ln, StackFrames);
           }
 
         }
@@ -3579,7 +3625,7 @@ function eval_native_fn(name : string, args : RuntimeVal[], ln : number, env : E
       if(localStorage.getItem('Af') == "true"){
         
         if(!Confirm(args[0], Tokens.String, ln, env, StackFrames)){
-          return makeError("Expecting argument of type STRING", "type", ln, StackFrames);
+          return makeError("Expecting argument of type STRING", "Type", ln, StackFrames);
         }
       
 
@@ -3587,7 +3633,7 @@ function eval_native_fn(name : string, args : RuntimeVal[], ln : number, env : E
       }
       else{
         
-        return makeError('"STR_TO_NUM()" is a method part of the "Non-syllabus" collection. To call it, enable "Support Non-syllabus Features" in settings.', "name", ln, StackFrames);
+        return makeError('"STR_TO_NUM()" is a method part of the "Non-syllabus" collection. To call it, enable "Support Non-syllabus Features" in settings.', "Name", ln, StackFrames);
       }
 
       break;
@@ -3596,13 +3642,13 @@ function eval_native_fn(name : string, args : RuntimeVal[], ln : number, env : E
       if(localStorage.getItem('Af') == "true"){
         
         if(!Confirm(args[0], Tokens.Real, ln, env, StackFrames)){
-          return makeError("Expecting argument of type REAL", "type", ln, StackFrames);
+          return makeError("Expecting argument of type REAL", "Type", ln, StackFrames);
         }
 
       }
       else{
 
-        return makeError('"NUM_TO_STR()" is a method part of the "Non-syllabus" collection. To call it, enable "Support Non-syllabus Features" in settings.', "name", ln, StackFrames)
+        return makeError('"NUM_TO_STR()" is a method part of the "Non-syllabus" collection. To call it, enable "Support Non-syllabus Features" in settings.', "Name", ln, StackFrames)
 
       }
 
@@ -3611,7 +3657,7 @@ function eval_native_fn(name : string, args : RuntimeVal[], ln : number, env : E
     case "LENGTH":
       if(args[0].type == "Object" && localStorage.getItem('Af') != "true"){
 
-        return makeError(`"LENGTH()" method only takes arguments of type STRING. To return array lengths, enable "Support Non-Syllabus Features" in settings.`, "type", ln, StackFrames);
+        return makeError(`"LENGTH()" method only takes arguments of type STRING. To return array lengths, enable "Support Non-Syllabus Features" in settings.`, "Type", ln, StackFrames);
 
       }
 
@@ -3621,14 +3667,14 @@ function eval_native_fn(name : string, args : RuntimeVal[], ln : number, env : E
 
       if(!accepted.includes(subjectComponent.type)){
         
-        return makeError("LENGTH function only takes STRING or ARRAY arguments!", "type", ln, StackFrames) ;
+        return makeError("LENGTH function only takes STRING or ARRAY arguments!", "Type", ln, StackFrames) ;
       }
 
       break;
 
     case "ROUND":
       if(args[0].type !== "number"){
-          return makeError("Argument 1 is not of type REAL!", "type", ln, StackFrames) ;
+          return makeError("Argument 1 is not of type REAL!", "Type", ln, StackFrames) ;
         }
 
       if(args[1].type == "number"){
@@ -3636,17 +3682,17 @@ function eval_native_fn(name : string, args : RuntimeVal[], ln : number, env : E
 
         if(runtimeval.value < 0){
 
-          return makeError("Argument 2 of a 'ROUND' function must be above zero!", "runtime", ln, StackFrames);
+          return makeError("Argument 2 of a 'ROUND' function must be above zero!", "Runtime", ln, StackFrames);
 
         }
 
 
         if(!isint(runtimeval.value)){
-          return makeError("Argument 2 of is not of type INTEGER!", "type", ln, StackFrames) ;
+          return makeError("Argument 2 of is not of type INTEGER!", "Type", ln, StackFrames) ;
         }
       }
       else{
-        return makeError("Argument 2 of is not of type INTEGER!", "type", ln, StackFrames) ;
+        return makeError("Argument 2 of is not of type INTEGER!", "Type", ln, StackFrames) ;
       }
 
       break;
@@ -3654,14 +3700,14 @@ function eval_native_fn(name : string, args : RuntimeVal[], ln : number, env : E
     case "RANDOM":
       if(args && args.length != 0 && localStorage.getItem('Af') != "true"){
 
-        return makeError(`Expected 0 arguments but got ${args.length}!`, "runtime", ln, StackFrames);
+        return makeError(`Expected 0 arguments but got ${args.length}!`, "Runtime", ln, StackFrames);
 
       }
       else if(localStorage.getItem('Af') == "true"){
 
         if(args && (args.length == 1 || args.length > 2)){
 
-          return makeError(`Expected 0 or 2 arguments but got 1!`, "runtime", ln, StackFrames);
+          return makeError(`Expected 0 or 2 arguments but got 1!`, "Runtime", ln, StackFrames);
 
         }
 
@@ -3692,12 +3738,15 @@ function eval_native_fn(name : string, args : RuntimeVal[], ln : number, env : E
 }
 
 
+
 export async function eval_call_expr(expr : CallExpr, env : Environment, StackFrames : StackFrame[]): Promise<RuntimeVal> {
   
 
   //StackFrames.push({expr: pcon.stringify(expr), ln: expr.ln, context: env.context} as StackFrame);
 
 
+
+  if(StackFrames.length > callStackLimit) return makeError("Maximum call stack size exceeded", "Range");
 
   const name = (expr.callee as Identifier).symbol;
   const runtime = env.lookupVar(name, expr.ln, StackFrames, env);
@@ -3711,7 +3760,7 @@ export async function eval_call_expr(expr : CallExpr, env : Environment, StackFr
 
   if(runtime.type != "function" && runtime.type != "native-fn"){
 
-    return makeError(`'${name}' is not callable!`, "type", expr.ln, StackFrames);
+    return makeError(`'${name}' is not callable!`, "Type", expr.ln, StackFrames);
 
   }
 
@@ -3751,11 +3800,11 @@ export async function eval_call_expr(expr : CallExpr, env : Environment, StackFr
 
 
     if(expr.wasCallKeywordUsed && !funcProcComponent.isProcedure){
-      return makeError("Do not use 'CALL' keyword on functions!", "syntax", expr.ln, StackFrames);
+      return makeError("Do not use 'CALL' keyword on functions!", "Syntax", expr.ln, StackFrames);
     }
 
     if(!expr.wasCallKeywordUsed && funcProcComponent.isProcedure){
-      return makeError("Must use 'CALL' keyword when calling procedures!", "syntax", expr.ln, StackFrames) ;
+      return makeError("Must use 'CALL' keyword when calling procedures!", "Syntax", expr.ln, StackFrames) ;
     }
     
     
@@ -3764,7 +3813,7 @@ export async function eval_call_expr(expr : CallExpr, env : Environment, StackFr
 
 
     if(func.parameters.size != args.length){
-      return makeError(`Expected ${func.parameters.size} arguments, but got ${args.length}`, "type", expr.ln, StackFrames);
+      return makeError(`Expected ${func.parameters.size} arguments, but got ${args.length}`, "Type", expr.ln, StackFrames);
     }
 
     if(func.parameters !== null){
@@ -3785,11 +3834,11 @@ export async function eval_call_expr(expr : CallExpr, env : Environment, StackFr
           if(parameter[1].kind == "ObjectLiteral"){
 
             if(arg.type != "Object"){
-              return makeError("Expecting argument to be array!", "type", expr.ln, StackFrames);
+              return makeError("Expecting argument to be array!", "Type", expr.ln, StackFrames);
             }
 
             if(!Confirm(arg, (parameter[1] as NewObjectLiteralExpr).dataType, expr.ln, env, StackFrames)){
-              return makeError(`Array is not of type ${Tokens[(parameter[1] as NewObjectLiteralExpr).dataType].toUpperCase()}!`, "type", expr.ln, StackFrames)
+              return makeError(`Array is not of type ${Tokens[(parameter[1] as NewObjectLiteralExpr).dataType].toUpperCase()}!`, "Type", expr.ln, StackFrames)
             }
 
             paramType = {
@@ -3821,7 +3870,7 @@ export async function eval_call_expr(expr : CallExpr, env : Environment, StackFr
             paramTypeMsg = paramTypeMsg.toUpperCase();
 
             if(errorLog.length == 0){
-              return makeError(`Argument '${JSON.stringify((arg as StringVal).value)}' is not of type ${paramTypeMsg}!`, "type", expr.ln, StackFrames);
+              return makeError(`Argument '${JSON.stringify((arg as StringVal).value)}' is not of type ${paramTypeMsg}!`, "Type", expr.ln, StackFrames);
             }
             else{
               return MK_NULL();
@@ -3896,7 +3945,7 @@ export async function eval_call_expr(expr : CallExpr, env : Environment, StackFr
 
                   
 
-                  return makeError(`Returned value is not of type ${Tokens[rt]}!`, "type", stmt.ln, StackFrames);
+                  return makeError(`Returned value is not of type ${Tokens[rt]}!`, "Type", stmt.ln, StackFrames);
                 }
 
 
@@ -3907,7 +3956,7 @@ export async function eval_call_expr(expr : CallExpr, env : Environment, StackFr
               
             }
             else{
-              return makeError("Procedures may not return a value!", "runtime", stmt.ln, StackFrames);
+              return makeError("Procedures may not return a value!", "Runtime", stmt.ln, StackFrames);
             }
           }
         }
@@ -3942,7 +3991,7 @@ export async function eval_call_expr(expr : CallExpr, env : Environment, StackFr
               }
             }
             else{
-              return makeError("Procedures may not return a value!", "runtime", result.ln, StackFrames);
+              return makeError("Procedures may not return a value!", "Runtime", result.ln, StackFrames);
             }
           }
         }
@@ -3953,7 +4002,7 @@ export async function eval_call_expr(expr : CallExpr, env : Environment, StackFr
       else if(stmt.kind == "ReturnStmt"){
        
         if(func.isProcedure){
-          return makeError("Procedures may not return a value!", "runtime", stmt.ln, StackFrames);
+          return makeError("Procedures may not return a value!", "Runtime", stmt.ln, StackFrames);
         }
         else{
           //StackFrames.pop();
@@ -4009,7 +4058,7 @@ export async function eval_call_expr(expr : CallExpr, env : Environment, StackFr
 
         if(!func.isProcedure && !kindMatchesToken(result, returnType,env)){
             makeError( `Return type is not ${result.type},
-          !`, "type", expr.ln, StackFrames);
+          !`, "Type", expr.ln, StackFrames);
         }
       }
     }
@@ -4019,7 +4068,7 @@ export async function eval_call_expr(expr : CallExpr, env : Environment, StackFr
     
   }
   else{
-    return makeError(`Function does not exist!`, "name", expr.ln);
+    return makeError(`Function does not exist!`, "Name", expr.ln);
   }
 
 
@@ -4036,7 +4085,7 @@ async function confirmForReturning(getting:RuntimeVal, expecting:Expr, env : Env
   if(expecting.kind == "ObjectLiteral"){
 
     if(getting.type != "Object"){
-      makeError("Value returned is not an array!", "type", getting.ln, StackFrames);
+      makeError("Value returned is not an array!", "Type", getting.ln, StackFrames);
     }
 
     const r = (expecting as NewObjectLiteralExpr).dataType;
@@ -4051,7 +4100,7 @@ async function confirmForReturning(getting:RuntimeVal, expecting:Expr, env : Env
       
 
       errorLog.pop();
-      makeError(`Returned value is not of type ${return_type}`, "type", getting.ln, StackFrames);
+      makeError(`Returned value is not of type ${return_type}`, "Type", getting.ln, StackFrames);
       return false;
     }
 
@@ -4069,7 +4118,7 @@ async function confirmForReturning(getting:RuntimeVal, expecting:Expr, env : Env
 
       
       errorLog.pop();
-      makeError(`Returned value is not of type ${return_type}`, "type", getting.ln, StackFrames);
+      makeError(`Returned value is not of type ${return_type}`, "Type", getting.ln, StackFrames);
       return false;
     }
   }
@@ -4256,7 +4305,7 @@ export async function eval_unary_expr(unaryExpr : UnaryExpr, env : Environment, 
     
     if(val.type != "number"){
 
-      return makeError("Expecting operand of type REAL", "type", unaryExpr.ln);
+      return makeError("Expecting operand of type REAL", "Type", unaryExpr.ln);
 
     }
     else{
@@ -4349,7 +4398,7 @@ function eval_unary_numeric_expr(opeator : string, rhs : number, ln : number) : 
 
 
     default: 
-      return makeError("Unrecognised numeric operator!", "runtime",ln);
+      return makeError("Unrecognised numeric operator!", "Runtime",ln);
   }
 }
 
@@ -4364,7 +4413,7 @@ function eval_unary_logic_expr(operator : string, rhs : boolean, ln : number) : 
       return MK_BOOL(!rhs);
 
     default:
-      return makeError("Unrecognised logic operator!", "runtime", ln);
+      return makeError("Unrecognised logic operator!", "Runtime", ln);
   }
 
 
