@@ -3,7 +3,7 @@ import { SetupGlobalScope } from "./Runtime/Environment.js";
 import { evaluate } from "./Runtime/Interpreter.js";
 import { MK_NULL } from "./Runtime/Value.js";
 import { tokenize, Tokens } from "./Frontend/Lexer.js";
-import { PyT, JST } from "./Runtime/Translators.js";
+import { PyT, JST, VBnet } from "./Runtime/Translators.js";
 export const UserFnArgDesc = new Map();
 export let outputLog = [];
 export let consoleHistory = [];
@@ -201,7 +201,11 @@ export function makeError(message, errType, ln, StackFrames) {
                     seen_lns.push(frame.ln);
                 }
                 else {
-                    errorMsg += (` File <"${cur_fl}">, ${bit}in ${frame.context}\n   ${frame.expr}\n`);
+                    errorMsg = "Traceback (most recent call last):\n";
+                    if (frame.expr)
+                        errorMsg += (`File <"${cur_fl}">, ${bit}in ${frame.context}\n   ${frame.expr}\n`);
+                    else
+                        errorMsg += (` File <"${cur_fl}">, ${bit}in ${frame.context}\n\n`);
                     seen_lns.push(frame.ln);
                 }
             }
@@ -221,15 +225,12 @@ export function makeError(message, errType, ln, StackFrames) {
                 errorMsg += ` File <"${cur_fl}">, in <module>\n`;
         }
     }
-    if (errType) {
+    if (errType)
         errorMsg += "Uncaught " + errType + "Error: " + message;
-    }
-    else {
+    else
         errorMsg += "Uncaught: " + message;
-    }
-    if (errorLog.length == 0) {
+    if (errorLog.length == 0)
         errorLog.push(errorMsg);
-    }
     return MK_NULL();
 }
 function countStmts(closure, search) {
@@ -348,6 +349,21 @@ export function halt_program(safe) {
         makeError("Session killed due to timeout");
     }
 }
+function extract_file_name(raw) {
+    let guess = "";
+    raw = raw.split('');
+    let i = 0;
+    if (!raw.includes('.')) {
+        return 'none';
+    }
+    else {
+        while (raw[i] != '.') {
+            guess += raw[i];
+            i++;
+        }
+        return guess;
+    }
+}
 export async function repl(src, pF, filename, request) {
     cur_fl = filename;
     programFile = pF;
@@ -438,6 +454,22 @@ export async function repl(src, pF, filename, request) {
             contexts = [];
             const translator = new JST();
             const translatedProgam = await translator.produce_JS_program(program);
+            outputLog = translatedProgam.split('\n');
+            return outputLog;
+        }
+    }
+    else if (request == "VBnet") {
+        my_state = "translating";
+        program = parser.produceAST(src);
+        if (loose_expr("<module>", program)) {
+            return ["' Cannot finish translation due to a potential syntax error", "' Evaluate your program and check that there are no errors first before translating!"];
+        }
+        else {
+            errorLog = [];
+            pauseLog = [];
+            contexts = [];
+            const translator = new VBnet(extract_file_name(cur_fl) == 'Main' ? "MyProgram" : extract_file_name(cur_fl));
+            const translatedProgam = await translator.produce_VB_program(program);
             outputLog = translatedProgam.split('\n');
             return outputLog;
         }

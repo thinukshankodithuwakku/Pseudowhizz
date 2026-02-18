@@ -671,17 +671,18 @@ function asses_dataType_fromRTV(test) {
 export async function eval_selectionStmt_expr(declaration, env, StackFrames) {
     let result = { type: "end-closure" };
     let scopes = [];
-    for (const condition of declaration.body.keys()) {
+    for (const cond_str of declaration.body.keys()) {
         if (kill_program()) {
             return null;
         }
         //const temp = StackFrames.pop();
         //StackFrames.push({expr: pcon.stringify(condition as Expr), ln: condition.ln, context: env.context})
-        if (condition.kind == "DefaultCase" || (await evaluate(condition, env, StackFrames)).value) {
+        const condition = cond_str == "Otherwise" ? MK_BOOL(true) : JSON.parse(cond_str);
+        if (cond_str == "Otherwise" || (await evaluate(condition, env, StackFrames)).value) {
             //StackFrames.pop();
             //StackFrames.push(temp);
             scopes.push(new Environment(env.context, env));
-            const body = hoist(declaration.body.get(condition)[1]);
+            const body = hoist(declaration.body.get(cond_str)[1]);
             for (const stmt of body) {
                 //StackFrames.push({context: env.context, expr: pcon.stringify(stmt), ln: stmt.ln} as StackFrame);
                 if (kill_program()) {

@@ -6,6 +6,7 @@ import { RuntimeVal, MK_NULL, MK_NUMBER, MK_STRING, MK_BOOL, MK_CHAR, ValueType,
 import { configureFileMemory, errorLog, makeError, pauseLog, func_map, StackFrame } from "../../Main.js";
 import { concantate_exprs, hoist } from "./Expressions.js";
 
+
 const initial_frame = {
   expr: undefined,
   ln: undefined,
@@ -177,10 +178,18 @@ export const natives = ["ROUND", "RANDOM", "SUBSTRING", "LCASE", "UCASE", "MOD",
 export function eval_fn_declaration(
     declaration : FunctionDeclaration, 
     env : Environment,
+    StackFrames : StackFrame[]
   ) : RuntimeVal {
         
 
     func_map.set(declaration.name, declaration.isProcedure ? "PROCEDURE" : "FUNCTION");
+
+    if(declaration.returnExpressions.length == 0){
+
+      StackFrames.push({expr: undefined, ln: declaration.ln, context: declaration.name});
+      return makeError("Functions that are not procedures must return a value!", "Type", declaration.ln, StackFrames);
+
+    }
 
     const fn = {
       

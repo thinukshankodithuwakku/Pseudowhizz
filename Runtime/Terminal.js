@@ -9,12 +9,12 @@ export default class Terminal {
         this.console = box;
         this.block_descs.set("IF", 'The "IF" statement\n******************\n\nThe "IF" statement is used to conditionally execute a block of code. An "ELSEIF" branch can be added if the first condition is not met. If all branch conditions evaluate to FALSE, the block of the "ELSE" clause, if present, is excecuted. An if statement is terminated with the keyword "ENDIF".\n');
         this.block_descs.set("CASE", 'The "CASE" statement\n********************\n\nThe "CASE" statement is used to conditionally execute a block of code, where the subject variable evaluates to the expression given by the branch condition. The subject of the case statement follows the "CASE" keyword. If the subject does not evaluate to any of the branch expressions, the block of the "OTHERWISE" clause, if present, is excecuted. A CASE statement is terminated with the keyword "ENDCASE".\n');
-        this.block_descs.set("FUNCTION", 'Function declarations\n*********************\n\nFunctions are declared with the FUNCTION keyword, followed by the function name, a parenthesized, comma-separated list of parameters, the RETURNS keyword, and the return datatype. The block of the function follows, and is terminated with the keyword ENDFUNCTION.\n\nExample: FUNCTION Greet(Name : STRING) RETURNS STRING\n              RETURN "Hello, ", Name\n          ENDFUNCTION\n');
-        this.block_descs.set("PROCEDURE", 'Procedure declarations\n**********************\n\nProcedures are declared with the PROCEDURE keyword, followed by the procedure name, and (optionally) a parenthesized, comma-separated list of parameters. The block of the procedure follows, and is terminated with the keyword ENDPROCEDURE.\n\nExample: PROCEDURE Greet(Name : STRING)\n              OUTPUT "Hello, ", Name\n          ENDPROCEDURE.\nProcedures may NOT return a value.\n');
+        this.block_descs.set("FUNCTION", 'Function declarations\n*********************\n\nFunctions are declared with the "FUNCTION" keyword, followed by the function name, a parenthesized, comma-separated list of parameters, the "RETURNS" keyword, and the return datatype. The block of the function follows, and is terminated with the keyword "ENDFUNCTION".\n\nExample: FUNCTION Greet(Name : STRING) RETURNS STRING\n              RETURN "Hello, ", Name\n          ENDFUNCTION\n');
+        this.block_descs.set("PROCEDURE", 'Procedure declarations\n**********************\n\nProcedures are declared with the "PROCEDURE" keyword, followed by the procedure name, and (optionally) a parenthesized, comma-separated list of parameters. The block of the procedure follows, and is terminated with the keyword "ENDPROCEDURE".\n\nExample: "PROCEDURE" Greet(Name : STRING)\n              OUTPUT "Hello, ", Name\n          ENDPROCEDURE.\nProcedures may NOT return a value.\n');
         this.block_descs.set("WHILE", 'Pre-conditional loops\n****************\n\n"WHILE" loops are used to execute a block of code while the loop condition evaluates to TRUE. The loop condition follows the "WHILE" keyword, followed by the "DO" keyword. A "WHILE" loop is terminated with the keyword "ENDWHILE".\n');
         this.block_descs.set("REPEAT", 'Post-conditional loops\n*****************\n\n"REPEAT" loops are used to execute a block of code at least once, and while the loop condition evaluates to FALSE. A "REPEAT" loop is terminated with the keyword "UNTIL" followed by the condition expression.\n');
         this.block_descs.set("FOR", 'Count-controlled loops\n**********************\n\n"FOR" loops are used to execute a block of code a set number of times. The loop iterator, initial value and terminal value are declared in the "FOR" statement, with the syntax: FOR <identifier> ← <initial value> TO <terminal value>. An optional "STEP" keyword can be used to specify the increment value for each iteration. If no step value is specified, the default step is 1. A "FOR" loop is terminated with the keyword "NEXT" and then the iterator.\n');
-        this.block_descs.set("OPENFILE", 'File handling\n*************\n\nFiles are opened with the OPENFILE keyword, followed by the filename in double quotes, the "FOR" keyword and the read/write mode. When finished with a file, it should be closed with the CLOSEFILE keyword, followed by the filename in double quotes.\n');
+        this.block_descs.set("OPENFILE", 'File handling\n*************\n\nFiles are opened with the "OPENFILE" keyword, followed by the filename in double quotes, the "FOR" keyword and the read/write mode. When finished with a file, it should be closed with the "CLOSEFILE" keyword, followed by the filename in double quotes.\n');
         this.block_descs.set("←", "Assignment operator\n*******************\n\nThe '←' symbol is used to assign a value to a variable. The variable to which the value is being assigned is placed on the left side of the operator, and the value or expression being assigned is placed on the right side.\n\nExample: Age ← 21\n");
         this.std_out("Pseudowhizz 1.1.2");
         this.main('Type "help", "copyright" or "credits" for more information.');
@@ -50,7 +50,7 @@ export default class Terminal {
     async main(msg) {
         let res = null;
         try {
-            res = (await this.race(this.ask(msg), this.timeout));
+            res = (await this.race(this.ask(msg), this.timeout)).trim();
         }
         catch (e) {
             this.cancel(e.message);
@@ -58,7 +58,7 @@ export default class Terminal {
         if (!res)
             return;
         if (!this.avoid.includes(res) && res.startsWith('help(') && res.endsWith(')')) {
-            res = res.slice(5, -1);
+            res = res.slice(5, -1).trim();
             this.process_help_request(res);
         }
         else {
@@ -154,31 +154,31 @@ export default class Terminal {
                 this.help_handler('\n');
                 break;
             case "SUBSTRING":
-                this.help_handler("SUBSTRING(<expr>, <start index>, <length>)\n\nReturns the substring of the provided expression starting at the provided 1-based index, and with the provided length.\n\nExample: SUBSTRING(\"Hello World\", 7, 5) returns \"World\"\n");
+                this.help_handler("Help on built-in module SUBSTRING in module built-ins:\n\nSUBSTRING(<expr>, <start index>, <length>)\n\nReturns the substring of the provided expression starting at the provided 1-based index, and with the provided length.\n\nExample: SUBSTRING(\"Hello World\", 7, 5) returns \"World\"\n");
                 break;
             case "LENGTH":
-                this.help_handler('LENGTH(<expr>)\n\nReturns the length of the provided expression. Can be STRING or ARRAY (Pseudowhizz only).\n\nExample: LENGTH("Hello") returns 5\n');
+                this.help_handler('Help on built-in module LENGTH in module built-ins:\n\nLENGTH(<expr>)\n\nReturns the length of the provided expression. Can be STRING or ARRAY (Pseudowhizz only).\n\nExample: LENGTH("Hello") returns 5\n');
                 break;
             case "ROUND":
-                this.help_handler('ROUND(<expr>, <decimal places>)\n\nReturns the value of the provided expression rounded to the specified number of decimal places.\n\nExample: ROUND(3.14159, 2) returns 3.14\n');
+                this.help_handler('Help on built-in module ROUND in module built-ins:\n\nROUND(<expr>, <decimal places>)\n\nReturns the value of the provided expression rounded to the specified number of decimal places.\n\nExample: ROUND(3.14159, 2) returns 3.14\n');
                 break;
             case "RANDOM":
-                this.help_handler('RANDOM()\n\nReturns a random REAL value between 0 and 1.\n\nExample: RANDOM() * 10 may return any real number between 1 and 10, such as 4.39285\n');
+                this.help_handler('Help on built-in module RANDOM in module built-ins:\n\nRANDOM()\n\nReturns a random REAL value between 0 and 1.\n\nExample: RANDOM() * 10 may return any real number between 1 and 10, such as 4.39285\n');
                 break;
             case "MOD":
-                this.help_handler('MOD(<expr>, <expr>)\n\nReturns the modulus of the first expression by the second expression. \n\nExample: MOD(10, 3) returns 1\n');
+                this.help_handler('Help on built-in module MOD in module built-ins:\n\nMOD(<expr>, <expr>)\n\nReturns the modulus of the first expression by the second expression. \n\nExample: MOD(10, 3) returns 1\n');
                 break;
             case "DIV":
-                this.help_handler('DIV(<expr>, <expr>)\n\nReturns the floored division of the first expression by the second expression. \n\nExample: DIV(10, 3) returns 3\n');
+                this.help_handler('Help on built-in module DIV in module built-ins:\n\nDIV(<expr>, <expr>)\n\nReturns the floored division of the first expression by the second expression. \n\nExample: DIV(10, 3) returns 3\n');
                 break;
             case "NUM_TO_STR":
-                this.help_handler('NUM_TO_STR(<expr>)\n\nReturns the string representation of the provided numeric expression.\n\nExample: NUM_TO_STR(3.14) returns "3.14"\n');
+                this.help_handler('Help on built-in module NUM_TO_STR in module built-ins:\n\nNUM_TO_STR(<expr>)\n\nReturns the string representation of the provided numeric expression.\n\nExample: NUM_TO_STR(3.14) returns "3.14"\n');
                 break;
             case "STR_TO_NUM":
-                this.help_handler('STR_TO_NUM(<expr>)\n\nReturns the numeric representation of the provided string expression, if it exists. If the string cannot be converted to a number, an error is thrown.\n\nExample: STR_TO_NUM("3.14") returns 3.14\n');
+                this.help_handler('Help on built-in module STR_TO_NUM in module built-ins:\n\nSTR_TO_NUM(<expr>)\n\nReturns the numeric representation of the provided string expression, if it exists. If the string cannot be converted to a number, an error is thrown.\n\nExample: STR_TO_NUM("3.14") returns 3.14\n');
                 break;
             case "EOF":
-                this.help_handler('EOF(<filename>)\n\nReturns TRUE if the end of the specified file has been reached, and FALSE otherwise.\n\nExample: EOF("Sample.txt") may return TRUE if the end of Sample.txt has been reached, and FALSE otherwise.\n');
+                this.help_handler('Help on built-in module EOF in module built-ins:\n\nEOF(<filename>)\n\nReturns TRUE if the end of the specified file has been reached, and FALSE otherwise.\n\nExample: EOF("Sample.txt") may return TRUE if the end of Sample.txt has been reached, and FALSE otherwise.\n');
                 break;
             case "AND":
                 this.help_handler("AND\nLogical operators\n*****************\n\nAND takes two operands and returns TRUE if both operands evalaute as truthy, and FALSE otherwise.\n");

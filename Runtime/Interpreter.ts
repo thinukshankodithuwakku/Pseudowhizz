@@ -141,7 +141,7 @@ export async function evaluate(astNode: Stmt, env: Environment, StackFrames : St
         return await eval_var_declaration(astNode as VarDeclaration, env, SF_BYREF);
 
       case "FunctionDeclaration":
-        return await eval_fn_declaration(astNode as FunctionDeclaration, env);
+        return await eval_fn_declaration(astNode as FunctionDeclaration, env, SF_BYREF);
 
       case "ObjectLiteral":
         return await eval_new_objectVal(astNode as NewObjectLiteralExpr, env, SF_BYREF);

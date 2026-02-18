@@ -789,7 +789,7 @@ export default class Parser {
                 }
             }
             Statements.push({ kind: "EndClosureExpr" });
-            body.set(condition, ["", Statements]);
+            body.set(JSON.stringify(condition), ["", Statements]);
             Statements = [];
             while (this.at().type == Tokens.EOL) {
                 this.eat();
@@ -858,7 +858,7 @@ export default class Parser {
                         }
                     }
                     Statements.push({ kind: "EndClosureExpr" });
-                    body.set(condition, [comment, Statements]);
+                    body.set(JSON.stringify(condition), [comment, Statements]);
                 }
             }
             Statements = [];
@@ -907,7 +907,7 @@ export default class Parser {
                     }
                 }
                 Statements.push({ kind: "EndClosureExpr" });
-                body.set({ kind: "DefaultCase" }, [comment, Statements]);
+                body.set("Otherwise", [comment, Statements]);
             }
             if (this.at().type !== Tokens.Endif && this.at().type !== Tokens.EOL && this.not_eof()) {
                 this.expect(context, Tokens.EOL, "Expecting new line before ENDIF token!");
@@ -973,7 +973,7 @@ export default class Parser {
                         return this.MK_NULL_PARSER();
                     }
                 }
-                body.set(condition, ["", Statements]);
+                body.set(JSON.stringify(condition), ["", Statements]);
                 while (this.at().type == Tokens.EOL) {
                     this.eat();
                 }
@@ -1013,7 +1013,7 @@ export default class Parser {
                                 return this.MK_NULL_PARSER();
                             }
                         }
-                        body.set(condition, [comment, Statements]);
+                        body.set(JSON.stringify(condition), [comment, Statements]);
                         if (this.classify(parsed) == "Expr") {
                             check = parsed;
                         }
@@ -1062,7 +1062,7 @@ export default class Parser {
                         const MK_DEFAULT = {
                             kind: "DefaultCase",
                         };
-                        body.set(MK_DEFAULT, [comment, Statements]);
+                        body.set("Otherwise", [comment, Statements]);
                     }
                 }
             }
@@ -1133,6 +1133,7 @@ export default class Parser {
     parse_fn_declaration(context) {
         let header_comment = undefined;
         const procedure = (this.eat().type == Tokens.Procedure);
+        const dcl_ln = this.at().ln;
         const name = this.expect(context, Tokens.Identifier, "Expecting function name!").value;
         if (errorLog.length > 0) {
             return this.MK_NULL_PARSER();
@@ -1342,15 +1343,13 @@ export default class Parser {
             isProcedure: procedure,
             expectedArguments: parameters.size,
             returnExpressions: returnExpressions,
+            ln: dcl_ln,
         };
         if (this.at().type == Tokens.Comment) {
             fn.footer_comment = this.eat().value;
         }
         if (header_comment) {
             fn.header_comment = header_comment;
-        }
-        if (!procedure && returnExpressions.length == 0) {
-            return this.MK_Err(context, "Functions that are not procedures must return a value!");
         }
         if (errorLog.length > 0) {
             return this.MK_NULL_PARSER();
@@ -1543,6 +1542,7 @@ export default class Parser {
                         value: [val],
                         ln: ln,
                     };
+                    //console.log(var_decl);
                     if (this.at().type == Tokens.Comment) {
                         var_decl.comment = this.eat().value;
                     }
@@ -2248,6 +2248,7 @@ export default class Parser {
                     kind: "NumericLiteral",
                     value: parseFloat(a.value),
                     ln: a.ln,
+                    numberKind: isint(a.value) ? Tokens.Integer : Tokens.Real
                 };
             case Tokens.OpenBracket:
                 this.eat(); //remove opening bracket

@@ -1170,7 +1170,7 @@ export default class Parser {
 
   private parse_selectionStmt_declaration(context : string): Expr {
     const ifStatement = this.eat().type == Tokens.If; //consume the IF/CASE token
-    let body = new Map<Expr, [string, Stmt[]]>();
+    let body = new Map<string, [string, Stmt[]]>();
     let Statements : Stmt[] = [];
     let ReturnExpressions : Stmt[] = [];
 
@@ -1321,7 +1321,7 @@ export default class Parser {
       
       Statements.push({kind: "EndClosureExpr"} as EndClosureExpr);
       
-      body.set(condition, ["", Statements]);
+      body.set(JSON.stringify(condition), ["", Statements]);
       
       Statements = [];
 
@@ -1430,7 +1430,7 @@ export default class Parser {
           }
           Statements.push({kind: "EndClosureExpr"} as EndClosureExpr);
 
-          body.set(condition, [comment, Statements]);
+          body.set(JSON.stringify(condition), [comment, Statements]);
 
         }
       }
@@ -1514,7 +1514,7 @@ export default class Parser {
 
         Statements.push({kind: "EndClosureExpr"} as EndClosureExpr);
 
-        body.set({kind: "DefaultCase"} as Expr, [comment, Statements]);
+        body.set("Otherwise", [comment, Statements]);
       }
       
 
@@ -1622,7 +1622,7 @@ export default class Parser {
 
         }
 
-        body.set(condition, ["", Statements]);
+        body.set(JSON.stringify(condition), ["", Statements]);
 
         while(this.at().type == Tokens.EOL){
           this.eat();
@@ -1674,7 +1674,7 @@ export default class Parser {
               }
             }
 
-            body.set(condition, [comment, Statements]);
+            body.set(JSON.stringify(condition), [comment, Statements]);
 
             if(this.classify(parsed) == "Expr"){
               check = parsed;
@@ -1741,7 +1741,7 @@ export default class Parser {
               kind: "DefaultCase",
             } as DefaultCase;
 
-            body.set(MK_DEFAULT, [comment, Statements]);
+            body.set("Otherwise", [comment, Statements]);
             
           }
         }
@@ -1850,6 +1850,7 @@ export default class Parser {
 
 
     const procedure = (this.eat().type == Tokens.Procedure);
+    const dcl_ln = this.at().ln;
     const name = this.expect(context,Tokens.Identifier, "Expecting function name!").value;
 
     if(errorLog.length > 0){
@@ -2190,6 +2191,7 @@ export default class Parser {
       isProcedure: procedure,
       expectedArguments: parameters.size,
       returnExpressions: returnExpressions,
+      ln: dcl_ln,
 
     } as FunctionDeclaration;
 
@@ -2204,14 +2206,6 @@ export default class Parser {
       fn.header_comment = header_comment;
 
     }
-
-    if(!procedure && returnExpressions.length == 0){
-      return this.MK_Err(context,"Functions that are not procedures must return a value!") ;
-
-    }
-
-
-
 
     if(errorLog.length > 0){
 
@@ -2544,6 +2538,8 @@ export default class Parser {
             value: [val],
             ln: ln,
           } as VarDeclaration;
+
+          //console.log(var_decl);
 
           if(this.at().type == Tokens.Comment){
 
@@ -3728,10 +3724,13 @@ export default class Parser {
         
         const a = this.eat();
 
+        
+          
         return {
           kind: "NumericLiteral",
           value: parseFloat(a.value),
           ln: a.ln,
+          numberKind: isint(a.value) ? Tokens.Integer : Tokens.Real
         } as NumericLiteral;
         
       case Tokens.OpenBracket:

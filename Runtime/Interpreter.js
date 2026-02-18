@@ -73,7 +73,7 @@ export async function evaluate(astNode, env, StackFrames) {
             case "VarDeclaration":
                 return await eval_var_declaration(astNode, env, SF_BYREF);
             case "FunctionDeclaration":
-                return await eval_fn_declaration(astNode, env);
+                return await eval_fn_declaration(astNode, env, SF_BYREF);
             case "ObjectLiteral":
                 return await eval_new_objectVal(astNode, env, SF_BYREF);
             case "CallExpr":

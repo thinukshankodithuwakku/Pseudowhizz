@@ -94,8 +94,12 @@ export function MK_EMPTY(typ) {
     }
 }
 export const natives = ["ROUND", "RANDOM", "SUBSTRING", "LCASE", "UCASE", "MOD", "DIV", "NUM_TO_STR", "STR_TO_NUM", "EOF"];
-export function eval_fn_declaration(declaration, env) {
+export function eval_fn_declaration(declaration, env, StackFrames) {
     func_map.set(declaration.name, declaration.isProcedure ? "PROCEDURE" : "FUNCTION");
+    if (declaration.returnExpressions.length == 0) {
+        StackFrames.push({ expr: undefined, ln: declaration.ln, context: declaration.name });
+        return makeError("Functions that are not procedures must return a value!", "Type", declaration.ln, StackFrames);
+    }
     const fn = {
         type: "function",
         name: declaration.name,

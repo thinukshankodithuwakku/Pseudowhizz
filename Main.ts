@@ -4,7 +4,7 @@ import Environment, {SetupGlobalScope} from "./Runtime/Environment.js";
 import { evaluate } from "./Runtime/Interpreter.js";
 import { RuntimeVal, MK_NULL } from "./Runtime/Value.js";
 import { Token, tokenize, Tokens } from "./Frontend/Lexer.js";
-import {PyT, JST} from "./Runtime/Translators.js";
+import {PyT, JST, VBnet} from "./Runtime/Translators.js";
 
 
 interface ConsoleLine {
@@ -322,7 +322,6 @@ export function makeError(message : string,  errType? : error, ln? : number, Sta
   let errorMsg : string = "";
   
 
-
   errorLines.push(ln);
 
 
@@ -347,7 +346,9 @@ export function makeError(message : string,  errType? : error, ln? : number, Sta
         }
         else{
 
-          errorMsg += (` File <"${cur_fl}">, ${bit}in ${frame.context}\n   ${frame.expr}\n`);
+          errorMsg = "Traceback (most recent call last):\n";
+          if(frame.expr) errorMsg += (`File <"${cur_fl}">, ${bit}in ${frame.context}\n   ${frame.expr}\n`);
+          else errorMsg += (` File <"${cur_fl}">, ${bit}in ${frame.context}\n\n`);
           seen_lns.push(frame.ln);
         
         }
@@ -382,24 +383,10 @@ export function makeError(message : string,  errType? : error, ln? : number, Sta
 
   }
 
-  
+  if(errType) errorMsg += "Uncaught " + errType + "Error: " + message;
+  else errorMsg += "Uncaught: " + message;
 
-
-  if(errType){
-    errorMsg += "Uncaught " + errType + "Error: " + message;
-
-
-  }
-  else{
-    errorMsg += "Uncaught: " + message;
-  }
-
-
-
-  if(errorLog.length == 0){
-
-    errorLog.push(errorMsg);
-  }
+  if(errorLog.length == 0) errorLog.push(errorMsg);
   
   return MK_NULL();
 }
@@ -594,6 +581,34 @@ export function halt_program(safe : boolean) {
   
 }
 
+function extract_file_name(raw) {
+
+  let guess = "";
+
+  raw = raw.split('');
+
+  let i = 0;
+
+  if(!raw.includes('.')){
+
+      return 'none';
+
+  }
+  else{
+      while(raw[i] != '.'){
+
+          guess += raw[i];
+          i++;
+
+      }
+
+      return guess;
+  }
+
+
+
+}
+
 export async function repl(src : string, pF : string, filename : string, request? : string) {
   
   cur_fl = filename;
@@ -757,6 +772,35 @@ export async function repl(src : string, pF : string, filename : string, request
 
       const translator = new JST();
       const translatedProgam = await translator.produce_JS_program(program);
+
+      outputLog = translatedProgam.split('\n')
+
+      return outputLog;
+    }
+
+  }
+  else if(request == "VBnet"){
+
+    my_state = "translating";
+
+    program = parser.produceAST(src);
+    
+
+    if(loose_expr("<module>",program)){
+
+      return ["' Cannot finish translation due to a potential syntax error", "' Evaluate your program and check that there are no errors first before translating!"];
+
+    }
+    else{
+
+      errorLog = [];
+      pauseLog = [];
+      contexts = [];
+
+    
+
+      const translator = new VBnet(extract_file_name(cur_fl) == 'Main' ? "MyProgram" : extract_file_name(cur_fl));
+      const translatedProgam = await translator.produce_VB_program(program);
 
       outputLog = translatedProgam.split('\n')
 

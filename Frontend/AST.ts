@@ -244,7 +244,7 @@ export interface CallExpr extends Expr {
 
 export interface SelectionStmtDeclaration extends Expr {
   kind: "SelectionStmtDeclaration",
-  body: Map<Stmt, [string, Stmt[]]>;
+  body: Map<string, [string, Stmt[]]>;
   returns?: ReturnStmt[];
   case?:boolean,
 

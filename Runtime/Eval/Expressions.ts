@@ -1081,7 +1081,7 @@ export async function eval_selectionStmt_expr(
 
     let scopes : Environment[] = [];
 
-    for(const condition of declaration.body.keys()){
+    for(const cond_str of declaration.body.keys()){
       
       if(kill_program()){
         return null;
@@ -1090,13 +1090,15 @@ export async function eval_selectionStmt_expr(
       //const temp = StackFrames.pop();
       //StackFrames.push({expr: pcon.stringify(condition as Expr), ln: condition.ln, context: env.context})
 
-      if(condition.kind == "DefaultCase" || (await evaluate(condition as Expr, env, StackFrames) as BooleanVal).value){
+      const condition = cond_str == "Otherwise" ? MK_BOOL(true) : JSON.parse(cond_str);
+
+      if(cond_str == "Otherwise" || (await evaluate(condition as Expr, env, StackFrames) as BooleanVal).value){
         //StackFrames.pop();
         //StackFrames.push(temp);
         
         scopes.push(new Environment(env.context, env));
 
-        const body = hoist(declaration.body.get(condition)[1]);
+        const body = hoist(declaration.body.get(cond_str)[1]);
 
         for(const stmt of body){
 

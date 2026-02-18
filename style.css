@@ -2259,6 +2259,8 @@ input[type=number]:focus {
     width: 25px;
     height: 100%;
 
+    padding-right: 0.05em;
+
 }
 
 .red-squiggle {
@@ -3939,6 +3941,8 @@ input:-webkit-autofill {
     overflow-x: hidden;
     overflow-y: hidden;
 
+
+
     
 }
 
@@ -4059,6 +4063,13 @@ input:-webkit-autofill {
 .cnsl-ln.error {
 
     color: var(--console-error);
+
+}
+
+#Ln,
+#Col {
+
+    color: var(--accent)
 
 }
 
